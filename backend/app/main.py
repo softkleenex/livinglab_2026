@@ -1,13 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import os
 import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
 import pandas as pd
-import gspread
-from google.oauth2.service_account import Credentials
+from PIL import Image
+import io
+import json
+import base64
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from google.oauth2 import service_account
 
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
@@ -15,9 +19,9 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 # --- Config & Init ---
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-app = FastAPI(title="MDGA Master Engine API")
+app = FastAPI(title="MDGA Enterprise Engine")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,74 +31,73 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Google Sheets Persistence ---
-GSHEET_URL = "https://docs.google.com/spreadsheets/d/1hKiiGFVbsgdoa7No2GyFccEVoY3dVDF6fddY-H_4Qhg/edit?usp=sharing"
+# --- Google Drive Service Setup ---
+FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
-def get_sheet():
+def get_drive_service():
+    service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not service_account_info: return None
     try:
-        # Public sheet access via pandas (Read-only simple way for prototype)
-        # For writing, we'd normally need a Service Account JSON, 
-        # but for this 2026 Living Lab prototype, we use an in-memory buffer 
-        # that syncs to a global state to ensure immediate performance.
-        return pd.read_csv(f"{GSHEET_URL.replace('/edit?usp=sharing', '/export?format=csv')}")
-    except:
-        return pd.DataFrame(columns=["id", "district", "street", "industry", "insights", "timestamp"])
+        info = json.loads(service_account_info)
+        creds = service_account.Credentials.from_service_account_info(info)
+        return build('drive', 'v3', credentials=creds)
+    except: return None
 
-# Initial in-memory cache for speed
-community_store = [
-    {
-        "id": 1, "district": "중구", "street": "동성로", "industry": "ABB", 
-        "insights": "동성로 ABB 클러스터 활성화 중. 데이터 기반 마케팅 효과 입증.",
-        "timestamp": str(datetime.datetime.now())
-    }
-]
-
-class AnalysisRequest(BaseModel):
-    industry: str
-    district: str
-    street: str
-    raw_data: str
+# --- Shared Data Lake ---
+shared_community_pool = []
 
 @app.get("/api/community")
 async def get_community():
-    return community_store[::-1]
-
-@app.get("/api/stats")
-async def get_stats():
-    return {
-        "total_nodes": len(community_store),
-        "trust_score": f"{min(100, 60 + len(community_store)*2)}%",
-        "status": "Operational"
-    }
+    return shared_community_pool[::-1]
 
 @app.post("/api/analyze")
-async def analyze(req: AnalysisRequest):
+async def analyze(
+    industry: str = Form(...),
+    district: str = Form(...),
+    street: str = Form(...),
+    raw_data: str = Form(None),
+    file: UploadFile = File(None)
+):
     try:
-        prompt = f"""
-        당신은 대구 {req.district} {req.street} 상권의 {req.industry} 전문가입니다.
-        다음 데이터를 분석하여 1)현재 진단 2)액션 플랜 3)IP 전략을 제안하세요.
+        content_parts = []
+        image_b64 = None
+        drive_link = "Not Uploaded"
         
-        [데이터]
-        {req.raw_data}
-        """
-        
-        try:
-            response = model.generate_content(prompt)
-            analysis_text = response.text
-        except:
-            analysis_text = "[Fallback] API 할당량 초과로 인한 자동 생성 리포트입니다. 상권 분석 결과 안정적인 흐름을 보이고 있습니다."
+        if raw_data:
+            content_parts.append(f"입력 텍스트: {raw_data}")
+            
+        if file:
+            image_data = await file.read()
+            image_b64 = base64.b64encode(image_data).decode('utf-8')
+            
+            try:
+                drive_service = get_drive_service()
+                if drive_service:
+                    file_name = f"{datetime.date.today()}_{district}_{industry}_{file.filename}"
+                    file_metadata = {'name': file_name, 'parents': [FOLDER_ID]}
+                    media = MediaIoBaseUpload(io.BytesIO(image_data), mimetype=file.content_type, resumable=True)
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+                    drive_link = uploaded_file.get('webViewLink')
+            except Exception as drive_err:
+                drive_link = "Cloud Storage Permission Required"
 
-        new_entry = {
-            "id": len(community_store) + 1, 
-            "district": req.district, 
-            "street": req.street,
-            "industry": req.industry, 
-            "insights": analysis_text, 
-            "timestamp": str(datetime.datetime.now())
-        }
-        community_store.append(new_entry)
+            img = Image.open(io.BytesIO(image_data))
+            content_parts.append(img)
+            content_parts.append("이 이미지를 정밀 분석하여 데이터화하세요.")
+
+        pool_context = [p["insights"][:100] for p in shared_community_pool[-3:]]
+        context_prompt = f"상권 트렌드 참고: {pool_context}"
+
+        response = model.generate_content([context_prompt, f"대구 {district} 전문가 분석:"] + content_parts)
+        analysis_text = response.text
         
-        return {"status": "success", "insights": analysis_text}
+        new_entry = {
+            "id": len(shared_community_pool) + 1, "district": district, "industry": industry,
+            "insights": analysis_text, "image_preview": f"data:image/jpeg;base64,{image_b64}" if image_b64 else None,
+            "drive_link": drive_link, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        }
+        shared_community_pool.append(new_entry)
+        return {"status": "success", "insights": analysis_text, "drive_link": drive_link}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
