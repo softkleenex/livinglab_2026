@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/samsd/workspace_v2/livinglab_2026/backend/app/main.py", line 1, in <module>
+    from fastapi import FastAPI, HTTPException
+ModuleNotFoundError: No module named 'fastapi'

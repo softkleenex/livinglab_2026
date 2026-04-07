@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+google-generativeai
+python-dotenv
+pydantic
+pandas
+gspread
+google-auth
+st-gsheets-connection
+Pillow
