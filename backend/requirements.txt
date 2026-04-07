@@ -6,5 +6,6 @@ pydantic
 pandas
 gspread
 google-auth
-st-gsheets-connection
+google-api-python-client
 Pillow
+python-multipart
