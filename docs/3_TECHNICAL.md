@@ -13,5 +13,11 @@
 
 ## 3.3 보안 및 운영 (Security & Ops)
 - **Privacy**: 데이터 전송 시 AES-256 암호화 및 커뮤니티 공유 시 익명 마스킹 처리.
-- **Deployment**: Cloudflare Pages (Frontend) & Render (Backend) 또는 Docker 기반 하이브리드 배포.
+- **Deployment**: 
+  - **Frontend**: Cloudflare Pages (Vite 빌드 최적화)
+  - **Backend**: Render.com (FastAPI 전용 서버)
+  - **Database**: Google Sheets API (무손실 클라우드 DB)
 - **Integrity**: `system_check.py`를 통한 전역 엔진 무결성 상시 검증.
+
+## 3.4 상세 배포 가이드
+- 상세한 프로덕션 배포 절차는 [DEPLOYMENT_PROD.md](./DEPLOYMENT_PROD.md)를 참조하거나, 최상위 README의 가이드를 따르십시오.
