@@ -12,6 +12,8 @@
     -   상세 페르소나, 사용자 여정, BM 및 지식재산(IP) 확보 계획.
 3.  **Technical Design**: [3. 기술 설계 및 운영 가이드](./docs/3_TECHNICAL.md)
     -   **App Shell** 아키텍처, 멀티모달 파이프라인, 보안 및 배포 전략.
+4.  **System Architecture**: [0. 폴더 구조 및 파일 시스템](./docs/0_ARCHITECTURE.md)
+    -   프로젝트 단위 계층 구조 및 각 스크립트 역할 완전 명세.
 
 ## 🛠️ 핵심 기술 스택 (High-Fidelity Stack)
 -   **Frontend**: React (Vite) + Tailwind CSS + Framer Motion (v5.7.3)
