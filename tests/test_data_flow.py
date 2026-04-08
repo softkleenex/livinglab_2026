@@ -18,6 +18,10 @@ def test_data_flow():
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="raw_text"\r\n\r\n'
             f"테스트 구/동/거리/가게 데이터 저장 흐름 테스트\r\n"
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="file"; filename="dummy_test.txt"\r\n'
+            f'Content-Type: text/plain\r\n\r\n'
+            f"Hello World Dummy Content for Google Drive\r\n"
             f"--{boundary}--\r\n"
         ).encode('utf-8')
         
@@ -29,6 +33,8 @@ def test_data_flow():
             print(f"  👉 Ingest Status: {res['status']}")
             path = res.get('assigned_path', [])
             print(f"  👉 Path assigned: {path}")
+            if 'drive_link' in res.get('entry', {}):
+                print(f"  👉 Saved to Drive: {res['entry']['drive_link']}")
             
         print(f"  🔍 Verifying via Explore... Path: {path}")
         path_query = urllib.parse.quote("/".join(path))
