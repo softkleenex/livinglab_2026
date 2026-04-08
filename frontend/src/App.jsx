@@ -272,7 +272,7 @@ function App() {
       <AnimatePresence>
         {showIngest && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/98 backdrop-blur-[60px] z-[100] flex items-center justify-center p-8">
-            <motion.div initial={{ scale: 0.8, y: 200 }} animate={{ scale: 1, y: 0 }} className="bg-[#1E293B] w-full max-w-5xl rounded-[8rem] border border-white/10 shadow-[0_100px_300px_rgba(0,0,0,0.9)] overflow-hidden relative">
+            <motion.div initial={{ scale: 0.8, y: 200 }} animate={{ scale: 1, y: 0 }} className="bg-[#1E293B] w-full max-w-5xl max-h-[95vh] flex flex-col rounded-[6rem] border border-white/10 shadow-[0_100px_300px_rgba(0,0,0,0.9)] overflow-hidden relative">
               <div className="p-20 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
                 <div className="flex items-center gap-10">
                   <div className="p-10 bg-blue-600 rounded-[3.5rem] text-white shadow-[0_0_100px_rgba(37,99,235,0.7)] animate-pulse"><Upload size={64} strokeWidth={4}/></div>
@@ -283,13 +283,15 @@ function App() {
                 </div>
                 <button onClick={()=>setShowIngest(false)} className="text-slate-500 hover:text-white p-8 transition-all active:rotate-180"><X size={100}/></button>
               </div>
-              <div className="p-24 space-y-20 text-center">
+              <div className="p-16 space-y-12 text-center overflow-y-auto flex-1 custom-scrollbar">
                 {!ingestRes ? (
                   <>
-                    <p className="text-slate-400 text-4xl font-medium leading-relaxed max-w-4xl mx-auto italic">"비정형 비즈니스 로그를 분석하여 계층 구조 투사 및 무결성 블록체인 자산화를 즉시 수행합니다."</p>
-                    <textarea value={rawText} onChange={(e)=>setRawText(e.target.value)} className="w-full bg-slate-900/50 border border-white/10 rounded-[6rem] p-20 text-4xl font-medium focus:ring-[24px] focus:ring-blue-500/10 outline-none transition-all text-slate-300 shadow-inner placeholder:text-slate-800" rows={4} placeholder="Input Contextual Data Stream..." />
-                    <input type="file" onChange={(e)=>setFile(e.target.files[0])} className="w-full text-3xl text-slate-400 file:mr-10 file:py-6 file:px-12 file:rounded-full file:border-0 file:text-3xl file:font-black file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all cursor-pointer bg-slate-900/30 p-10 rounded-[4rem] border border-white/5" />
-                    <button onClick={handleIngest} disabled={ingestLoading} className="w-full py-14 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[6rem] font-black text-5xl shadow-[0_60px_200px_rgba(37,99,235,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all border border-blue-400/30 uppercase tracking-widest">Execute Sync</button>
+                    <p className="text-slate-400 text-3xl font-medium leading-relaxed max-w-4xl mx-auto italic">"비정형 비즈니스 로그를 분석하여 계층 구조 투사 및 무결성 블록체인 자산화를 즉시 수행합니다."</p>
+                    <textarea value={rawText} onChange={(e)=>setRawText(e.target.value)} className="w-full bg-slate-900/50 border border-white/10 rounded-[3rem] p-12 text-3xl font-medium focus:ring-[24px] focus:ring-blue-500/10 outline-none transition-all text-slate-300 shadow-inner placeholder:text-slate-800" rows={4} placeholder="Input Contextual Data Stream..." />
+                    <input type="file" onChange={(e)=>setFile(e.target.files[0])} className="w-full text-2xl text-slate-400 file:mr-10 file:py-4 file:px-8 file:rounded-full file:border-0 file:text-2xl file:font-black file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all cursor-pointer bg-slate-900/30 p-8 rounded-[3rem] border border-white/5" />
+                    <button onClick={handleIngest} disabled={ingestLoading} className="w-full py-10 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[3rem] font-black text-4xl shadow-[0_60px_200px_rgba(37,99,235,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all border border-blue-400/30 uppercase tracking-widest flex items-center justify-center gap-4">
+                      {ingestLoading ? <RefreshCw className="animate-spin" size={40}/> : "Execute Sync"}
+                    </button>
                   </>
                 ) : (
                   <div className="py-32 space-y-24 animate-in zoom-in-95 duration-1000 text-white">
