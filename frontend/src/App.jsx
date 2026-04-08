@@ -42,7 +42,7 @@ function App() {
     if (rawText) formData.append('raw_text', rawText);
     try {
       const res = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
-      setIngestRes(res.data.entry);
+      setIngestRes({ entry: res.data.entry, path: res.data.assigned_path });
       setTimeout(() => { setShowIngest(false); fetchExplorer(); setIngestRes(null); }, 2500);
     } catch (err) { alert("Ingest Error"); }
     finally { setIngestLoading(false); }
