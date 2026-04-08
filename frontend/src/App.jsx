@@ -16,6 +16,7 @@ function App() {
   // Ingest/Sim States
   const [showIngest, setShowIngest] = useState(false);
   const [rawText, setRawText] = useState('');
+  const [file, setFile] = useState(null);
   const [ingestLoading, setIngestLoading] = useState(false);
   const [ingestRes, setIngestRes] = useState(null);
 
@@ -40,6 +41,7 @@ function App() {
     setIngestLoading(true);
     const formData = new FormData();
     if (rawText) formData.append('raw_text', rawText);
+    if (file) formData.append('file', file);
     try {
       const res = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
       setIngestRes({ entry: res.data.entry, path: res.data.assigned_path });
@@ -286,6 +288,7 @@ function App() {
                   <>
                     <p className="text-slate-400 text-4xl font-medium leading-relaxed max-w-4xl mx-auto italic">"비정형 비즈니스 로그를 분석하여 계층 구조 투사 및 무결성 블록체인 자산화를 즉시 수행합니다."</p>
                     <textarea value={rawText} onChange={(e)=>setRawText(e.target.value)} className="w-full bg-slate-900/50 border border-white/10 rounded-[6rem] p-20 text-4xl font-medium focus:ring-[24px] focus:ring-blue-500/10 outline-none transition-all text-slate-300 shadow-inner placeholder:text-slate-800" rows={4} placeholder="Input Contextual Data Stream..." />
+                    <input type="file" onChange={(e)=>setFile(e.target.files[0])} className="w-full text-3xl text-slate-400 file:mr-10 file:py-6 file:px-12 file:rounded-full file:border-0 file:text-3xl file:font-black file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all cursor-pointer bg-slate-900/30 p-10 rounded-[4rem] border border-white/5" />
                     <button onClick={handleIngest} disabled={ingestLoading} className="w-full py-14 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[6rem] font-black text-5xl shadow-[0_60px_200px_rgba(37,99,235,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all border border-blue-400/30 uppercase tracking-widest">Execute Sync</button>
                   </>
                 ) : (

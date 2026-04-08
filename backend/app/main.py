@@ -148,7 +148,20 @@ async def explore(path: str = ""):
 async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
     try:
         content = raw_text if raw_text else ""
-        if file: content += f"\n[File] {file.filename}"
+        drive_link = None
+        if file: 
+            content += f"\n[File] {file.filename}"
+            file_data = await file.read()
+            try:
+                drive_service = get_drive_service()
+                if drive_service:
+                    file_metadata = {'name': f"Ingest_{datetime.date.today()}_{file.filename}", 'parents': [FOLDER_ID]}
+                    media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+                    drive_link = uploaded_file.get('webViewLink')
+            except Exception as e:
+                print("Drive Upload Error inside Ingest:", e)
+                drive_link = "Storage Error"
 
         # AI Route Fallback for Leaked Key
         try:
@@ -166,7 +179,7 @@ async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
             insights = f"시스템이 가상 지능 모드로 작동 중입니다. {path} 지역의 데이터를 성공적으로 자산화했습니다."
         
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
-        entry = {"timestamp": str(datetime.datetime.now()), "insights": insights, "hash": trust_hash}
+        entry = {"timestamp": str(datetime.datetime.now()), "insights": insights, "hash": trust_hash, "drive_link": drive_link}
         target_obj["data_entries"].append(entry)
         
         # Prevent in-memory list from growing indefinitely (Memory Leak Fix)
