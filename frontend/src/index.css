@@ -6,8 +6,30 @@
   --color-accent: #f59e0b;
 }
 
+:root {
+  /* Dynamic Viewport Height for Mobile */
+  --vh: 1svh;
+}
+
 body {
   background-color: #fcfcfc;
   color: #1a1a1a;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Prevent bounce effect on mobile */
+  overscroll-behavior-y: none;
+}
+
+/* Scrollbar styling for better aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
 }

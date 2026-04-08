@@ -2,6 +2,8 @@
 
 # MDGA: High-Fidelity Full-Stack Unified Runner
 
+export PATH="/opt/homebrew/bin:$PATH"
+
 PROJECT_ROOT="/Volumes/samsd/workspace_v2/livinglab_2026"
 echo "==============================================="
 echo "🚀 MDGA 통합 엔진 가동을 시작합니다..."
