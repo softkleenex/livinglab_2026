@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
 const ROLES = [
   { id: 'store', name: '소상공인 (Store Level)', icon: <Store size={24}/>, desc: '내 매장 데이터 분석 및 피딩' },
