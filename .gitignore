@@ -5,3 +5,6 @@ node_modules/
 dist/
 .DS_Store
 app/data/*.json
+backend/client_secret.json
+backend/token.json
+**/__pycache__/
