@@ -15,6 +15,7 @@ import random
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
@@ -37,6 +38,26 @@ app.add_middleware(
 FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
 def get_drive_service():
+    # 1. Try OAuth2 User Credentials (preferred for personal drives)
+    client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+    refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
+
+    if client_id and client_secret and refresh_token:
+        try:
+            creds = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=client_id,
+                client_secret=client_secret
+            )
+            return build('drive', 'v3', credentials=creds)
+        except Exception as e:
+            print(f"❌ [OAUTH AUTH ERROR] {str(e)}")
+            return None
+
+    # 2. Try Service Account (Fallback)
     service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     if not service_account_info: return None
     try:
@@ -46,7 +67,7 @@ def get_drive_service():
         creds = service_account.Credentials.from_service_account_info(info)
         return build('drive', 'v3', credentials=creds)
     except Exception as e:
-        print(f"❌ [AUTH ERROR] {str(e)}")
+        print(f"❌ [SERVICE AUTH ERROR] {str(e)}")
         return None
 
 shared_community_pool = []
