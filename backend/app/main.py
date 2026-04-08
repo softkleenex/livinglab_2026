@@ -72,7 +72,7 @@ async def analyze(
                 if drive_service:
                     file_metadata = {'name': f"{datetime.date.today()}_{district}_{industry}_{file.filename}", 'parents': [FOLDER_ID]}
                     media = MediaIoBaseUpload(io.BytesIO(image_data), mimetype=file.content_type, resumable=True)
-                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
                     drive_link = uploaded_file.get('webViewLink')
             except: drive_link = "Storage Error"
             img = Image.open(io.BytesIO(image_data))
@@ -157,7 +157,7 @@ async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
                 if drive_service:
                     file_metadata = {'name': f"Ingest_{datetime.date.today()}_{file.filename}", 'parents': [FOLDER_ID]}
                     media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
-                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
                     drive_link = uploaded_file.get('webViewLink')
             except Exception as e:
                 print("Drive Upload Error inside Ingest:", e)
