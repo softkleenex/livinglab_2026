@@ -83,6 +83,9 @@ async def analyze(
         new_entry = {"id": len(shared_community_pool) + 1, "district": district, "industry": industry, "insights": analysis_text, "image_preview": f"data:image/jpeg;base64,{image_b64}" if image_b64 else None, "drive_link": drive_link, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
         shared_community_pool.append(new_entry)
         return {"status": "success", "insights": analysis_text, "drive_link": drive_link}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- 📂 [Core] Hyper-Hierarchy Engine ---
 

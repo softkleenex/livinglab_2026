@@ -28,4 +28,4 @@ echo "💡 (팁) 로그 스트리밍을 종료하려면 Ctrl+C 를 누르세요.
 echo ""
 
 # Logs stream
-render logs $SERVICE_ID
+render logs -r $SERVICE_ID --limit 100
