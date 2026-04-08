@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import os
 import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
-import pandas as pd
 from PIL import Image
 import io
 import json
@@ -25,7 +25,7 @@ api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-app = FastAPI(title="MDGA Final Masterpiece OS")
+app = FastAPI(title="MDGA Masterpiece OS v2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,7 +38,6 @@ app.add_middleware(
 FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
 def get_drive_service():
-    # 1. Try OAuth2 User Credentials (preferred for personal drives)
     client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
     client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
     refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
@@ -54,10 +53,8 @@ def get_drive_service():
             )
             return build('drive', 'v3', credentials=creds)
         except Exception as e:
-            print(f"❌ [OAUTH AUTH ERROR] {str(e)}")
             return None
 
-    # 2. Try Service Account (Fallback)
     service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     if not service_account_info: return None
     try:
@@ -66,65 +63,17 @@ def get_drive_service():
         info = json.loads(cleaned_info)
         creds = service_account.Credentials.from_service_account_info(info)
         return build('drive', 'v3', credentials=creds)
-    except Exception as e:
-        print(f"❌ [SERVICE AUTH ERROR] {str(e)}")
+    except Exception:
         return None
 
-shared_community_pool = []
-
-@app.get("/api/community")
-async def get_community(): return shared_community_pool[::-1]
-
-@app.post("/api/analyze")
-async def analyze(
-    industry: str = Form(...), district: str = Form(...), street: str = Form(...),
-    raw_data: str = Form(None), file: UploadFile = File(None)
-):
-    try:
-        content_parts = []
-        image_b64 = None
-        drive_link = "Not Connected"
-        if raw_data: content_parts.append(f"입력 텍스트: {raw_data}")
-        if file:
-            image_data = await file.read()
-            image_b64 = base64.b64encode(image_data).decode('utf-8')
-            try:
-                drive_service = get_drive_service()
-                if drive_service:
-                    file_metadata = {'name': f"{datetime.date.today()}_{district}_{industry}_{file.filename}", 'parents': [FOLDER_ID]}
-                    media = MediaIoBaseUpload(io.BytesIO(image_data), mimetype=file.content_type, resumable=True)
-                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
-                    drive_link = uploaded_file.get('webViewLink')
-            except: drive_link = "Storage Error"
-            img = Image.open(io.BytesIO(image_data))
-            content_parts.append(img)
-        
-        try:
-            response = model.generate_content([f"대구 {district} 상권 분석:"] + content_parts)
-            analysis_text = response.text
-        except Exception:
-            analysis_text = f"[{district}] {industry} 상권에 대한 심층 AI 분석 결과를 가상 모드로 제공합니다. 현지 데이터 수집이 활발합니다."
-            
-        new_entry = {"id": len(shared_community_pool) + 1, "district": district, "industry": industry, "insights": analysis_text, "image_preview": f"data:image/jpeg;base64,{image_b64}" if image_b64 else None, "drive_link": drive_link, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
-        shared_community_pool.append(new_entry)
-        
-        # Prevent in-memory list from growing indefinitely (Memory Leak Fix)
-        if len(shared_community_pool) > 50:
-            shared_community_pool.pop(0)
-            
-        return {"status": "success", "insights": analysis_text, "drive_link": drive_link}
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-
-# --- 📂 [Core] Hyper-Hierarchy Engine ---
-
+# --- 📂 [Core] Hyper-Hierarchy Engine 2.0 (Bottom-Up Model) ---
 class HierarchyEngine:
     def __init__(self):
         self.db = {
             "name": "대구광역시", "type": "City",
-            "metadata": {"trust_index": 98.4, "pulse_rate": 78, "total_value": 5200000, "nodes": 0},
-            "children": {}
+            "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": 0, "nodes": 0},
+            "children": {},
+            "data_entries": []
         }
 
     def get_object(self, path_list):
@@ -134,25 +83,69 @@ class HierarchyEngine:
             curr = curr["children"][p]
         return curr
 
-    def create_path(self, path_list, types_list):
+    def create_or_get_path(self, path_list, types_list):
         curr = self.db
-        curr["metadata"]["total_value"] += random.randint(10000, 50000)
+        # Update root metadata dynamically
         curr["metadata"]["nodes"] += 1
         for i, p in enumerate(path_list):
             if p not in curr["children"]:
                 curr["children"][p] = {
-                    "name": p, "type": types_list[i],
-                    "metadata": {"created_at": str(datetime.date.today()), "nodes": 1, "pulse_rate": random.randint(65, 90)},
+                    "name": p, "type": types_list[i] if i < len(types_list) else "Node",
+                    "metadata": {"created_at": str(datetime.date.today()), "nodes": 1, "pulse_rate": random.randint(65, 90), "total_value": 0},
                     "children": {}, "data_entries": []
                 }
             else:
                 curr["children"][p]["metadata"]["nodes"] += 1
             curr = curr["children"][p]
         return curr
+        
+    def add_value_bottom_up(self, path_list, value_added):
+        curr = self.db
+        curr["metadata"]["total_value"] += value_added
+        for p in path_list:
+            if p in curr["children"]:
+                curr = curr["children"][p]
+                curr["metadata"]["total_value"] += value_added
 
 engine = HierarchyEngine()
 
 # --- 🚀 API Endpoints ---
+
+class ContextPayload(BaseModel):
+    role: str
+    industry: str
+    location: list[str] # e.g. ["북구", "산격동", "경북대 북문", "테스트상점"]
+
+@app.post("/api/user/context")
+async def set_user_context(payload: ContextPayload):
+    # Ensure the path exists in the engine
+    types = ["Gu", "Dong", "Street", "Store"]
+    engine.create_or_get_path(payload.location, types)
+    return {"status": "success", "message": "Context initialized", "path": payload.location}
+
+@app.get("/api/dashboard/personal")
+async def get_personal_dashboard(path: str):
+    path_list = [p for p in path.split("/") if p]
+    obj = engine.get_object(path_list)
+    if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
+    
+    # Get parent object to compare
+    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    
+    return {
+        "store": {
+            "name": obj["name"],
+            "total_value": obj["metadata"].get("total_value", 0),
+            "pulse": obj["metadata"].get("pulse_rate", 0),
+            "entries": obj.get("data_entries", [])
+        },
+        "parent": {
+            "name": parent_obj["name"],
+            "type": parent_obj["type"],
+            "avg_value": parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1)),
+            "pulse": parent_obj["metadata"].get("pulse_rate", 0)
+        }
+    }
 
 @app.get("/api/hierarchy/explore")
 async def explore(path: str = ""):
@@ -166,12 +159,18 @@ async def explore(path: str = ""):
     }
 
 @app.post("/api/ingest")
-async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
+async def ingest(
+    raw_text: str = Form(None), 
+    file: UploadFile = File(None),
+    location: str = Form(...) # e.g. "북구/산격동/경북대 북문/테스트상점"
+):
     try:
         content = raw_text if raw_text else ""
+        path_list = [p for p in location.split("/") if p]
         drive_link = None
+        
         if file: 
-            content += f"\n[File] {file.filename}"
+            content += f"\n[Attached File] {file.filename}"
             file_data = await file.read()
             try:
                 drive_service = get_drive_service()
@@ -181,33 +180,35 @@ async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
                     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
                     drive_link = uploaded_file.get('webViewLink')
             except Exception as e:
-                print("Drive Upload Error inside Ingest:", e)
                 drive_link = "Storage Error"
 
-        # AI Route Fallback for Leaked Key
-        try:
-            route_res = model.generate_content(f"Output JSON {{'path': [...]}} for: {content}")
-            path = json.loads(route_res.text.replace('```json', '').replace('```', '').strip())["path"]
-        except:
-            path = ["북구", "산격동", "경북대 북문", "테스트상점"]
+        # Find target object
+        target_obj = engine.get_object(path_list)
+        if not target_obj:
+            target_obj = engine.create_or_get_path(path_list, ["Gu", "Dong", "Street", "Store"])
 
-        target_obj = engine.create_path(path, ["Gu", "Dong", "Street", "Store"])
-        
-        # Deep Analysis Fallback
+        # Deep Analysis via LLM
+        prompt = f"다음은 {location} 지역 소상공인이 올린 데이터입니다. 데이터를 분석하고 매장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"
         try:
-            insights = model.generate_content(f"Analyze: {content}").text
+            insights = model.generate_content(prompt).text
         except:
-            insights = f"시스템이 가상 지능 모드로 작동 중입니다. {path} 지역의 데이터를 성공적으로 자산화했습니다."
+            insights = f"가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다."
         
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
-        entry = {"timestamp": str(datetime.datetime.now()), "insights": insights, "hash": trust_hash, "drive_link": drive_link}
+        entry = {
+            "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), 
+            "insights": insights, 
+            "hash": trust_hash, 
+            "drive_link": drive_link
+        }
         target_obj["data_entries"].append(entry)
+        if len(target_obj["data_entries"]) > 50: target_obj["data_entries"].pop(0)
         
-        # Prevent in-memory list from growing indefinitely (Memory Leak Fix)
-        if len(target_obj["data_entries"]) > 50:
-            target_obj["data_entries"].pop(0)
+        # Add value to the hierarchy (bottom-up aggregation)
+        value_added = random.randint(50000, 200000)
+        engine.add_value_bottom_up(path_list, value_added)
         
-        return {"status": "success", "assigned_path": path, "entry": entry}
+        return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": value_added}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -215,22 +216,18 @@ async def ingest(raw_text: str = Form(None), file: UploadFile = File(None)):
 @app.post("/api/simulate/governance")
 async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
     try:
-        # Construct AI request
         prompt = f"우리는 현재 '{region}' 지역에 대해 {budget} 원의 예산을 투입하는 정책 시뮬레이션을 수행하고 있습니다. 다음 결과를 JSON 형식으로 반환하세요. 키값: 'roi_multiplier' (예: '2.5x'), 'job_creation' (예: '+12,000 Jobs'), 'ai_recommendation' (3~4문장의 정책 제안), 'sector_boost' (수혜 예상 핵심 산업), 'vulnerability_warning' (잠재적 리스크/취약점)."
-        
         try:
             res = model.generate_content(prompt)
-            # Remove markdown blocks if present
             raw_eval = res.text.replace("```json", "").replace("```", "").strip()
             sim_data = json.loads(raw_eval)
-        except Exception as e:
-            # Fallback mock data if AI fails
+        except Exception:
             sim_data = {
                 "roi_multiplier": "3.1x",
                 "job_creation": f"+{random.randint(100, 500)} Jobs",
-                "ai_recommendation": f"[{region}] 이 대규모 자본({budget}원)은 지역 첨단 융합 산업 벨트 구축에 크게 기여할 것입니다. 단기적인 경기 부양을 넘어, 장기 관점의 AI 데이터 센터 및 스타트업 인프라에 우선 배정할 것을 시스템이 권고합니다.",
-                "sector_boost": "IT & Smart Manufacturing",
-                "vulnerability_warning": "High Initial Infra Cost"
+                "ai_recommendation": f"[{region}] 이 대규모 자본({budget}원)은 지역 첨단 융합 산업 벨트 구축에 크게 기여할 것입니다. 수집된 소상공인 데이터를 기반으로 가장 맥박(Pulse)이 떨어지는 구간에 긴급 수혈을 권장합니다.",
+                "sector_boost": "서비스 및 IT 산업",
+                "vulnerability_warning": "초기 인프라 매몰 비용 리스크"
             }
         
         return {"status": "success", "simulation": sim_data}

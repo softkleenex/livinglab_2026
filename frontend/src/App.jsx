@@ -2,79 +2,161 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+const ROLES = [
+  { id: 'store', name: '소상공인 (Store Level)', icon: <Store size={24}/>, desc: '내 매장 데이터 분석 및 피딩' },
+  { id: 'leader', name: '상권 리더 (Street/Dong)', icon: <Users size={24}/>, desc: '관할 상권 트렌드 및 지표' },
+  { id: 'gov', name: '정책 담당자 (Gu/City)', icon: <Building2 size={24}/>, desc: '디지털 트윈 맵 및 정책 시뮬레이션' }
+];
+
 function App() {
-  const [currentPath, setCurrentPath] = useState([]);
+  const [userContext, setUserContext] = useState(null); // { role, industry, location: [] }
+  
+  if (!userContext) {
+    return <Onboarding onComplete={setUserContext} />;
+  }
+
+  return <MainApp userContext={userContext} onLogout={() => setUserContext(null)} />;
+}
+
+function Onboarding({ onComplete }) {
+  const [role, setRole] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [locGu, setLocGu] = useState('');
+  const [locDong, setLocDong] = useState('');
+  const [locStreet, setLocStreet] = useState('');
+  const [locStore, setLocStore] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!role) return alert('역할을 선택해주세요.');
+    
+    let location = ['대구광역시'];
+    if (locGu) location.push(locGu);
+    if (locDong) location.push(locDong);
+    if (locStreet) location.push(locStreet);
+    if (role === 'store' && locStore) location.push(locStore);
+
+    setLoading(true);
+    try {
+      await axios.post(`${API_BASE_URL}/api/user/context`, {
+        role, industry: industry || '공공', location
+      });
+      onComplete({ role, industry, location });
+    } catch (err) {
+      alert('초기화 실패. 서버 연결을 확인하세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0A0F1A] text-slate-200 flex items-center justify-center p-4 selection:bg-blue-500/30">
+      <div className="max-w-2xl w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
+        <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
+        <p className="text-slate-400 mb-8 relative z-10">원활한 맞춤형 지능형 분석을 위해 역할을 설정합니다.</p>
+        
+        <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+          <div className="space-y-4">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">1. Select Persona</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {ROLES.map(r => (
+                <div key={r.id} onClick={() => setRole(r.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${role === r.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+                  <div className="mb-3 text-blue-400">{r.icon}</div>
+                  <div className="font-bold mb-1 text-sm">{r.name}</div>
+                  <div className="text-[10px] opacity-70 break-keep">{r.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {role && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6">
+                {role === 'store' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry (산업군)</label>
+                    <input required placeholder="예: 요식업, 카페, 도소매" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Location Definition</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input required placeholder="구 (예: 북구)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    {(role === 'store' || role === 'leader') && (
+                      <input required placeholder="동 (예: 산격동)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    )}
+                    {(role === 'store' || role === 'leader') && (
+                      <input required={role==='store'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    )}
+                    {role === 'store' && (
+                      <input required placeholder="매장명 (예: MDGA 카페)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button type="submit" disabled={!role || loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
+            {loading ? <RefreshCw className="animate-spin" size={18}/> : "Enter Workspace"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function MainApp({ userContext, onLogout }) {
+  const [currentPath, setCurrentPath] = useState(userContext.role === 'gov' ? [] : userContext.location.slice(1));
   const [explorerData, setExplorerData] = useState(null);
+  const [personalData, setPersonalData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('explorer');
+  
+  const defaultTab = userContext.role === 'store' ? 'personal' : 'explorer';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   
   const [showIngest, setShowIngest] = useState(false);
-  const [rawText, setRawText] = useState('');
-  const [file, setFile] = useState(null);
-  const [ingestLoading, setIngestLoading] = useState(false);
-  const [ingestRes, setIngestRes] = useState(null);
 
-  const [budget, setBudget] = useState(100000000);
-  const [simRes, setSimRes] = useState(null);
-  const [simLoading, setSimLoading] = useState(false);
-
-  useEffect(() => { fetchExplorer(); }, [currentPath]);
+  useEffect(() => {
+    if (activeTab === 'personal' && userContext.role === 'store') {
+      fetchPersonal();
+    } else {
+      fetchExplorer();
+    }
+  }, [currentPath, activeTab]);
 
   const fetchExplorer = async () => {
     setLoading(true);
     try {
-      const pathStr = currentPath.join('/');
+      const pathStr = ['대구광역시', ...currentPath].join('/');
       const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
       setExplorerData(res.data);
     } catch (err) { 
-      console.error(err);
-      setExplorerData({
-        current: currentPath.length > 0 ? currentPath[currentPath.length - 1] : "대구광역시",
-        type: "City",
-        metadata: { trust_index: 98.4, pulse_rate: 78, total_value: 5200000, nodes: 0 },
-        children: [],
-        entries: []
-      });
+      setExplorerData(null);
     }
     finally { setLoading(false); }
   };
 
-  const handleIngest = async () => {
-    setIngestLoading(true);
-    const formData = new FormData();
-    if (rawText) formData.append('raw_text', rawText);
-    if (file) formData.append('file', file);
+  const fetchPersonal = async () => {
+    setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
-      setIngestRes({ entry: res.data.entry, path: res.data.assigned_path });
-      setTimeout(() => { 
-        setShowIngest(false); 
-        fetchExplorer(); 
-        setIngestRes(null); 
-        setRawText('');
-        setFile(null);
-      }, 2500);
-    } catch (err) { alert("Ingest Error. Check connection."); }
-    finally { setIngestLoading(false); }
-  };
-
-  const handleSimulate = async () => {
-    if (!explorerData) return;
-    setSimLoading(true);
-    const formData = new FormData();
-    formData.append('budget', budget);
-    formData.append('region', explorerData.current);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/simulate/governance`, formData);
-      setSimRes(res.data.simulation);
-    } catch (err) { alert("Simulation Error. Check connection."); }
-    finally { setSimLoading(false); }
+      const pathStr = userContext.location.join('/');
+      const res = await axios.get(`${API_BASE_URL}/api/dashboard/personal?path=${pathStr}`);
+      setPersonalData(res.data);
+    } catch (err) {
+      setPersonalData(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const navigateTo = (name) => setCurrentPath([...currentPath, name]);
@@ -86,250 +168,306 @@ function App() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 lg:w-72 bg-[#0E1420] border-r border-slate-800/80 flex-col z-50 shrink-0 shadow-lg">
         <div className="p-6 flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-10 cursor-pointer group" onClick={()=>{setCurrentPath([]); setActiveTab('explorer');}}>
+          <div className="flex items-center gap-3 mb-8 cursor-pointer group" onClick={onLogout}>
             <div className="p-2.5 bg-blue-600 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] group-hover:scale-105 transition-transform"><Radar size={22} className="text-white"/></div>
             <div>
               <span className="text-xl font-bold text-white block leading-none mb-1">MDGA TWIN</span>
-              <span className="text-[10px] text-blue-400 font-semibold tracking-wider uppercase opacity-90">Spatial Intelligence</span>
+              <span className="text-[9px] text-blue-400 font-semibold tracking-widest uppercase opacity-90">{userContext.role} Workspace</span>
             </div>
           </div>
+
+          <div className="mb-6 px-4 py-3 bg-slate-800/30 rounded-xl border border-slate-800">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Current Focus</p>
+            <p className="text-sm font-semibold text-white truncate">{userContext.location[userContext.location.length-1]}</p>
+          </div>
+
           <nav className="space-y-2 flex-1">
-            <SidebarLink icon={<Map size={18}/>} label="디지털 트윈 맵" active={activeTab === 'explorer'} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
-            <SidebarLink icon={<BarChart3 size={18}/>} label="정책 시뮬레이터" active={activeTab === 'governance'} onClick={()=>{setActiveTab('governance'); setShowIngest(false);}} />
-            <SidebarLink icon={<Zap size={18}/>} label="하이퍼 피딩" active={showIngest} onClick={()=>setShowIngest(true)} />
+            {userContext.role === 'store' && (
+              <SidebarLink icon={<Store size={18}/>} label="내 매장 대시보드" active={activeTab === 'personal'} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
+            )}
+            <SidebarLink icon={<Map size={18}/>} label={userContext.role === 'gov' ? "디지털 트윈 맵" : "상권 트렌드 맵"} active={activeTab === 'explorer'} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
+            {(userContext.role === 'gov' || userContext.role === 'leader') && (
+              <SidebarLink icon={<BarChart3 size={18}/>} label="정책 시뮬레이터" active={activeTab === 'governance'} onClick={()=>{setActiveTab('governance'); setShowIngest(false);}} />
+            )}
+            {userContext.role === 'store' && (
+              <SidebarLink icon={<Zap size={18}/>} label="하이퍼 피딩 (자산화)" active={showIngest} onClick={()=>setShowIngest(true)} />
+            )}
           </nav>
-          
-          <div className="mt-auto bg-[#131A29] rounded-xl p-4 border border-slate-800/50">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">System Health</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-300">Connectivity</span>
-              <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
-            </div>
-          </div>
         </div>
       </aside>
 
       {/* Main Viewport */}
       <main className="flex-1 flex flex-col relative overflow-hidden bg-[#0A0F1A]">
-        {/* Top Header */}
-        <header className="h-12 shrink-0 border-b border-slate-800/60 bg-[#0A0F1A]/80 backdrop-blur-xl px-4 md:px-6 flex items-center sticky top-0 z-40">
+        {/* Header */}
+        <header className="h-12 shrink-0 border-b border-slate-800/60 bg-[#0A0F1A]/80 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap">
-            <button onClick={()=>{setCurrentPath([]); setActiveTab('explorer');}} className="hover:text-blue-400 transition-colors">ROOT</button>
+            <span className="text-blue-400">DAEGU</span>
             {currentPath.map((segment, i) => (
               <React.Fragment key={i}>
                 <span className="shrink-0 opacity-40">/</span>
-                <button onClick={()=>setCurrentPath(currentPath.slice(0, i+1))} className="hover:text-blue-400 transition-colors text-slate-300">{segment}</button>
+                <span className="text-slate-300">{segment}</span>
               </React.Fragment>
             ))}
           </div>
+          <button onClick={onLogout} className="md:hidden text-[10px] font-bold text-slate-400 uppercase bg-slate-800 px-3 py-1.5 rounded-lg">Switch Role</button>
         </header>
 
-        {/* Scrollable Content */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-12 scroll-smooth">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex h-full items-center justify-center">
                 <RefreshCw size={28} className="text-blue-600 animate-spin" />
               </motion.div>
-            ) : activeTab === 'governance' && explorerData ? (
-              <motion.div key="gov" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-4xl mx-auto w-full">
-                <div className="space-y-2">
-                  <div className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-md text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20 inline-block">Policy Projection</div>
-                  <h2 className="text-2xl md:text-4xl font-bold text-white">Budget Simulation</h2>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    선택된 노드 <span className="text-blue-400 font-semibold">[{explorerData.current}]</span>에 대한 가상 예산 투입 결과를 확인하세요.
-                  </p>
+            ) : activeTab === 'personal' && personalData ? (
+              <motion.div key="personal" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-4xl mx-auto w-full">
+                <div className="flex justify-between items-end">
+                  <div className="space-y-2">
+                    <Badge label="STORE LEVEL" color="bg-blue-600/10 text-blue-400 border-blue-500/20" />
+                    <h2 className="text-3xl md:text-5xl font-black text-white">{personalData.store.name}</h2>
+                    <p className="text-slate-400 text-sm">내 매장 현황 및 데이터 자산화 보상 분석</p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                  <div className="lg:col-span-2 bg-[#101725] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6 h-fit">
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Budget (KRW)</label>
-                      <input type="range" min="10000000" max="1000000000" step="10000000" value={budget} onChange={(e)=>setBudget(e.target.value)} className="w-full h-1.5 bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600" />
-                      <div className="text-2xl font-bold text-white">₩{(parseInt(budget)).toLocaleString()}</div>
-                    </div>
-                    <button onClick={handleSimulate} disabled={simLoading} className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.2)] hover:bg-blue-500 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
-                      {simLoading ? <RefreshCw className="animate-spin" size={16}/> : "Execute Simulation"}
-                    </button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">My Asset Value</p>
+                    <p className="text-2xl font-bold text-emerald-400">₩{personalData.store.total_value.toLocaleString()}</p>
+                    <p className="text-[10px] text-slate-500 mt-2">상권 평균: ₩{personalData.parent.avg_value.toLocaleString()}</p>
                   </div>
+                  <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Store Pulse</p>
+                    <p className="text-2xl font-bold text-blue-400">{personalData.store.pulse} BPM</p>
+                    <p className="text-[10px] text-slate-500 mt-2">상권 평균: {personalData.parent.pulse} BPM</p>
+                  </div>
+                </div>
 
-                  <div className="lg:col-span-3 flex flex-col">
-                    <AnimatePresence mode="wait">
-                      {simRes ? (
-                        <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 h-full flex flex-col">
-                          <div className="grid grid-cols-2 gap-4">
-                            <GovStat label="ROI Multiplier" value={simRes.roi_multiplier} icon={<TrendingUp size={16} className="text-emerald-400"/>} />
-                            <GovStat label="Job Creation" value={simRes.job_creation} icon={<Plus size={16} className="text-blue-400"/>} />
-                          </div>
-                          <div className="bg-[#101725] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 relative overflow-hidden flex-1">
-                            <div className="absolute -top-6 -right-6 opacity-[0.03]"><PieChart size={120}/></div>
-                            <h4 className="text-xs font-bold uppercase text-white tracking-wider">AI Policy Directive</h4>
-                            <div className="text-sm leading-relaxed border-l-2 border-blue-500 pl-4 text-slate-300 whitespace-pre-wrap relative z-10">
-                              {simRes.ai_recommendation}
-                            </div>
-                            <div className="pt-4 border-t border-slate-800/80 grid grid-cols-2 gap-4 relative z-10">
-                              <div><p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Benefit Sector</p><p className="text-sm font-semibold text-blue-400 break-keep">{simRes.sector_boost}</p></div>
-                              <div><p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Vulnerability</p><p className="text-sm font-semibold text-rose-400 break-keep">{simRes.vulnerability_warning}</p></div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div key="empty" className="h-full min-h-[160px] flex flex-col items-center justify-center text-center space-y-3 bg-slate-900/30 rounded-2xl border border-dashed border-slate-800 p-6">
-                          <PieChart size={32} className="text-slate-700 animate-pulse" />
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Ready for Simulation</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI Consultings (보상)</h3>
+                  {personalData.store.entries.length === 0 ? (
+                    <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center">
+                      <p className="text-sm text-slate-400">아직 입력된 데이터가 없습니다. 하이퍼 피딩을 통해 매장 데이터를 업로드하고 AI 컨설팅을 받아보세요.</p>
+                    </div>
+                  ) : (
+                    personalData.store.entries.map((entry, idx) => (
+                      <div key={idx} className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <BrainCircuit size={16} className="text-blue-500" />
+                          <span className="text-[10px] font-bold text-slate-400">{entry.timestamp}</span>
+                        </div>
+                        <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-blue-600 pl-3">{entry.insights}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </motion.div>
-            ) : explorerData ? (
-              <motion.div key="explorer" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-10 max-w-5xl mx-auto w-full">
-                
-                {/* Identity Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-                  <div className="space-y-4 flex-1 w-full">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge label={`${explorerData.type} NODE`} color="bg-blue-600/10 text-blue-400 border-blue-500/20" />
-                      <Badge label={`PULSE: ${explorerData.metadata.pulse_rate}BPM`} color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
-                      <Badge label="VALIDATED ASSET" icon={<Lock size={10}/>} color="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {currentPath.length > 0 && (
-                        <button onClick={goBack} className="p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-slate-300 shrink-0"><ArrowLeft size={20} /></button>
-                      )}
-                      <h2 className="text-3xl md:text-5xl font-bold text-white uppercase break-keep leading-tight">
-                        {explorerData.current}
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-                      <BigStat label="Accumulated Value" value={`₩${(explorerData.metadata.total_value || 0).toLocaleString()}`} />
-                      <BigStat label="Node Density" value={explorerData.metadata.nodes} />
-                      <BigStat label="Integrity Score" value={`${explorerData.metadata.trust_index || 0}%`} />
-                    </div>
+            ) : activeTab === 'explorer' && explorerData ? (
+              <motion.div key="explorer" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-5xl mx-auto w-full">
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge label={`${explorerData.type} NODE`} color="bg-blue-600/10 text-blue-400 border-blue-500/20" />
+                    <Badge label={`PULSE: ${explorerData.metadata.pulse_rate}BPM`} color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {currentPath.length > (userContext.role==='gov'?0:userContext.location.length-1) && (
+                      <button onClick={goBack} className="p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-slate-300"><ArrowLeft size={20} /></button>
+                    )}
+                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase break-keep leading-tight">{explorerData.current}</h2>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 pt-2">
+                    <BigStat label="Aggregated Value" value={`₩${(explorerData.metadata.total_value || 0).toLocaleString()}`} />
+                    <BigStat label="Node Density" value={explorerData.metadata.nodes} />
+                    <BigStat label="Integrity" value={`${explorerData.metadata.trust_index || 0}%`} />
                   </div>
                 </div>
 
-                {/* Hierarchy Grid */}
                 {explorerData.children && explorerData.children.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                      <Layers size={14} className="text-blue-500"/> Spatial Map
-                    </h3>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {explorerData.children.map(child => (
-                        <motion.div key={child.name} whileHover={{ y: -2 }} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-5 rounded-2xl border border-slate-800/80 hover:border-blue-500/40 hover:bg-[#141D2C] transition-all cursor-pointer group relative overflow-hidden shadow-sm">
-                          <div className="absolute -bottom-4 -right-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity"><Database size={80}/></div>
-                          <div className="space-y-4 relative z-10">
-                            <div className="flex justify-between items-start">
-                              <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors"><Folder size={18} /></div>
-                              <div className="text-right w-16">
-                                <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider">{child.pulse} bpm</span>
-                                <div className="w-full h-1 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-                                  <div className="h-full bg-rose-500 rounded-full" style={{width: `${child.pulse}%`}} />
-                                </div>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-lg font-bold text-slate-200 group-hover:text-white transition-colors truncate">{child.name}</p>
-                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">{child.type}</p>
+                        <div key={child.name} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-5 rounded-2xl border border-slate-800/80 hover:border-blue-500/40 hover:bg-[#141D2C] cursor-pointer group transition-all">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-600 group-hover:text-white"><Folder size={18} /></div>
+                            <div className="text-right w-16">
+                              <span className="text-[9px] font-bold text-rose-400 uppercase">{child.pulse} bpm</span>
+                              <div className="w-full h-1 bg-slate-800 rounded-full mt-1 overflow-hidden"><div className="h-full bg-rose-500" style={{width: `${child.pulse}%`}} /></div>
                             </div>
                           </div>
-                        </motion.div>
+                          <p className="text-lg font-bold text-slate-200 truncate">{child.name}</p>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">{child.type}</p>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
-
-                {/* Feed */}
-                {explorerData.entries && explorerData.entries.length > 0 && (
+                
+                {explorerData.entries && explorerData.entries.length > 0 && userContext.role !== 'store' && (
                   <div className="space-y-4">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Intelligence Stream</h3>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Aggregated Insights</h3>
                     <div className="space-y-4">
-                      {explorerData.entries.map((entry, idx) => (
-                        <div key={idx} className="bg-[#101725] p-5 md:p-6 rounded-2xl border border-slate-800/80 relative overflow-hidden group shadow-sm">
-                          <div className="absolute top-0 right-0 p-6 opacity-[0.02]"><BrainCircuit size={100} /></div>
-                          <div className="flex items-center gap-2.5 mb-4">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{entry.timestamp}</span>
+                      {explorerData.entries.slice(-5).map((entry, idx) => (
+                        <div key={idx} className="bg-[#101725] p-5 rounded-2xl border border-slate-800/80">
+                          <div className="flex items-center gap-2 mb-3">
+                            <BrainCircuit size={14} className="text-blue-500" />
+                            <span className="text-[10px] font-bold text-slate-500">{entry.timestamp}</span>
                           </div>
-                          <div className="text-sm leading-relaxed text-slate-300 mb-4 whitespace-pre-wrap border-l-2 border-blue-600 pl-3 relative z-10">
-                            {entry.insights}
-                          </div>
-                          {entry.drive_link && entry.drive_link !== "Not Connected" && entry.drive_link !== "Storage Error" && (
-                            <a href={entry.drive_link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors mb-4 bg-blue-500/10 px-2.5 py-1 rounded-md relative z-10">
-                              <ShieldCheck size={12} /> View Asset
-                            </a>
-                          )}
-                          <div className="pt-4 border-t border-slate-800/50 font-mono text-[9px] text-slate-600 break-all uppercase flex items-center gap-1.5">
-                            <Lock size={10} className="text-slate-600" /> Hash: {entry.hash}
-                          </div>
+                          <div className="text-sm text-slate-300 border-l-2 border-blue-600 pl-3">{entry.insights}</div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
               </motion.div>
+            ) : activeTab === 'governance' ? (
+              <GovernanceSim explorerData={explorerData} />
             ) : null}
           </AnimatePresence>
         </div>
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.3)] relative">
+      <nav className="md:hidden flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 fixed bottom-0 left-0 right-0">
+        {userContext.role === 'store' && (
+          <BottomNavLink icon={<Store size={20}/>} label="내 매장" active={activeTab === 'personal' && !showIngest} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
+        )}
         <BottomNavLink icon={<Map size={20}/>} label="트윈 맵" active={activeTab === 'explorer' && !showIngest} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
-        <BottomNavLink icon={<BarChart3 size={20}/>} label="시뮬레이터" active={activeTab === 'governance' && !showIngest} onClick={()=>{setActiveTab('governance'); setShowIngest(false);}} />
-        <BottomNavLink icon={<Zap size={20}/>} label="피딩" active={showIngest} onClick={()=>setShowIngest(true)} special />
+        {(userContext.role === 'gov' || userContext.role === 'leader') && (
+          <BottomNavLink icon={<BarChart3 size={20}/>} label="시뮬레이터" active={activeTab === 'governance' && !showIngest} onClick={()=>{setActiveTab('governance'); setShowIngest(false);}} />
+        )}
+        {userContext.role === 'store' && (
+          <BottomNavLink icon={<Zap size={20}/>} label="피딩" active={showIngest} onClick={()=>setShowIngest(true)} special />
+        )}
       </nav>
 
-      {/* Ingest Modal */}
+      {/* Ingest Modal for Store */}
       <AnimatePresence>
         {showIngest && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[85dvh] flex flex-col rounded-3xl border border-slate-700/80 shadow-2xl overflow-hidden relative">
-              <div className="p-4 sm:p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420]/80">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-600 rounded-lg text-white shadow-md shadow-blue-900/40"><Upload size={18}/></div>
-                  <div>
-                    <h3 className="text-base font-bold uppercase text-white tracking-tight">Hyper Ingest</h3>
-                    <p className="text-blue-400 font-semibold text-[9px] uppercase tracking-wider mt-0.5">Asset Integration</p>
-                  </div>
-                </div>
-                <button onClick={()=>setShowIngest(false)} className="text-slate-500 hover:text-white p-1.5 transition-colors bg-slate-800/50 rounded-full"><X size={18}/></button>
-              </div>
-              <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
-                {!ingestRes ? (
-                  <>
-                    <p className="text-slate-400 text-xs leading-relaxed text-center break-keep">
-                      비정형 로컬 데이터를 분석하여 <strong className="text-slate-300">계층 구조에 매핑</strong>하고 <strong className="text-slate-300">자산화</strong>를 수행합니다.
-                    </p>
-                    <textarea value={rawText} onChange={(e)=>setRawText(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-slate-200 placeholder:text-slate-600 resize-none shadow-inner" rows={4} placeholder="텍스트 데이터를 입력하세요..." />
-                    <div className="relative">
-                      <input type="file" onChange={(e)=>setFile(e.target.files[0])} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-blue-500/10 file:text-blue-400 hover:file:bg-blue-500/20 transition-all cursor-pointer bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
-                    </div>
-                    <button onClick={handleIngest} disabled={ingestLoading} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 tracking-wide uppercase">
-                      {ingestLoading ? <RefreshCw className="animate-spin" size={16}/> : "Execute Sync"}
-                    </button>
-                  </>
-                ) : (
-                  <div className="py-12 space-y-6 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.15)] border-2 border-emerald-500/20 relative">
-                      <div className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping" />
-                      <ShieldCheck size={28} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <h4 className="text-lg font-bold uppercase text-white tracking-tight">Synced</h4>
-                      <p className="text-blue-400 text-xs font-semibold tracking-wide bg-blue-500/10 px-3 py-1.5 rounded-full inline-block">{ingestRes.path.join(' ❯ ')}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
+          <IngestModal 
+            onClose={() => setShowIngest(false)} 
+            onSuccess={() => {
+              setShowIngest(false);
+              if (activeTab === 'personal') fetchPersonal();
+              else fetchExplorer();
+            }}
+            locationPath={userContext.location.join('/')}
+          />
         )}
       </AnimatePresence>
-
     </div>
+  );
+}
+
+function IngestModal({ onClose, onSuccess, locationPath }) {
+  const [rawText, setRawText] = useState('');
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [res, setRes] = useState(null);
+
+  const handleIngest = async () => {
+    setLoading(true);
+    const formData = new FormData();
+    if (rawText) formData.append('raw_text', rawText);
+    if (file) formData.append('file', file);
+    formData.append('location', locationPath);
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
+      setRes(response.data);
+      setTimeout(onSuccess, 2500);
+    } catch (err) { alert("업로드 실패"); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg rounded-3xl border border-slate-700/80 shadow-2xl overflow-hidden relative">
+        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420]">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-600 rounded-lg text-white"><Upload size={18}/></div>
+            <h3 className="text-base font-bold text-white uppercase">Data Ingest</h3>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-white"><X size={20}/></button>
+        </div>
+        <div className="p-5 space-y-4">
+          {!res ? (
+            <>
+              <p className="text-xs text-slate-400 text-center">매장의 일상, 영수증, 장부 등을 올려 자산화하고 AI 컨설팅을 받으세요.</p>
+              <textarea value={rawText} onChange={e=>setRawText(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none text-slate-200" rows={4} placeholder="오늘 우리 매장에는..." />
+              <input type="file" onChange={e=>setFile(e.target.files[0])} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-500/10 file:text-blue-400 bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
+              <button onClick={handleIngest} disabled={loading} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2">
+                {loading ? <RefreshCw className="animate-spin" size={16}/> : "업로드 및 자산화"}
+              </button>
+            </>
+          ) : (
+            <div className="py-10 text-center space-y-4">
+              <ShieldCheck size={48} className="text-emerald-400 mx-auto" />
+              <h4 className="text-lg font-bold text-white">업로드 완료</h4>
+              <p className="text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full inline-block">+ ₩{res.value_added.toLocaleString()} 자산 증가</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function GovernanceSim({ explorerData }) {
+  const [budget, setBudget] = useState(100000000);
+  const [simRes, setSimRes] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const runSim = async () => {
+    if(!explorerData) return;
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append('budget', budget);
+      fd.append('region', explorerData.current);
+      const res = await axios.post(`${API_BASE_URL}/api/simulate/governance`, fd);
+      setSimRes(res.data.simulation);
+    } catch(err) { alert("Sim Error"); }
+    finally { setLoading(false); }
+  }
+
+  if (!explorerData) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-4xl mx-auto w-full">
+      <h2 className="text-2xl md:text-4xl font-bold text-white">Policy Simulator</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-2 bg-[#101725] p-6 rounded-2xl border border-slate-800 space-y-6 h-fit">
+          <label className="text-[10px] font-bold text-slate-500 uppercase">Target: {explorerData.current}</label>
+          <input type="range" min="10000000" max="1000000000" step="10000000" value={budget} onChange={(e)=>setBudget(e.target.value)} className="w-full h-1.5 bg-slate-800 rounded-full appearance-none accent-blue-600" />
+          <div className="text-2xl font-bold text-white">₩{parseInt(budget).toLocaleString()}</div>
+          <button onClick={runSim} disabled={loading} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center gap-2">
+            {loading ? <RefreshCw className="animate-spin" size={16}/> : "Run"}
+          </button>
+        </div>
+        <div className="lg:col-span-3">
+          {simRes ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <GovStat label="ROI" value={simRes.roi_multiplier} icon={<TrendingUp size={16} className="text-emerald-400"/>} />
+                <GovStat label="Jobs" value={simRes.job_creation} icon={<Plus size={16} className="text-blue-400"/>} />
+              </div>
+              <div className="bg-[#101725] p-6 rounded-2xl border border-slate-800">
+                <h4 className="text-xs font-bold text-white mb-2">AI Directive</h4>
+                <div className="text-sm text-slate-300 border-l-2 border-blue-500 pl-3 mb-4">{simRes.ai_recommendation}</div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/80">
+                  <div><p className="text-[10px] text-slate-500 mb-1">Sector</p><p className="text-sm text-blue-400">{simRes.sector_boost}</p></div>
+                  <div><p className="text-[10px] text-slate-500 mb-1">Risk</p><p className="text-sm text-rose-400">{simRes.vulnerability_warning}</p></div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-full min-h-[160px] flex items-center justify-center bg-slate-900/30 rounded-2xl border border-dashed border-slate-800">
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Ready</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
