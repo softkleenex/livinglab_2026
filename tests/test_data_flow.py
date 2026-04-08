@@ -1,8 +1,10 @@
-import urllib.request
-import urllib.parse
 import json
+import urllib.parse
+import requests
+import warnings
+warnings.filterwarnings("ignore")
 
-API_URL = "http://localhost:8001"
+API_URL = "https://mdga-api.onrender.com"
 
 def test_data_flow():
     print(f"🚀 Testing Data Flow -> {API_URL}")
@@ -11,85 +13,51 @@ def test_data_flow():
     # 1. Test Ingest Flow
     print("\n1. Testing Ingest Flow (POST /api/ingest => GET /api/hierarchy/explore)...")
     try:
-        from urllib.request import Request, urlopen
-        
-        boundary = 'wL36Yn8afVp8Ag7AmP8qZ0SA4n1v9T'
-        body = (
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="raw_text"\r\n\r\n'
-            f"테스트 구/동/거리/가게 데이터 저장 흐름 테스트\r\n"
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="file"; filename="dummy_test.txt"\r\n'
-            f'Content-Type: text/plain\r\n\r\n'
-            f"Hello World Dummy Content for Google Drive\r\n"
-            f"--{boundary}--\r\n"
-        ).encode('utf-8')
-        
-        req = Request(f"{API_URL}/api/ingest", data=body)
-        req.add_header('Content-type', f'multipart/form-data; boundary={boundary}')
-        
-        with urlopen(req) as response:
-            res = json.loads(response.read().decode())
-            print(f"  👉 Ingest Status: {res['status']}")
-            path = res.get('assigned_path', [])
-            print(f"  👉 Path assigned: {path}")
-            if 'drive_link' in res.get('entry', {}):
-                print(f"  👉 Saved to Drive: {res['entry']['drive_link']}")
+        files = {'file': ('dummy_test.txt', b'Hello World Dummy Content for Google Drive', 'text/plain')}
+        data = {'raw_text': '테스트 구/동/거리/가게 데이터 저장 흐름 테스트'}
+        res = requests.post(f"{API_URL}/api/ingest", data=data, files=files, verify=False, timeout=30)
+        res.raise_for_status()
+        body = res.json()
+        print(f"  👉 Ingest Status: {body['status']}")
+        path = body.get('assigned_path', [])
+        print(f"  👉 Path assigned: {path}")
+        entry = body.get('entry', {})
+        if entry.get('drive_link'):
+            print(f"  👉 Saved to Drive: {entry['drive_link']}")
+        else:
+            print(f"  ⚠️  Drive link: {entry.get('drive_link', 'None')}")
             
         print(f"  🔍 Verifying via Explore... Path: {path}")
         path_query = urllib.parse.quote("/".join(path))
-        req2 = Request(f"{API_URL}/api/hierarchy/explore?path={path_query}")
-        with urlopen(req2) as response:
-            res2 = json.loads(response.read().decode())
-            entries = res2.get("entries", [])
-            print(f"  ✅ Success! Found {len(entries)} entries in target path.")
-            if len(entries) > 0:
-                print(f"   -> Latest entry hash: {entries[-1].get('hash')[:8]}...")
+        res2 = requests.get(f"{API_URL}/api/hierarchy/explore?path={path_query}", verify=False, timeout=15)
+        res2.raise_for_status()
+        entries = res2.json().get("entries", [])
+        print(f"  ✅ Success! Found {len(entries)} entries in target path.")
+        if entries:
+            print(f"   -> Latest entry hash: {entries[-1].get('hash')[:8]}...")
             
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
         print(f"  ❌ Ingest flow error: {e}")
 
     # 2. Test Analyze Flow
     print("\n2. Testing Analyze Flow (POST /api/analyze => GET /api/community)...")
     try:
-        boundary = 'wL36Yn8afVp8Ag7AmP8qZ0SA4n1v9T'
-        body = (
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="industry"\r\n\r\n'
-            f"요식업\r\n"
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="district"\r\n\r\n'
-            f"수성구\r\n"
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="street"\r\n\r\n'
-            f"알파시티\r\n"
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="raw_data"\r\n\r\n'
-            f"데이터 세이빙 텍스트 정보\r\n"
-            f"--{boundary}--\r\n"
-        ).encode('utf-8')
+        data = {'industry': '요식업', 'district': '수성구', 'street': '알파시티', 'raw_data': '데이터 세이빙 텍스트 정보'}
+        res = requests.post(f"{API_URL}/api/analyze", data=data, verify=False, timeout=30)
+        res.raise_for_status()
+        body = res.json()
+        print(f"  👉 Analyze Status: {body['status']}")
+        print(f"  👉 Drive Link: {body.get('drive_link')}")
         
-        req = urllib.request.Request(f"{API_URL}/api/analyze", data=body)
-        req.add_header('Content-type', f'multipart/form-data; boundary={boundary}')
-        
-        with urllib.request.urlopen(req) as response:
-            res = json.loads(response.read().decode())
-            print(f"  👉 Analyze Status: {res['status']}")
-            print(f"  👉 Drive Link: {res.get('drive_link')}")
-            
         print("  🔍 Verifying via Community Pool...")
-        req2 = urllib.request.Request(f"{API_URL}/api/community")
-        with urllib.request.urlopen(req2) as response:
-            res2 = json.loads(response.read().decode())
-            print(f"  ✅ Success! Community entries count: {len(res2)}")
-            if len(res2) > 0:
-                 print(f"   -> Latest entry district: {res2[0].get('district')} / industry: {res2[0].get('industry')}")
-            
+        res2 = requests.get(f"{API_URL}/api/community", verify=False, timeout=15)
+        pool = res2.json()
+        print(f"  ✅ Success! Community entries count: {len(pool)}")
+        if pool:
+            print(f"   -> Latest entry district: {pool[0].get('district')} / industry: {pool[0].get('industry')}")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
         print(f"  ❌ Analyze flow error: {e}")
 
 if __name__ == '__main__':
