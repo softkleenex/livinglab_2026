@@ -1,6 +1,6 @@
-import requests
-import sys
-import time
+import urllib.request
+import urllib.parse
+import json
 
 API_URL = "https://mdga-api.onrender.com"
 
@@ -11,27 +11,24 @@ def test_endpoints():
     # 1. Test Explore (GET)
     print("1. Testing GET /api/hierarchy/explore (Check Engine & Ingest Data)...")
     try:
-        r1 = requests.get(f"{API_URL}/api/hierarchy/explore")
-        if r1.status_code == 200:
-            print(f"✅ Success! Data: {r1.json().get('current', 'unknown')}")
-        else:
-            print(f"❌ Failed: {r1.status_code} - {r1.text}")
+        req1 = urllib.request.Request(f"{API_URL}/api/hierarchy/explore")
+        with urllib.request.urlopen(req1) as response:
+            data = json.loads(response.read().decode())
+            print(f"✅ Success! Data: {data.get('current', 'unknown')}")
     except Exception as e:
         print(f"❌ Connection Error: {e}")
 
     # 2. Test Governance Simulation (POST)
     print("\n2. Testing POST /api/simulate/governance (Check OOM Fix & AI Generation)...")
     try:
-        data = {"budget": 15000000, "region": "대구광역시 수성구 스마트밸리"}
-        r2 = requests.post(f"{API_URL}/api/simulate/governance", data=data)
-        if r2.status_code == 200:
-            sim = r2.json()
+        data = urllib.parse.urlencode({"budget": 15000000, "region": "대구광역시 수성구 스마트밸리"}).encode('utf-8')
+        req2 = urllib.request.Request(f"{API_URL}/api/simulate/governance", data=data)
+        with urllib.request.urlopen(req2) as response:
+            sim = json.loads(response.read().decode())
             status = sim.get('status')
             multiplier = sim.get('simulation', {}).get('roi_multiplier', '')
             print(f"✅ Success! Status: {status}, ROI: {multiplier}")
             print(f"📝 AI Recommendation: {sim.get('simulation', {}).get('ai_recommendation', '')}")
-        else:
-            print(f"❌ Failed: {r2.status_code} - {r2.text}")
     except Exception as e:
         print(f"❌ Connection Error: {e}")
 

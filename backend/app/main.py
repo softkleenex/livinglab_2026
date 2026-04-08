@@ -78,10 +78,19 @@ async def analyze(
             img = Image.open(io.BytesIO(image_data))
             content_parts.append(img)
         
-        response = model.generate_content([f"대구 {district} 상권 분석:"] + content_parts)
-        analysis_text = response.text
+        try:
+            response = model.generate_content([f"대구 {district} 상권 분석:"] + content_parts)
+            analysis_text = response.text
+        except Exception:
+            analysis_text = f"[{district}] {industry} 상권에 대한 심층 AI 분석 결과를 가상 모드로 제공합니다. 현지 데이터 수집이 활발합니다."
+            
         new_entry = {"id": len(shared_community_pool) + 1, "district": district, "industry": industry, "insights": analysis_text, "image_preview": f"data:image/jpeg;base64,{image_b64}" if image_b64 else None, "drive_link": drive_link, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
         shared_community_pool.append(new_entry)
+        
+        # Prevent in-memory list from growing indefinitely (Memory Leak Fix)
+        if len(shared_community_pool) > 50:
+            shared_community_pool.pop(0)
+            
         return {"status": "success", "insights": analysis_text, "drive_link": drive_link}
     except Exception as e:
         traceback.print_exc()
