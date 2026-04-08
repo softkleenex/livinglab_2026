@@ -45,7 +45,7 @@ echo "✅ 서비스 ID 확인: $SERVICE_ID"
 echo "⏳ 배포 프로세스를 시작하고, 완료될 때까지 터미널에서 대기합니다 (--wait)..."
 
 # Deploy Trigger & Wait
-render deploys create $SERVICE_ID --wait
+render deploys create $SERVICE_ID --confirm --wait
 
 if [ $? -eq 0 ]; then
     echo "==============================================="
