@@ -18,12 +18,12 @@ from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 
 load_dotenv()
-load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"), override=True)
 
 # --- Config ---
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 app = FastAPI(title="MDGA Masterpiece OS v2.0")
 
@@ -276,6 +276,7 @@ async def ingest(
                 raise Exception("API Key missing")
             insights = model.generate_content(prompt_parts).text
         except Exception as e:
+            traceback.print_exc()
             # Fallback mock insights based on content length or keywords
             if any(keyword in content for keyword in ["폭발적", "많이", "증가", "대박"]):
                 insights = "가상 지능 분석: 최근 유입된 인구(예: 신규 오피스)가 매출 상승의 주요 원인입니다. 점심 한정 세트 메뉴를 신설하여 1인당 객단가(AOV)를 높이는 전략을 추천합니다."
