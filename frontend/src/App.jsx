@@ -153,7 +153,7 @@ function MainApp({ userContext, onLogout }) {
     return () => ws.close();
   }, [activeTab, currentPath, userContext]);
 
-  const fetchExplorer = async () => {
+  const fetchExplorer = React.useCallback(async () => {
     setLoading(true);
     try {
       const pathStr = ['대구광역시', ...currentPath].join('/');
@@ -163,9 +163,9 @@ function MainApp({ userContext, onLogout }) {
       setExplorerData(null);
     }
     finally { setLoading(false); }
-  };
+  }, [currentPath]);
 
-  const fetchPersonal = async () => {
+  const fetchPersonal = React.useCallback(async () => {
     setLoading(true);
     try {
       const pathStr = userContext.location.join('/');
@@ -176,10 +176,10 @@ function MainApp({ userContext, onLogout }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userContext.location]);
 
-  const navigateTo = (name) => setCurrentPath([...currentPath, name]);
-  const goBack = () => setCurrentPath(currentPath.slice(0, -1));
+  const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
+  const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
 
   return (
     <div className="flex h-[100dvh] w-full bg-[#05080F] text-slate-200 overflow-hidden font-sans antialiased justify-center selection:bg-blue-500/30">
@@ -523,16 +523,16 @@ function GovernanceSim({ explorerData }) {
   );
 }
 
-function SidebarLink({ icon, label, active, onClick }) {
+const SidebarLink = React.memo(({ icon, label, active, onClick }) => {
   return (
     <button onClick={onClick} className={`w-full flex items-center justify-start text-left whitespace-nowrap overflow-hidden gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${active ? 'bg-blue-600 text-white shadow-md shadow-blue-900/30' : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'}`}>
       <span className="shrink-0">{icon}</span>
       <span className="tracking-wide truncate">{label}</span>
     </button>
   );
-}
+});
 
-function BottomNavLink({ icon, label, active, onClick, special }) {
+const BottomNavLink = React.memo(({ icon, label, active, onClick, special }) => {
   return (
     <button onClick={onClick} className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors relative ${active ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}>
       {special && (
@@ -544,9 +544,9 @@ function BottomNavLink({ icon, label, active, onClick, special }) {
       <span className={`text-[9px] font-bold tracking-wide ${special ? 'mt-5 text-slate-400' : ''}`}>{label}</span>
     </button>
   );
-}
+});
 
-function GovStat({ label, value, icon }) {
+const GovStat = React.memo(({ label, value, icon }) => {
   return (
     <div className="bg-[#0A0F1A]/50 p-4 rounded-xl border border-slate-800/50 space-y-2">
       <div className="flex items-center gap-2 text-slate-400">
@@ -555,18 +555,18 @@ function GovStat({ label, value, icon }) {
       <p className="text-lg font-bold text-white tracking-tight truncate">{value}</p>
     </div>
   );
-}
+});
 
-function BigStat({ label, value }) {
+const BigStat = React.memo(({ label, value }) => {
   return (
     <div className="space-y-1 min-w-0">
       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight truncate">{label}</p>
       <p className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">{value}</p>
     </div>
   );
-}
+});
 
-function Sparkline({ data, color, width = 60, height = 20 }) {
+const Sparkline = React.memo(({ data, color, width = 60, height = 20 }) => {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -589,14 +589,14 @@ function Sparkline({ data, color, width = 60, height = 20 }) {
       />
     </svg>
   );
-}
+});
 
-function Badge({ label, icon, color }) {
+const Badge = React.memo(({ label, icon, color }) => {
   return (
     <div className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider border flex items-center gap-1.5 transition-colors cursor-default ${color}`}>
       {icon} {label}
     </div>
   );
-}
+});
 
 export default App;
