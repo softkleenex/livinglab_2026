@@ -112,6 +112,24 @@ class HierarchyEngine:
 
 engine = HierarchyEngine()
 
+def seed_initial_data(eng):
+    types = ["Gu", "Dong", "Street", "Store"]
+    # 북구 산격동 경대북문
+    eng.create_or_get_path(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], types)
+    eng.add_value_bottom_up(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], 250000)
+    eng.create_or_get_path(["대구광역시", "북구", "산격동", "경대북문", "은화수식당"], types)
+    eng.add_value_bottom_up(["대구광역시", "북구", "산격동", "경대북문", "은화수식당"], 480000)
+    # 중구 삼덕동 동성로
+    eng.create_or_get_path(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로로데오점"], types)
+    eng.add_value_bottom_up(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로로데오점"], 950000)
+    eng.create_or_get_path(["대구광역시", "중구", "삼덕동", "동성로", "랜디스도넛"], types)
+    eng.add_value_bottom_up(["대구광역시", "중구", "삼덕동", "동성로", "랜디스도넛"], 1200000)
+    # 수성구 두산동 수성못
+    eng.create_or_get_path(["대구광역시", "수성구", "두산동", "수성못", "롤링핀 수성못점"], types)
+    eng.add_value_bottom_up(["대구광역시", "수성구", "두산동", "수성못", "롤링핀 수성못점"], 300000)
+
+seed_initial_data(engine)
+
 # --- 🚀 API Endpoints ---
 
 class ContextPayload(BaseModel):

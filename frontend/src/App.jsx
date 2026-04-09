@@ -440,6 +440,23 @@ function GovernanceSim({ explorerData }) {
                 <GovStat label="Jobs" value={simRes.job_creation} icon={<Plus size={16} className="text-blue-400"/>} />
               </div>
               <div className="bg-[#101725] p-6 rounded-2xl border border-slate-800">
+                <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><PieChart size={14} className="text-blue-400"/> Impact Analysis</h4>
+                <div className="space-y-3 mb-6">
+                  <div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-bold mb-1">
+                      <span className="uppercase">{simRes.sector_boost.split(' ')[0] || 'Tech'} Sector Growth</span>
+                      <span className="text-emerald-400">+85%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5"><div className="bg-emerald-500 h-1.5 rounded-full" style={{width: '85%'}}></div></div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-bold mb-1">
+                      <span className="uppercase">Local Commerce</span>
+                      <span className="text-blue-400">+62%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{width: '62%'}}></div></div>
+                  </div>
+                </div>
                 <h4 className="text-xs font-bold text-white mb-2">AI Directive</h4>
                 <div className="text-sm text-slate-300 border-l-2 border-blue-500 pl-3 mb-4">{simRes.ai_recommendation}</div>
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/80">
