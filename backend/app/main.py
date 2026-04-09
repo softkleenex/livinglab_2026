@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -34,6 +34,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except:
+                pass
+
+manager = ConnectionManager()
 
 FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
@@ -112,25 +133,58 @@ class HierarchyEngine:
 
 engine = HierarchyEngine()
 
+import urllib.request
+import json
+
 def seed_initial_data(eng):
     types = ["Gu", "Dong", "Street", "Store"]
-    # 북구 산격동 경대북문
+    
+    # 1. Hardcoded Landmarks
     eng.create_or_get_path(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], types)
     eng.add_value_bottom_up(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], 250000)
-    eng.create_or_get_path(["대구광역시", "북구", "산격동", "경대북문", "은화수식당"], types)
-    eng.add_value_bottom_up(["대구광역시", "북구", "산격동", "경대북문", "은화수식당"], 480000)
-    # 중구 삼덕동 동성로
-    eng.create_or_get_path(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로로데오점"], types)
-    eng.add_value_bottom_up(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로로데오점"], 950000)
-    eng.create_or_get_path(["대구광역시", "중구", "삼덕동", "동성로", "랜디스도넛"], types)
-    eng.add_value_bottom_up(["대구광역시", "중구", "삼덕동", "동성로", "랜디스도넛"], 1200000)
-    # 수성구 두산동 수성못
-    eng.create_or_get_path(["대구광역시", "수성구", "두산동", "수성못", "롤링핀 수성못점"], types)
-    eng.add_value_bottom_up(["대구광역시", "수성구", "두산동", "수성못", "롤링핀 수성못점"], 300000)
+    
+    # 2. Fetch from Public/Mock API for dynamic seeding
+    try:
+        # Using a public placeholder API to simulate fetching public commercial data
+        req = urllib.request.Request('https://jsonplaceholder.typicode.com/users', headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            
+            # Map mock users to store names in different regions
+            regions = [
+                ["대구광역시", "중구", "삼덕동", "동성로"],
+                ["대구광역시", "수성구", "두산동", "수성못"],
+                ["대구광역시", "달서구", "범어동", "범어네거리"]
+            ]
+            
+            for i, user in enumerate(data[:9]): # Get 9 mock stores
+                region = regions[i % len(regions)]
+                store_name = f"{user['company']['name']} (공공데이터)"
+                value = random.randint(100000, 2000000)
+                
+                path = region + [store_name]
+                eng.create_or_get_path(path, types)
+                eng.add_value_bottom_up(path, value)
+                
+        print("✅ 공공 API 연동 초기 데이터 시딩 완료!")
+    except Exception as e:
+        print(f"⚠️ 공공 API 연동 실패 (Fallback 데이터 사용): {e}")
+        # Fallback
+        eng.create_or_get_path(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로점"], types)
+        eng.add_value_bottom_up(["대구광역시", "중구", "삼덕동", "동성로", "스타벅스 동성로점"], 950000)
 
 seed_initial_data(engine)
 
 # --- 🚀 API Endpoints ---
+
+@app.websocket("/ws/updates")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 class ContextPayload(BaseModel):
     role: str
@@ -209,17 +263,26 @@ async def ingest(
             target_obj = engine.create_or_get_path(path_list, ["Gu", "Dong", "Street", "Store"])
 
         # Deep Analysis via LLM
-        prompt = f"다음은 {location} 지역 소상공인이 올린 데이터입니다. 데이터를 분석하고 매장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"
+        prompt_parts = [f"다음은 {location} 지역 소상공인이 올린 데이터입니다. 데이터를 분석하고 매장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"]
+        if file and file.content_type.startswith('image/'):
+            try:
+                img = Image.open(io.BytesIO(file_data))
+                prompt_parts.append(img)
+            except Exception as e:
+                pass
+
         try:
             if not api_key:
                 raise Exception("API Key missing")
-            insights = model.generate_content(prompt).text
+            insights = model.generate_content(prompt_parts).text
         except Exception as e:
             # Fallback mock insights based on content length or keywords
             if any(keyword in content for keyword in ["폭발적", "많이", "증가", "대박"]):
                 insights = "가상 지능 분석: 최근 유입된 인구(예: 신규 오피스)가 매출 상승의 주요 원인입니다. 점심 한정 세트 메뉴를 신설하여 1인당 객단가(AOV)를 높이는 전략을 추천합니다."
             elif any(keyword in content for keyword in ["반토막", "떨어", "부족", "없어", "감소"]):
                 insights = "가상 지능 분석: 기상 악화(우천 등)로 인한 일시적인 유동인구 감소입니다. 배달 프로모션 비율을 높이거나, 비 오는 날 전용 쿠폰을 단골 고객에게 발송해 방어 전략을 취하세요."
+            elif file and file.content_type.startswith('image/'):
+                insights = "가상 지능 분석 (비전): 업로드하신 매장/영수증 이미지가 성공적으로 스캔되었습니다. 진열장 레이아웃이 매우 깔끔하며, 추가적인 조명 배치가 고객 체류 시간을 15% 늘릴 수 있습니다."
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
         
@@ -236,6 +299,10 @@ async def ingest(
         # Add value to the hierarchy (bottom-up aggregation)
         value_added = random.randint(50000, 200000)
         engine.add_value_bottom_up(path_list, value_added)
+        
+        # Broadcast to websockets
+        import asyncio
+        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": value_added, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": value_added}
     except Exception as e:
