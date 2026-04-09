@@ -92,13 +92,15 @@ class HierarchyEngine:
     def __init__(self):
         self.db = {
             "name": "대구광역시", "type": "City",
-            "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": 0, "nodes": 0},
+            "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": 0, "nodes": 0, "history": []},
             "children": {},
             "data_entries": []
         }
 
     def get_object(self, path_list):
         curr = self.db
+        if path_list and path_list[0] == self.db["name"]:
+            path_list = path_list[1:]
         for p in path_list:
             if p not in curr["children"]: return None
             curr = curr["children"][p]
@@ -106,13 +108,21 @@ class HierarchyEngine:
 
     def create_or_get_path(self, path_list, types_list):
         curr = self.db
+        if path_list and path_list[0] == self.db["name"]:
+            path_list = path_list[1:]
         # Update root metadata dynamically
         curr["metadata"]["nodes"] += 1
         for i, p in enumerate(path_list):
             if p not in curr["children"]:
                 curr["children"][p] = {
                     "name": p, "type": types_list[i] if i < len(types_list) else "Node",
-                    "metadata": {"created_at": str(datetime.date.today()), "nodes": 1, "pulse_rate": random.randint(65, 90), "total_value": 0},
+                    "metadata": {
+                        "created_at": str(datetime.date.today()), 
+                        "nodes": 1, 
+                        "pulse_rate": random.randint(65, 90), 
+                        "total_value": 0,
+                        "history": [random.randint(60, 80) for _ in range(5)]
+                    },
                     "children": {}, "data_entries": []
                 }
             else:
@@ -122,14 +132,21 @@ class HierarchyEngine:
         
     def add_value_bottom_up(self, path_list, value_added):
         curr = self.db
+        if path_list and path_list[0] == self.db["name"]:
+            path_list = path_list[1:]
         curr["metadata"]["total_value"] += value_added
-        # Increase pulse rate slightly on activity, cap at 100
         curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 1)
+        # Update history
+        curr["metadata"]["history"].append(curr["metadata"]["pulse_rate"])
+        if len(curr["metadata"]["history"]) > 10: curr["metadata"]["history"].pop(0)
+
         for p in path_list:
             if p in curr["children"]:
                 curr = curr["children"][p]
                 curr["metadata"]["total_value"] += value_added
                 curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 2)
+                curr["metadata"]["history"].append(curr["metadata"]["pulse_rate"])
+                if len(curr["metadata"]["history"]) > 10: curr["metadata"]["history"].pop(0)
 
 engine = HierarchyEngine()
 
@@ -140,8 +157,8 @@ def seed_initial_data(eng):
     types = ["Gu", "Dong", "Street", "Store"]
     
     # 1. Hardcoded Landmarks
-    eng.create_or_get_path(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], types)
-    eng.add_value_bottom_up(["대구광역시", "북구", "산격동", "경대북문", "MDGA 카페"], 250000)
+    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페"], types)
+    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페"], 250000)
     
     # 2. Fetch from Public/Mock API for dynamic seeding
     try:
@@ -152,9 +169,9 @@ def seed_initial_data(eng):
             
             # Map mock users to store names in different regions
             regions = [
-                ["대구광역시", "중구", "삼덕동", "동성로"],
-                ["대구광역시", "수성구", "두산동", "수성못"],
-                ["대구광역시", "달서구", "범어동", "범어네거리"]
+                ["중구", "삼덕동", "동성로"],
+                ["수성구", "두산동", "수성못"],
+                ["달서구", "범어동", "범어네거리"]
             ]
             
             for i, user in enumerate(data[:9]): # Get 9 mock stores
@@ -212,6 +229,7 @@ async def get_personal_dashboard(path: str):
             "name": obj["name"],
             "total_value": obj["metadata"].get("total_value", 0),
             "pulse": obj["metadata"].get("pulse_rate", 0),
+            "history": obj["metadata"].get("history", []),
             "entries": obj.get("data_entries", [])
         },
         "parent": {
@@ -229,7 +247,7 @@ async def explore(path: str = ""):
     if not obj: raise HTTPException(status_code=404, detail="Path not found")
     return {
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
-        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"]} for k, v in obj["children"].items() ],
+        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
         "entries": obj.get("data_entries", [])
     }
 

@@ -236,7 +236,10 @@ function MainApp({ userContext, onLogout }) {
                   </div>
                   <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Store Pulse</p>
-                    <p className="text-2xl font-bold text-blue-400">{personalData.store.pulse} BPM</p>
+                    <div className="flex items-end gap-3">
+                      <p className="text-2xl font-bold text-blue-400">{personalData.store.pulse} BPM</p>
+                      <Sparkline data={personalData.store.history} color="#3b82f6" />
+                    </div>
                     <p className="text-[10px] text-slate-500 mt-2">상권 평균: {personalData.parent.pulse} BPM</p>
                   </div>
                 </div>
@@ -294,9 +297,12 @@ function MainApp({ userContext, onLogout }) {
                             </div>
                           </div>
                           <div className="text-right flex items-center gap-4">
-                            <div className="hidden sm:block text-right">
-                                <p className="text-[10px] text-slate-500 mb-1 font-bold">ACTIVITY</p>
-                                <span className="text-xs font-bold text-emerald-400 uppercase">{child.pulse} BPM</span>
+                            <div className="hidden sm:flex flex-col items-end gap-1">
+                                <p className="text-[10px] text-slate-500 font-bold">ACTIVITY</p>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-emerald-400 uppercase">{child.pulse} BPM</span>
+                                  <Sparkline data={child.history} color="#10b981" width={40} height={15} />
+                                </div>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
                                 <ChevronRight size={16}/>
@@ -557,6 +563,31 @@ function BigStat({ label, value }) {
       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight truncate">{label}</p>
       <p className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">{value}</p>
     </div>
+  );
+}
+
+function Sparkline({ data, color, width = 60, height = 20 }) {
+  if (!data || data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((d - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={width} height={height} className="overflow-visible">
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
   );
 }
 
