@@ -102,10 +102,13 @@ class HierarchyEngine:
     def add_value_bottom_up(self, path_list, value_added):
         curr = self.db
         curr["metadata"]["total_value"] += value_added
+        # Increase pulse rate slightly on activity, cap at 100
+        curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 1)
         for p in path_list:
             if p in curr["children"]:
                 curr = curr["children"][p]
                 curr["metadata"]["total_value"] += value_added
+                curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 2)
 
 engine = HierarchyEngine()
 

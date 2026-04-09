@@ -163,57 +163,37 @@ function MainApp({ userContext, onLogout }) {
   const goBack = () => setCurrentPath(currentPath.slice(0, -1));
 
   return (
-    <div className="flex h-[100dvh] w-full bg-[#0A0F1A] text-slate-200 overflow-hidden font-sans antialiased flex-col md:flex-row selection:bg-blue-500/30">
+    <div className="flex h-[100dvh] w-full bg-[#05080F] text-slate-200 overflow-hidden font-sans antialiased justify-center selection:bg-blue-500/30">
       
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 lg:w-72 bg-[#0E1420] border-r border-slate-800/80 flex-col z-50 shrink-0 shadow-lg">
-        <div className="p-6 flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-8 cursor-pointer group" onClick={onLogout}>
-            <div className="p-2.5 bg-blue-600 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] group-hover:scale-105 transition-transform"><Radar size={22} className="text-white"/></div>
-            <div>
-              <span className="text-xl font-bold text-white block leading-none mb-1">MDGA TWIN</span>
-              <span className="text-[9px] text-blue-400 font-semibold tracking-widest uppercase opacity-90">{userContext.role} Workspace</span>
-            </div>
-          </div>
-
-          <div className="mb-6 px-4 py-3 bg-slate-800/30 rounded-xl border border-slate-800">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Current Focus</p>
-            <p className="text-sm font-semibold text-white truncate">{userContext.location[userContext.location.length-1]}</p>
-          </div>
-
-          <nav className="space-y-2 flex-1">
-            {userContext.role === 'store' && (
-              <SidebarLink icon={<Store size={18}/>} label="내 매장 대시보드" active={activeTab === 'personal'} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
-            )}
-            <SidebarLink icon={<Map size={18}/>} label={userContext.role === 'gov' ? "디지털 트윈 맵" : "상권 트렌드 맵"} active={activeTab === 'explorer'} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
-            {(userContext.role === 'gov' || userContext.role === 'leader') && (
-              <SidebarLink icon={<BarChart3 size={18}/>} label="정책 시뮬레이터" active={activeTab === 'governance'} onClick={()=>{setActiveTab('governance'); setShowIngest(false);}} />
-            )}
-            {userContext.role === 'store' && (
-              <SidebarLink icon={<Zap size={18}/>} label="하이퍼 피딩 (자산화)" active={showIngest} onClick={()=>setShowIngest(true)} />
-            )}
-          </nav>
-        </div>
-      </aside>
+      {/* Mobile-first App Container */}
+      <div className="w-full max-w-[480px] bg-[#0A0F1A] h-full flex flex-col relative border-x border-slate-800/60 shadow-2xl">
 
       {/* Main Viewport */}
       <main className="flex-1 flex flex-col relative overflow-hidden bg-[#0A0F1A]">
         {/* Header */}
-        <header className="h-12 shrink-0 border-b border-slate-800/60 bg-[#0A0F1A]/80 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap">
-            <span className="text-blue-400">DAEGU</span>
-            {currentPath.map((segment, i) => (
-              <React.Fragment key={i}>
-                <span className="shrink-0 opacity-40">/</span>
-                <span className="text-slate-300">{segment}</span>
-              </React.Fragment>
-            ))}
+        <header className="h-14 shrink-0 border-b border-slate-800/80 bg-[#0A0F1A]/95 backdrop-blur-xl px-4 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-blue-600 rounded-lg shadow-md"><Radar size={16} className="text-white"/></div>
+            <span className="text-sm font-black text-white tracking-wider">MDGA</span>
           </div>
-          <button onClick={onLogout} className="md:hidden text-[10px] font-bold text-slate-400 uppercase bg-slate-800 px-3 py-1.5 rounded-lg">Switch Role</button>
+          <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+            Logout
+          </button>
         </header>
 
+        {/* Path Breadcrumbs */}
+        <div className="px-4 py-2 border-b border-slate-800/40 bg-[#0A0F1A] flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+          <span className="text-blue-400">DAEGU</span>
+          {currentPath.map((segment, i) => (
+            <React.Fragment key={i}>
+              <span className="shrink-0 opacity-40">/</span>
+              <span className="text-slate-300">{segment}</span>
+            </React.Fragment>
+          ))}
+        </div>
+
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-12 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-4 pb-24 scroll-smooth">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex h-full items-center justify-center">
@@ -326,8 +306,8 @@ function MainApp({ userContext, onLogout }) {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 fixed bottom-0 left-0 right-0">
+      {/* Bottom Nav (App-like for all views) */}
+      <nav className="flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 absolute bottom-0 left-0 right-0 w-full">
         {userContext.role === 'store' && (
           <BottomNavLink icon={<Store size={20}/>} label="내 매장" active={activeTab === 'personal' && !showIngest} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
         )}
@@ -354,6 +334,7 @@ function MainApp({ userContext, onLogout }) {
           />
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

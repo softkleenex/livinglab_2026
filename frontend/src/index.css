@@ -12,8 +12,8 @@
 }
 
 body {
-  background-color: #fcfcfc;
-  color: #1a1a1a;
+  background-color: #05080F;
+  color: #fcfcfc;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   /* Prevent bounce effect on mobile */
   overscroll-behavior-y: none;
