@@ -66,6 +66,6 @@
 ## 5. 🛠️ 기술 스택 및 라이브러리 요약
 - **Frontend**: `React 18`, `Vite`, `TailwindCSS v4 (Inline CSS)`, `framer-motion` (애니메이션), `lucide-react` (아이콘 팩), `axios` (HTTP 및 WS).
 - **Backend**: `FastAPI`, `Uvicorn`, `google-generativeai`, `Pillow`, `google-api-python-client` (Drive), `websockets`.
-- **CI/CD**: `GitHub Actions`를 통한 `GitHub Pages` (UI) 정적 배포 파이프라인 연동.
+- **CI/CD**: 프론트엔드는 **Cloudflare Pages**(`https://mdga-2026.pages.dev/`)를 통해 Edge 배포되며, 백엔드는 Render.com 에 연동되어 무결성 검증 및 배포됩니다.
 
 이로써 **MDGA: Universal Data Engine**의 최종 MVP(Minimum Viable Product)는 실시간 통신, 멀티모달 AI, 반응형 PWA가 융합된 완벽한 프로토타입으로 완성되었습니다.
