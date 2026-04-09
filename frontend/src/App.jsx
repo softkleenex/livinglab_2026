@@ -264,18 +264,25 @@ function MainApp({ userContext, onLogout }) {
                 {explorerData.children && explorerData.children.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-3">
                       {explorerData.children.map(child => (
-                        <div key={child.name} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-5 rounded-2xl border border-slate-800/80 hover:border-blue-500/40 hover:bg-[#141D2C] cursor-pointer group transition-all">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-600 group-hover:text-white"><Folder size={18} /></div>
-                            <div className="text-right w-16">
-                              <span className="text-[9px] font-bold text-rose-400 uppercase">{child.pulse} bpm</span>
-                              <div className="w-full h-1 bg-slate-800 rounded-full mt-1 overflow-hidden"><div className="h-full bg-rose-500" style={{width: `${child.pulse}%`}} /></div>
+                        <div key={child.name} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-4 rounded-2xl border border-slate-800/80 hover:border-blue-500/50 hover:bg-[#121A2A] cursor-pointer group transition-all flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors"><Folder size={20} /></div>
+                            <div>
+                              <p className="text-base font-bold text-slate-200">{child.name}</p>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase mt-0.5 tracking-wider">{child.type} LEVEL</p>
                             </div>
                           </div>
-                          <p className="text-lg font-bold text-slate-200 truncate">{child.name}</p>
-                          <p className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">{child.type}</p>
+                          <div className="text-right flex items-center gap-4">
+                            <div className="hidden sm:block text-right">
+                                <p className="text-[10px] text-slate-500 mb-1 font-bold">ACTIVITY</p>
+                                <span className="text-xs font-bold text-emerald-400 uppercase">{child.pulse} BPM</span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
+                                <ChevronRight size={16}/>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
