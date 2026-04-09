@@ -346,6 +346,42 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
             }
         
         return {"status": "success", "simulation": sim_data}
+
+@app.get("/api/dashboard/personal")
+async def get_personal_dashboard(path: str):
+    path_list = [p for p in path.split("/") if p]
+    obj = engine.get_object(path_list)
+    if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
+    
+    # Get parent object to compare
+    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    
+    return {
+        "store": {
+            "name": obj["name"],
+            "total_value": obj["metadata"].get("total_value", 0),
+            "pulse": obj["metadata"].get("pulse_rate", 0),
+            "history": obj["metadata"].get("history", []),
+            "entries": obj.get("data_entries", [])
+        },
+        "parent": {
+            "name": parent_obj["name"],
+            "type": parent_obj["type"],
+            "avg_value": parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1)),
+            "pulse": parent_obj["metadata"].get("pulse_rate", 0)
+        }
+    }
+
+@app.get("/api/hierarchy/explore")
+async def explore(path: str = ""):
+    path_list = [p for p in path.split("/") if p] if path else []
+    obj = engine.get_object(path_list)
+    if not obj: raise HTTPException(status_code=404, detail="Path not found")
+    return {
+        "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
+        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
+        "entries": obj.get("data_entries", [])
+    }
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
