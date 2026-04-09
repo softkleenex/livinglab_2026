@@ -13,10 +13,11 @@
   - State & Routing: 가상 경로 기반 탐색(`currentPath`) 및 하단 내비게이션(Bottom Nav)을 이용한 페르소나별 탭 렌더링.
   - PWA: `manifest.json` 적용으로 모바일 기기 홈 화면 설치(Add to Home Screen) 완벽 지원.
 
-- **Backend (FastAPI)**
+- **Backend (FastAPI / Render)**
   - REST API: 컨텍스트 설정, 대시보드 데이터 페치, 정책 시뮬레이터 차트 연동.
+  - Base URL: `https://mdga-api.onrender.com`
   - Hierarchy Engine 2.0: 데이터를 `Store -> Street -> Dong -> Gu` 형태로 롤업(Roll-up)하여 자산(Asset Value)과 맥박(Pulse Rate)을 집계하는 인메모리 트리 구조.
-  - 외부 연동: Google Drive(이미지 원본 저장용, 선택적), Google Gemini API (텍스트 및 Vision AI 분석).
+  - 외부 연동: Google Drive(이미지 원본 저장용, `GOOGLE_DRIVE_FOLDER_ID` 연동), Google Gemini API (최신 **Gemini 2.5 Flash** 모델 사용).
   - 공공 API 시딩: 서버 시작 시 `jsonplaceholder` 등을 활용해 가상 랜드마크(경대북문, 동성로 등) 상권 데이터를 자동 시딩.
 
 ---
@@ -26,6 +27,7 @@
 **"누군가 데이터를 올리면, 관리자의 지도가 살아 숨쉰다."**
 
 - **구현 방식**: FastAPI의 `WebSocket` 채널(`ws/updates`)을 개설하고, 중앙 `ConnectionManager`가 연결된 모든 클라이언트(프론트엔드)를 관리.
+- **WebSocket URL**: `wss://mdga-api.onrender.com/ws/updates`
 - **동작 원리**: 
   1. `소상공인` 페르소나가 자신의 매장에서 **영수증/데이터를 업로드(Ingest)**.
   2. Hierarchy Engine에서 해당 노드 및 부모 노드들의 **Pulse Rate(맥박)와 Value(자산)** 상승.
@@ -40,7 +42,8 @@
 
 - **업로드 UI**: 프론트엔드 Ingest Modal에서 파일이 선택되면 `URL.createObjectURL`을 통해 모달 내에 다크 톤의 **Vision AI Ready** 프리뷰(Preview) 제공.
 - **백엔드 분석**: `multipart/form-data`로 전송된 이미지(`UploadFile`)를 `PIL.Image` 스트림으로 변환. 
-- **Gemini 1.5 Flash 연동**: 프롬프트 텍스트와 함께 멀티모달 입력(Image 객체)을 던져 매장 전경 피드백, 영수증 품목 기반 인사이트 등 시각적인 "가상 지능 분석" 솔루션을 도출하여 사용자에게 즉각 반환.
+- **AI Core**: **Gemini 2.5 Flash** 연동. 프롬프트 텍스트와 함께 멀티모달 입력(Image 객체)을 던져 매장 전경 피드백, 영수증 품목 기반 인사이트 등 시각적인 "가상 지능 분석" 솔루션을 도출하여 사용자에게 즉각 반환.
+- **데이터 보존**: 업로드된 이미지는 서버 메모리에 머물지 않고 즉시 **Google Drive**의 지정된 폴더로 전송되어 영구 링크(`webViewLink`)로 변환 및 저장됩니다.
 
 ---
 
