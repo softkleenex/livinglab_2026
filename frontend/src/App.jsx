@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -232,13 +232,17 @@ function MainApp({ userContext, onLogout }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">My Asset Value</p>
-                    <p className="text-2xl font-bold text-emerald-400">₩{personalData.store.total_value.toLocaleString()}</p>
+                    <motion.p key={personalData.store.total_value} initial={{ scale: 1.1, color: '#34d399' }} animate={{ scale: 1, color: '#34d399' }} className="text-2xl font-bold text-emerald-400">
+                      ₩{personalData.store.total_value.toLocaleString()}
+                    </motion.p>
                     <p className="text-[10px] text-slate-500 mt-2">상권 평균: ₩{personalData.parent.avg_value.toLocaleString()}</p>
                   </div>
                   <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Store Pulse</p>
                     <div className="flex items-end gap-3">
-                      <p className="text-2xl font-bold text-blue-400">{personalData.store.pulse} BPM</p>
+                      <motion.p key={personalData.store.pulse} initial={{ scale: 1.5, color: '#60a5fa' }} animate={{ scale: 1, color: '#3b82f6' }} className="text-2xl font-bold text-blue-400">
+                        {personalData.store.pulse} BPM
+                      </motion.p>
                       <Sparkline data={personalData.store.history} color="#3b82f6" />
                     </div>
                     <p className="text-[10px] text-slate-500 mt-2">상권 평균: {personalData.parent.pulse} BPM</p>
@@ -628,6 +632,16 @@ function ReportModal({ onClose, locationPath }) {
     fetchReport();
   }, [locationPath]);
 
+  const handleDownload = () => {
+    const element = document.createElement("a");
+    const file = new Blob([report], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `MDGA_주간_경영_리포트_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[80vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative">
@@ -645,8 +659,16 @@ function ReportModal({ onClose, locationPath }) {
               <p className="text-sm text-slate-400 font-medium">이번 주 데이터를 분석하여 보고서를 작성 중입니다...</p>
             </div>
           ) : (
-            <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
-              {report}
+            <div className="flex flex-col h-full">
+              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium flex-grow mb-6">
+                {report}
+              </div>
+              <button 
+                onClick={handleDownload}
+                className="w-full py-3 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold text-sm hover:bg-blue-600 hover:text-white transition-colors flex justify-center items-center gap-2 mt-auto shrink-0"
+              >
+                <Download size={16} /> 리포트 텍스트 파일로 저장
+              </button>
             </div>
           )}
         </div>
