@@ -190,6 +190,27 @@ function MainApp({ userContext, onLogout }) {
     }
   };
 
+  const handleDownloadEntry = (entry) => {
+    const content = `[MDGA Data Entry]\nTime: ${entry.timestamp}\nScope: ${entry.scope === 'store_specific' ? 'My Store' : 'Public Data'}\nTrust Index: ${entry.trust_index || 50.0}%\n\n[Insights]\n${entry.insights}\n\n[Raw Data]\n${entry.raw_text || 'N/A'}\n${entry.drive_link ? `\n[Attached File]\n${entry.drive_link}` : ''}`;
+    const element = document.createElement("a");
+    const file = new Blob([content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `MDGA_Data_${entry.hash.substring(0,8)}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const handleDemoInject = async () => {
+    setLoading(true);
+    try {
+      const pathStr = userContext.location.join('/');
+      await axios.post(`${API_BASE_URL}/api/demo/inject?path=${pathStr}`);
+      fetchPersonal();
+    } catch(e) { alert("데모 주입 실패"); }
+    finally { setLoading(false); }
+  };
+
   const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
   const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
 
@@ -271,8 +292,11 @@ function MainApp({ userContext, onLogout }) {
                     </button>
                   </div>
                   {personalData.store.entries.length === 0 ? (
-                    <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center">
+                    <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center flex flex-col items-center gap-4">
                       <p className="text-sm text-slate-400">아직 입력된 데이터가 없습니다. 하이퍼 피딩을 통해 매장 데이터를 업로드하고 AI 컨설팅을 받아보세요.</p>
+                      <button onClick={handleDemoInject} className="px-4 py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-colors">
+                        ✨ 데모 데이터 자동 완성 (발표용)
+                      </button>
                     </div>
                   ) : (
                     personalData.store.entries.map((entry, idx) => (
@@ -283,13 +307,21 @@ function MainApp({ userContext, onLogout }) {
                               <BrainCircuit size={16} className="text-blue-500" />
                               <span className="text-[10px] font-bold text-slate-400">{entry.timestamp}</span>
                             </div>
-                            <span className={`w-fit text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest ${entry.scope === 'store_specific' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
-                              {entry.scope === 'store_specific' ? 'My Store' : 'Public Data'}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-fit text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest ${entry.scope === 'store_specific' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                                {entry.scope === 'store_specific' ? 'My Store' : 'Public Data'}
+                              </span>
+                              <span className="text-[9px] font-bold text-slate-500 uppercase">Trust: {entry.trust_index ? entry.trust_index.toFixed(1) : 50.0}%</span>
+                            </div>
                           </div>
-                          <button onClick={() => handleDeleteEntry(entry.hash)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all" title="데이터 삭제 (신뢰도 하락 경고)">
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => handleDownloadEntry(entry)} className="text-slate-600 hover:text-blue-400 transition-colors" title="데이터 텍스트로 다운로드">
+                              <Download size={16} />
+                            </button>
+                            <button onClick={() => handleDeleteEntry(entry.hash)} className="text-slate-600 hover:text-red-400 transition-colors" title="데이터 삭제 (신뢰도 하락 경고)">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-blue-600 pl-3">{entry.insights}</p>
                       </div>
@@ -469,6 +501,12 @@ function IngestModal({ onClose, onSuccess, locationPath }) {
               
               <textarea value={rawText} onChange={e=>setRawText(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none text-slate-200" rows={preview ? 2 : 4} placeholder="여기에 텍스트 상황을 입력하세요..." />
               <input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-500/10 file:text-blue-400 bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
+              
+              <label className="flex items-start gap-2 opacity-50 cursor-not-allowed">
+                <input type="checkbox" disabled checked={false} className="mt-1" />
+                <span className="text-xs text-slate-400">다른 사용자의 데이터 다운로드 허용 안 함<br/><span className="text-[10px] text-red-400 font-bold">(현재 개발 중으로 필수 공개 설정됨)</span></span>
+              </label>
+
               <button onClick={handleIngest} disabled={loading || (!rawText && !file)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? <RefreshCw className="animate-spin" size={16}/> : "업로드 및 자산화"}
               </button>

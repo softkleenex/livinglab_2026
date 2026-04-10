@@ -156,44 +156,7 @@ import json
 def seed_initial_data(eng):
     types = ["Gu", "Dong", "Street", "Store"]
     
-    # 1. Hardcoded Landmarks
-    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페 검증용"], types)
-    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페 검증용"], 250000)
-    
-    import hashlib
-    store_obj = eng.get_object(["북구", "산격동", "경대북문", "MDGA 카페 검증용"])
-    if store_obj:
-        mock_insights = [
-            {"date": "2026-04-05", "text": "가상 지능 분석: 주말 매출이 지난주 대비 15% 상승했습니다. 특히 아메리카노와 케이크 세트 메뉴의 반응이 좋습니다. 세트 메뉴 프로모션을 연장하는 것을 권장합니다."},
-            {"date": "2026-04-07", "text": "가상 지능 분석: 원두 재고 소진 속도가 예상보다 빠릅니다. 내일까지 원두가 5kg 미만으로 떨어질 수 있으니, 즉시 인근 로스터리에서 비상 구매를 하거나 거래처에 긴급 배송을 요청하세요."},
-            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 영수증을 스캔한 결과, 객단가가 12,000원 선으로 상권 평균(9,500원)보다 높습니다. 단골 고객의 재방문율이 높게 유지되고 있습니다."}
-        ]
-        for m in mock_insights:
-            store_obj["data_entries"].append({
-                "timestamp": f"{m['date']} 14:00",
-                "insights": m["text"],
-                "hash": hashlib.sha256(m["text"].encode()).hexdigest(),
-                "drive_link": None
-            })
-            
-    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페 최종"], types)
-    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페 최종"], 320000)
-    
-    store_obj2 = eng.get_object(["북구", "산격동", "경대북문", "MDGA 카페 최종"])
-    if store_obj2:
-        mock_insights2 = [
-            {"date": "2026-04-08", "text": "가상 지능 분석: 최근 유입된 인구(신규 오피스 입주)가 매출 상승의 주요 원인입니다. 점심 한정 세트 메뉴를 신설하여 직장인들의 객단가(AOV)를 높이는 전략을 추천합니다."},
-            {"date": "2026-04-09", "text": "가상 지능 분석 (비전): 업로드하신 매장 전경 이미지를 스캔했습니다. 진열장 레이아웃이 깔끔하나, 간접 조명을 추가 배치하면 고객 체류 시간을 15% 더 늘릴 수 있습니다."}
-        ]
-        for m in mock_insights2:
-            store_obj2["data_entries"].append({
-                "timestamp": f"{m['date']} 10:30",
-                "insights": m["text"],
-                "hash": hashlib.sha256(m["text"].encode()).hexdigest(),
-                "drive_link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"
-            })
-    
-    # 2. Fetch from Public/Mock API for dynamic seeding
+    # 1. Fetch from Public/Mock API for dynamic seeding
     try:
         # Using a public placeholder API to simulate fetching public commercial data
         req = urllib.request.Request('https://jsonplaceholder.typicode.com/users', headers={'User-Agent': 'Mozilla/5.0'})
@@ -257,14 +220,17 @@ async def get_personal_dashboard(path: str):
     # Get parent object to compare
     parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
     
+    entries = obj.get("data_entries", [])
+    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
+    
     return {
         "store": {
             "name": obj["name"],
             "total_value": obj["metadata"].get("total_value", 0),
             "pulse": obj["metadata"].get("pulse_rate", 0),
-            "trust_index": obj["metadata"].get("trust_index", 50.0),
+            "trust_index": round(avg_trust, 1),
             "history": obj["metadata"].get("history", []),
-            "entries": obj.get("data_entries", [])
+            "entries": entries
         },
         "parent": {
             "name": parent_obj["name"],
@@ -344,29 +310,34 @@ async def ingest(
         # Scope definition (Store-specific vs Regional general)
         scope = "store_specific" if len(path_list) >= 4 else "regional_general"
         
+        # Trust Index assignment to the individual data entry
+        base_trust = 85.0 if file else 70.0
+        trust_index = round(base_trust + random.uniform(0.0, 14.9), 1)
+        
         entry = {
             "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), 
             "insights": insights, 
             "hash": trust_hash, 
             "drive_link": drive_link,
-            "scope": scope
+            "scope": scope,
+            "trust_index": trust_index,
+            "raw_text": content
         }
         target_obj["data_entries"].append(entry)
         if len(target_obj["data_entries"]) > 50: target_obj["data_entries"].pop(0)
         
-        # Add value and increase Trust Index
-        value_added = random.randint(50000, 200000)
-        engine.add_value_bottom_up(path_list, value_added)
+        # Add value weighted by trust index
+        base_value = random.randint(50000, 200000)
+        effective_value = int(base_value * (trust_index / 100.0))
+        entry["effective_value"] = effective_value
         
-        # Update Trust Index locally
-        current_trust = target_obj["metadata"].get("trust_index", 50.0)
-        target_obj["metadata"]["trust_index"] = min(100.0, current_trust + 0.5)
+        engine.add_value_bottom_up(path_list, effective_value)
         
         # Broadcast to websockets
         import asyncio
-        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": value_added, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
+        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
-        return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": value_added}
+        return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": effective_value}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -381,23 +352,64 @@ async def delete_entry(path: str, hash_val: str):
             raise HTTPException(status_code=404, detail="Path not found")
             
         entries = target_obj.get("data_entries", [])
-        original_length = len(entries)
-        target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
         
-        if len(target_obj["data_entries"]) == original_length:
+        target_entry = next((e for e in entries if e.get("hash") == hash_val), None)
+        if not target_entry:
             raise HTTPException(status_code=404, detail="Entry not found")
             
-        # Rollback mechanics: Penalize trust and reduce values
-        target_obj["metadata"]["trust_index"] = max(0.0, target_obj["metadata"].get("trust_index", 50.0) - 2.0)
+        target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
         
-        # Roll-down value (approximate penalty)
-        penalty_value = -50000
+        # Roll-down value based on the entry's effective value
+        penalty_value = -target_entry.get("effective_value", 50000)
         engine.add_value_bottom_up(path_list, penalty_value)
         
         import asyncio
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
-        return {"status": "success", "message": "Data deleted and trust penalty applied."}
+        return {"status": "success", "message": "Data deleted and values rolled back."}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/demo/inject")
+async def demo_inject(path: str):
+    try:
+        path_list = [p for p in path.split("/") if p]
+        types = ["Gu", "Dong", "Street", "Store"]
+        target_obj = engine.create_or_get_path(path_list, types)
+        
+        mock_insights = [
+            {"date": "2026-04-05", "text": "가상 지능 분석: 주말 매출이 지난주 대비 15% 상승했습니다. 특히 아메리카노와 케이크 세트 메뉴의 반응이 좋습니다. 세트 메뉴 프로모션을 연장하는 것을 권장합니다.", "trust": 88.5},
+            {"date": "2026-04-07", "text": "가상 지능 분석: 원두 재고 소진 속도가 예상보다 빠릅니다. 내일까지 원두가 5kg 미만으로 떨어질 수 있으니, 즉시 인근 로스터리에서 비상 구매를 하거나 거래처에 긴급 배송을 요청하세요.", "trust": 92.0},
+            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 매장 전경 이미지를 스캔했습니다. 진열장 레이아웃이 깔끔하나, 간접 조명을 추가 배치하면 고객 체류 시간을 15% 더 늘릴 수 있습니다.", "trust": 95.5, "link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"}
+        ]
+        
+        total_effective_value = 0
+        for i, m in enumerate(mock_insights):
+            trust_index = m["trust"]
+            base_value = random.randint(50000, 200000)
+            effective_value = int(base_value * (trust_index / 100.0))
+            total_effective_value += effective_value
+            
+            entry = {
+                "timestamp": f"{m['date']} 14:0{i}",
+                "insights": m["text"],
+                "hash": hashlib.sha256(m["text"].encode()).hexdigest(),
+                "drive_link": m.get("link"),
+                "scope": "store_specific",
+                "trust_index": trust_index,
+                "raw_text": f"[{m['date']}] 사용자가 직접 입력한 모의 테스트 데이터입니다.",
+                "effective_value": effective_value
+            }
+            target_obj["data_entries"].append(entry)
+            
+        if len(target_obj["data_entries"]) > 50: target_obj["data_entries"].pop(0)
+        
+        engine.add_value_bottom_up(path_list, total_effective_value)
+        import asyncio
+        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": total_effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
+        
+        return {"status": "success"}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -470,14 +482,17 @@ async def get_personal_dashboard(path: str):
     # Get parent object to compare
     parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
     
+    entries = obj.get("data_entries", [])
+    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
+    
     return {
         "store": {
             "name": obj["name"],
             "total_value": obj["metadata"].get("total_value", 0),
             "pulse": obj["metadata"].get("pulse_rate", 0),
-            "trust_index": obj["metadata"].get("trust_index", 50.0),
+            "trust_index": round(avg_trust, 1),
             "history": obj["metadata"].get("history", []),
-            "entries": obj.get("data_entries", [])
+            "entries": entries
         },
         "parent": {
             "name": parent_obj["name"],
