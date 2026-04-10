@@ -157,8 +157,41 @@ def seed_initial_data(eng):
     types = ["Gu", "Dong", "Street", "Store"]
     
     # 1. Hardcoded Landmarks
-    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페"], types)
-    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페"], 250000)
+    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페 검증용"], types)
+    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페 검증용"], 250000)
+    
+    import hashlib
+    store_obj = eng.get_object(["북구", "산격동", "경대북문", "MDGA 카페 검증용"])
+    if store_obj:
+        mock_insights = [
+            {"date": "2026-04-05", "text": "가상 지능 분석: 주말 매출이 지난주 대비 15% 상승했습니다. 특히 아메리카노와 케이크 세트 메뉴의 반응이 좋습니다. 세트 메뉴 프로모션을 연장하는 것을 권장합니다."},
+            {"date": "2026-04-07", "text": "가상 지능 분석: 원두 재고 소진 속도가 예상보다 빠릅니다. 내일까지 원두가 5kg 미만으로 떨어질 수 있으니, 즉시 인근 로스터리에서 비상 구매를 하거나 거래처에 긴급 배송을 요청하세요."},
+            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 영수증을 스캔한 결과, 객단가가 12,000원 선으로 상권 평균(9,500원)보다 높습니다. 단골 고객의 재방문율이 높게 유지되고 있습니다."}
+        ]
+        for m in mock_insights:
+            store_obj["data_entries"].append({
+                "timestamp": f"{m['date']} 14:00",
+                "insights": m["text"],
+                "hash": hashlib.sha256(m["text"].encode()).hexdigest(),
+                "drive_link": None
+            })
+            
+    eng.create_or_get_path(["북구", "산격동", "경대북문", "MDGA 카페 최종"], types)
+    eng.add_value_bottom_up(["북구", "산격동", "경대북문", "MDGA 카페 최종"], 320000)
+    
+    store_obj2 = eng.get_object(["북구", "산격동", "경대북문", "MDGA 카페 최종"])
+    if store_obj2:
+        mock_insights2 = [
+            {"date": "2026-04-08", "text": "가상 지능 분석: 최근 유입된 인구(신규 오피스 입주)가 매출 상승의 주요 원인입니다. 점심 한정 세트 메뉴를 신설하여 직장인들의 객단가(AOV)를 높이는 전략을 추천합니다."},
+            {"date": "2026-04-09", "text": "가상 지능 분석 (비전): 업로드하신 매장 전경 이미지를 스캔했습니다. 진열장 레이아웃이 깔끔하나, 간접 조명을 추가 배치하면 고객 체류 시간을 15% 더 늘릴 수 있습니다."}
+        ]
+        for m in mock_insights2:
+            store_obj2["data_entries"].append({
+                "timestamp": f"{m['date']} 10:30",
+                "insights": m["text"],
+                "hash": hashlib.sha256(m["text"].encode()).hexdigest(),
+                "drive_link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"
+            })
     
     # 2. Fetch from Public/Mock API for dynamic seeding
     try:
