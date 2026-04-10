@@ -346,6 +346,9 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
             }
         
         return {"status": "success", "simulation": sim_data}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/dashboard/report")
 async def generate_weekly_report(path: str):
@@ -419,9 +422,6 @@ async def explore(path: str = ""):
         "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
         "entries": obj.get("data_entries", [])
     }
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
