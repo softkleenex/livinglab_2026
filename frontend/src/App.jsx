@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -125,6 +125,7 @@ function MainApp({ userContext, onLogout }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   
   const [showIngest, setShowIngest] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'personal' && userContext.role === 'store') {
@@ -245,7 +246,12 @@ function MainApp({ userContext, onLogout }) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI Consultings (보상)</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI Consultings (보상)</h3>
+                    <button onClick={() => setShowReport(true)} className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-colors uppercase">
+                      <FileText size={12} /> 주간 리포트 발행
+                    </button>
+                  </div>
                   {personalData.store.entries.length === 0 ? (
                     <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center">
                       <p className="text-sm text-slate-400">아직 입력된 데이터가 없습니다. 하이퍼 피딩을 통해 매장 데이터를 업로드하고 AI 컨설팅을 받아보세요.</p>
@@ -355,8 +361,8 @@ function MainApp({ userContext, onLogout }) {
       {/* Ingest Modal for Store */}
       <AnimatePresence>
         {showIngest && (
-          <IngestModal 
-            onClose={() => setShowIngest(false)} 
+          <IngestModal
+            onClose={() => setShowIngest(false)}
             onSuccess={() => {
               setShowIngest(false);
               if (activeTab === 'personal') fetchPersonal();
@@ -365,8 +371,13 @@ function MainApp({ userContext, onLogout }) {
             locationPath={userContext.location.join('/')}
           />
         )}
-      </AnimatePresence>
-      </div>
+        {showReport && (
+          <ReportModal
+            onClose={() => setShowReport(false)}
+            locationPath={userContext.location.join('/')}
+          />
+        )}
+      </AnimatePresence>      </div>
     </div>
   );
 }
@@ -598,5 +609,50 @@ const Badge = React.memo(({ label, icon, color }) => {
     </div>
   );
 });
+
+function ReportModal({ onClose, locationPath }) {
+  const [report, setReport] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/dashboard/report?path=${locationPath}`);
+        setReport(res.data.report);
+      } catch (err) {
+        setReport("리포트를 생성하지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReport();
+  }, [locationPath]);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[80vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative">
+        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] rounded-t-3xl shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-600 rounded-lg text-white"><FileText size={18}/></div>
+            <h3 className="text-base font-bold text-white uppercase">주간 경영 요약 뉴스레터</h3>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={20}/></button>
+        </div>
+        <div className="p-5 overflow-y-auto grow custom-scrollbar">
+          {loading ? (
+            <div className="py-10 flex flex-col items-center justify-center gap-4">
+              <RefreshCw className="animate-spin text-blue-500" size={32}/>
+              <p className="text-sm text-slate-400 font-medium">이번 주 데이터를 분석하여 보고서를 작성 중입니다...</p>
+            </div>
+          ) : (
+            <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
+              {report}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default App;

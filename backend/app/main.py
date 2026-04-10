@@ -347,6 +347,43 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
         
         return {"status": "success", "simulation": sim_data}
 
+@app.get("/api/dashboard/report")
+async def generate_weekly_report(path: str):
+    path_list = [p for p in path.split("/") if p]
+    obj = engine.get_object(path_list)
+    if not obj: raise HTTPException(status_code=404, detail="Store not found")
+    
+    entries = obj.get("data_entries", [])
+    if not entries:
+        return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 매장의 일상이나 영수증을 먼저 피딩(업로드)해 주세요!"}
+        
+    history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]])
+    
+    prompt = f"""
+    당신은 '{obj['name']}' 매장의 전담 최고경영자(CEO) 컨설턴트입니다.
+    이번 주 소상공인이 업로드한 데이터와 AI가 주었던 피드백 히스토리는 다음과 같습니다:
+    {history_text}
+    
+    이 내용을 바탕으로 소상공인에게 제공할 '주간 경영 요약 뉴스레터'를 작성해주세요.
+    형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
+    
+    [이번 주 요약]
+    ...
+    [칭찬할 점]
+    ...
+    [개선 및 주의할 점]
+    ...
+    [다음 주 핵심 액션 플랜]
+    ...
+    """
+    try:
+        res = model.generate_content(prompt)
+        report_text = res.text
+    except Exception as e:
+        report_text = "현재 AI 서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요."
+        
+    return {"status": "success", "report": report_text}
+
 @app.get("/api/dashboard/personal")
 async def get_personal_dashboard(path: str):
     path_list = [p for p in path.split("/") if p]
