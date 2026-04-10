@@ -262,6 +262,7 @@ async def get_personal_dashboard(path: str):
             "name": obj["name"],
             "total_value": obj["metadata"].get("total_value", 0),
             "pulse": obj["metadata"].get("pulse_rate", 0),
+            "trust_index": obj["metadata"].get("trust_index", 50.0),
             "history": obj["metadata"].get("history", []),
             "entries": obj.get("data_entries", [])
         },
@@ -339,24 +340,64 @@ async def ingest(
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
         
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
+        
+        # Scope definition (Store-specific vs Regional general)
+        scope = "store_specific" if len(path_list) >= 4 else "regional_general"
+        
         entry = {
             "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), 
             "insights": insights, 
             "hash": trust_hash, 
-            "drive_link": drive_link
+            "drive_link": drive_link,
+            "scope": scope
         }
         target_obj["data_entries"].append(entry)
         if len(target_obj["data_entries"]) > 50: target_obj["data_entries"].pop(0)
         
-        # Add value to the hierarchy (bottom-up aggregation)
+        # Add value and increase Trust Index
         value_added = random.randint(50000, 200000)
         engine.add_value_bottom_up(path_list, value_added)
+        
+        # Update Trust Index locally
+        current_trust = target_obj["metadata"].get("trust_index", 50.0)
+        target_obj["metadata"]["trust_index"] = min(100.0, current_trust + 0.5)
         
         # Broadcast to websockets
         import asyncio
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": value_added, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": value_added}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/ingest/delete")
+async def delete_entry(path: str, hash_val: str):
+    try:
+        path_list = [p for p in path.split("/") if p]
+        target_obj = engine.get_object(path_list)
+        
+        if not target_obj:
+            raise HTTPException(status_code=404, detail="Path not found")
+            
+        entries = target_obj.get("data_entries", [])
+        original_length = len(entries)
+        target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
+        
+        if len(target_obj["data_entries"]) == original_length:
+            raise HTTPException(status_code=404, detail="Entry not found")
+            
+        # Rollback mechanics: Penalize trust and reduce values
+        target_obj["metadata"]["trust_index"] = max(0.0, target_obj["metadata"].get("trust_index", 50.0) - 2.0)
+        
+        # Roll-down value (approximate penalty)
+        penalty_value = -50000
+        engine.add_value_bottom_up(path_list, penalty_value)
+        
+        import asyncio
+        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
+        
+        return {"status": "success", "message": "Data deleted and trust penalty applied."}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -434,6 +475,7 @@ async def get_personal_dashboard(path: str):
             "name": obj["name"],
             "total_value": obj["metadata"].get("total_value", 0),
             "pulse": obj["metadata"].get("pulse_rate", 0),
+            "trust_index": obj["metadata"].get("trust_index", 50.0),
             "history": obj["metadata"].get("history", []),
             "entries": obj.get("data_entries", [])
         },

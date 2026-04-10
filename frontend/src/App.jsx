@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -179,6 +179,17 @@ function MainApp({ userContext, onLogout }) {
     }
   }, [userContext.location]);
 
+  const handleDeleteEntry = async (hash) => {
+    if(!window.confirm("이 데이터를 삭제하시겠습니까? 신뢰 지수(Trust Index)가 하락할 수 있습니다.")) return;
+    try {
+      const pathStr = userContext.location.join('/');
+      await axios.delete(`${API_BASE_URL}/api/ingest/delete?path=${pathStr}&hash_val=${hash}`);
+      fetchPersonal(); // 리스트 즉시 새로고침
+    } catch(err) {
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
   const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
 
@@ -230,7 +241,10 @@ function MainApp({ userContext, onLogout }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
+                  <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-blue-600/20 text-blue-400 text-[9px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-blue-500/20 uppercase">
+                      Trust: {personalData.store.trust_index ? personalData.store.trust_index.toFixed(1) : 50.0}%
+                    </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">My Asset Value</p>
                     <motion.p key={personalData.store.total_value} initial={{ scale: 1.1, color: '#34d399' }} animate={{ scale: 1, color: '#34d399' }} className="text-2xl font-bold text-emerald-400">
                       ₩{personalData.store.total_value.toLocaleString()}
@@ -262,10 +276,20 @@ function MainApp({ userContext, onLogout }) {
                     </div>
                   ) : (
                     personalData.store.entries.map((entry, idx) => (
-                      <div key={idx} className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-md">
-                        <div className="flex items-center gap-2 mb-3">
-                          <BrainCircuit size={16} className="text-blue-500" />
-                          <span className="text-[10px] font-bold text-slate-400">{entry.timestamp}</span>
+                      <div key={idx} className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-md relative group">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2">
+                              <BrainCircuit size={16} className="text-blue-500" />
+                              <span className="text-[10px] font-bold text-slate-400">{entry.timestamp}</span>
+                            </div>
+                            <span className={`w-fit text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest ${entry.scope === 'store_specific' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                              {entry.scope === 'store_specific' ? 'My Store' : 'Public Data'}
+                            </span>
+                          </div>
+                          <button onClick={() => handleDeleteEntry(entry.hash)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all" title="데이터 삭제 (신뢰도 하락 경고)">
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                         <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-blue-600 pl-3">{entry.insights}</p>
                       </div>
