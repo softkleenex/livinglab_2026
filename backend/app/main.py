@@ -245,10 +245,16 @@ async def explore(path: str = ""):
     path_list = [p for p in path.split("/") if p] if path else []
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Path not found")
+    
+    entries = obj.get("data_entries", [])
+    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
+    
     return {
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
+        "total_value": obj["metadata"].get("total_value", 0),
+        "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
         "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
-        "entries": obj.get("data_entries", [])
+        "entries": entries
     }
 
 @app.post("/api/ingest")
@@ -507,10 +513,16 @@ async def explore(path: str = ""):
     path_list = [p for p in path.split("/") if p] if path else []
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Path not found")
+    
+    entries = obj.get("data_entries", [])
+    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
+    
     return {
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
+        "total_value": obj["metadata"].get("total_value", 0),
+        "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
         "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
-        "entries": obj.get("data_entries", [])
+        "entries": entries
     }
 
 if __name__ == "__main__":

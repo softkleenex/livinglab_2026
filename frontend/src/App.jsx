@@ -155,7 +155,7 @@ function Onboarding({ onComplete, googleUser }) {
   );
 }
 
-function MainApp({ userContext, onLogout }) {
+function MainApp({ userContext, googleUser, onLogout }) {
   const [currentPath, setCurrentPath] = useState(userContext.role === 'gov' ? [] : userContext.location.slice(1));
   const [explorerData, setExplorerData] = useState(null);
   const [personalData, setPersonalData] = useState(null);
@@ -166,6 +166,7 @@ function MainApp({ userContext, onLogout }) {
   
   const [showIngest, setShowIngest] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (activeTab === 'personal' && userContext.role === 'store') {
@@ -182,6 +183,18 @@ function MainApp({ userContext, onLogout }) {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'update') {
+        const storeName = data.path[data.path.length - 1];
+        const newNotif = {
+          id: Date.now(),
+          message: `${storeName}에서 새로운 데이터 피딩! (자산 +₩${data.value_added.toLocaleString()})`
+        };
+        setNotifications(prev => [newNotif, ...prev].slice(0, 3));
+        
+        // Auto remove notification after 4s
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
+        }, 4000);
+
         // Refetch to get the latest values when anyone updates
         if (activeTab === 'personal' && userContext.role === 'store') {
           fetchPersonal();
@@ -396,23 +409,30 @@ function MainApp({ userContext, onLogout }) {
 
                 {explorerData.children && explorerData.children.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes</h3>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes Leaderboard</h3>
                     <div className="grid grid-cols-1 gap-3">
-                      {explorerData.children.map(child => (
-                        <div key={child.name} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-4 rounded-2xl border border-slate-800/80 hover:border-blue-500/50 hover:bg-[#121A2A] cursor-pointer group transition-all flex items-center justify-between">
+                      {[...explorerData.children].sort((a, b) => b.pulse - a.pulse).map((child, idx) => (
+                        <div key={child.name} onClick={() => navigateTo(child.name)} className="bg-[#101725] p-4 rounded-2xl border border-slate-800/80 hover:border-blue-500/50 hover:bg-[#121A2A] cursor-pointer group transition-all flex items-center justify-between relative overflow-hidden">
+                          {idx === 0 && (
+                            <div className="absolute top-0 right-0 bg-rose-500 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-lg shadow-rose-500/20">
+                              Top Activity 🔥
+                            </div>
+                          )}
                           <div className="flex items-center gap-4">
                             <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors"><Folder size={20} /></div>
                             <div>
-                              <p className="text-base font-bold text-slate-200">{child.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-base font-bold text-slate-200">{child.name}</p>
+                              </div>
                               <p className="text-[10px] font-bold text-slate-500 uppercase mt-0.5 tracking-wider">{child.type} LEVEL</p>
                             </div>
                           </div>
                           <div className="text-right flex items-center gap-4">
-                            <div className="hidden sm:flex flex-col items-end gap-1">
+                            <div className="hidden sm:flex flex-col items-end gap-1 mt-2">
                                 <p className="text-[10px] text-slate-500 font-bold">ACTIVITY</p>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-bold text-emerald-400 uppercase">{child.pulse} BPM</span>
-                                  <Sparkline data={child.history} color="#10b981" width={40} height={15} />
+                                  <span className={`text-xs font-bold uppercase ${idx === 0 ? 'text-rose-400' : 'text-emerald-400'}`}>{child.pulse} BPM</span>
+                                  <Sparkline data={child.history} color={idx === 0 ? "#fb7185" : "#10b981"} width={40} height={15} />
                                 </div>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
@@ -482,7 +502,27 @@ function MainApp({ userContext, onLogout }) {
             locationPath={userContext.location.join('/')}
           />
         )}
-      </AnimatePresence>      </div>
+      </AnimatePresence>
+
+      {/* Global Notifications (Toasts) */}
+      <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none flex flex-col gap-2">
+        <AnimatePresence>
+          {notifications.map(notif => (
+            <motion.div
+              key={notif.id}
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-emerald-500/90 backdrop-blur-md text-white px-4 py-3 rounded-xl shadow-lg shadow-emerald-900/30 flex items-center gap-3"
+            >
+              <Zap size={18} className="shrink-0" />
+              <p className="text-[11px] font-bold tracking-wide break-keep">{notif.message}</p>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      </div>
     </div>
   );
 }
