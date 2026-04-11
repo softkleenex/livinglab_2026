@@ -415,15 +415,15 @@ function MainApp({ userContext, googleUser, onLogout }) {
                     <Badge label={`PULSE: ${explorerData.metadata.pulse_rate}BPM`} color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
                   </div>
                   <div className="flex items-center gap-3">
-                    {currentPath.length > (userContext.role==='gov'?0:userContext.location.length-1) && (
+                    {currentPath.length > 0 && (
                       <button onClick={goBack} className="p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-slate-300"><ArrowLeft size={20} /></button>
                     )}
                     <h2 className="text-3xl md:text-5xl font-black text-white uppercase break-keep leading-tight">{explorerData.current}</h2>
                   </div>
                   <div className="grid grid-cols-3 gap-4 pt-2">
-                    <BigStat label="Aggregated Value" value={`₩${(explorerData.metadata.total_value || 0).toLocaleString()}`} />
+                    <BigStat label="Aggregated Value" value={`₩${(explorerData.total_value || explorerData.metadata.total_value || 0).toLocaleString()}`} />
                     <BigStat label="Node Density" value={explorerData.metadata.nodes} />
-                    <BigStat label="Integrity" value={`${explorerData.metadata.trust_index || 0}%`} />
+                    <BigStat label="Integrity" value={`${explorerData.trust_index || explorerData.metadata.trust_index || 50.0}%`} />
                   </div>
                 </div>
 
