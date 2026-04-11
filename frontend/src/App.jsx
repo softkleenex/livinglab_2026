@@ -5,6 +5,8 @@ import {
   Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
@@ -15,16 +17,52 @@ const ROLES = [
 ];
 
 function App() {
+  const [googleUser, setGoogleUser] = useState(null);
   const [userContext, setUserContext] = useState(null); // { role, industry, location: [] }
   
-  if (!userContext) {
-    return <Onboarding onComplete={setUserContext} />;
+  if (!googleUser) {
+    return <GoogleLoginScreen onLogin={setGoogleUser} />;
   }
 
-  return <MainApp userContext={userContext} onLogout={() => setUserContext(null)} />;
+  if (!userContext) {
+    return <Onboarding onComplete={setUserContext} googleUser={googleUser} />;
+  }
+
+  return <MainApp userContext={userContext} googleUser={googleUser} onLogout={() => {setUserContext(null); setGoogleUser(null);}} />;
 }
 
-function Onboarding({ onComplete }) {
+function GoogleLoginScreen({ onLogin }) {
+  return (
+    <div className="min-h-screen bg-[#0A0F1A] text-slate-200 flex flex-col items-center justify-center p-4 selection:bg-blue-500/30">
+      <div className="max-w-md w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-10 shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
+        <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={150}/></div>
+        <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-900/50">
+          <Radar size={32} className="text-white" />
+        </div>
+        <h1 className="text-3xl font-black text-white mb-2 relative z-10 tracking-tight">MDGA</h1>
+        <p className="text-slate-400 mb-8 text-xs relative z-10 uppercase tracking-widest font-bold">Universal Data Engine</p>
+        
+        <div className="w-full bg-[#101725] p-6 rounded-2xl border border-slate-800 mb-6 relative z-10 flex flex-col items-center">
+          <p className="text-xs text-slate-500 mb-6 font-bold uppercase tracking-wider">구글 계정으로 간편 시작</p>
+          <GoogleLogin
+            onSuccess={credentialResponse => {
+              const decoded = jwtDecode(credentialResponse.credential);
+              onLogin(decoded);
+            }}
+            onError={() => {
+              console.log('Login Failed');
+            }}
+            theme="filled_black"
+            shape="pill"
+          />
+        </div>
+        <p className="text-[10px] text-slate-600 relative z-10 font-medium">별도의 회원가입 없이 기존 구글 계정으로 연동됩니다.</p>
+      </div>
+    </div>
+  );
+}
+
+function Onboarding({ onComplete, googleUser }) {
   const [role, setRole] = useState('');
   const [industry, setIndustry] = useState('');
   const [locGu, setLocGu] = useState('');
@@ -228,9 +266,14 @@ function MainApp({ userContext, onLogout }) {
             <div className="p-1.5 bg-blue-600 rounded-lg shadow-md"><Radar size={16} className="text-white"/></div>
             <span className="text-sm font-black text-white tracking-wider">MDGA</span>
           </div>
-          <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            {googleUser?.picture && (
+              <img src={googleUser.picture} alt="profile" className="w-6 h-6 rounded-full border border-slate-700" />
+            )}
+            <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+              Logout
+            </button>
+          </div>
         </header>
 
         {/* Path Breadcrumbs */}
