@@ -45,26 +45,34 @@ function GoogleLoginScreen({ onLogin }) {
         
         <div className="w-full bg-[#101725] p-6 rounded-2xl border border-slate-800 mb-6 relative z-10 flex flex-col items-center">
           <p className="text-xs text-slate-500 mb-6 font-bold uppercase tracking-wider">구글 계정으로 간편 시작</p>
-          <GoogleLogin
-            onSuccess={credentialResponse => {
-              const decoded = jwtDecode(credentialResponse.credential);
-              onLogin(decoded);
-            }}
-            onError={() => {
-              console.log('Login Failed');
-            }}
-            theme="filled_black"
-            shape="pill"
-          />
+          <div className="w-full flex flex-col items-center gap-3">
+            <GoogleLogin
+              onSuccess={credentialResponse => {
+                const decoded = jwtDecode(credentialResponse.credential);
+                onLogin({ ...decoded, isGuest: false });
+              }}
+              onError={() => {
+                console.log('Login Failed');
+              }}
+              theme="filled_black"
+              shape="pill"
+            />
+            <div className="w-full border-t border-slate-800 my-2 relative">
+              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#101725] px-2 text-[10px] text-slate-500 font-bold uppercase">or</span>
+            </div>
+            <button onClick={() => onLogin({ name: 'Guest User', isGuest: true })} className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full font-bold text-xs transition-colors border border-slate-700">
+              구글 계정 없이 게스트로 둘러보기
+            </button>
+          </div>
         </div>
-        <p className="text-[10px] text-slate-600 relative z-10 font-medium">별도의 회원가입 없이 기존 구글 계정으로 연동됩니다.</p>
+        <p className="text-[10px] text-slate-600 relative z-10 font-medium">별도의 회원가입 없이 기존 구글 계정으로 연동됩니다.<br/>(게스트 모드 시 데이터 신뢰도 가중치 하락)</p>
       </div>
     </div>
   );
 }
 
 function Onboarding({ onComplete, googleUser }) {
-  const [levelId, setLevelId] = useState('');
+  const [levelId, setLevelId] = useState(googleUser?.isGuest ? '' : 'store');
   const [industry, setIndustry] = useState('');
   const [locGu, setLocGu] = useState('');
   const [locDong, setLocDong] = useState('');
@@ -88,7 +96,7 @@ function Onboarding({ onComplete, googleUser }) {
       await axios.post(`${API_BASE_URL}/api/user/context`, {
         role: selectedLevel.role, industry: industry || '공공', location
       });
-      onComplete({ role: selectedLevel.role, industry, location });
+      onComplete({ role: selectedLevel.role, industry, location, isGuest: googleUser?.isGuest || false });
     } catch (err) {
       alert('초기화 실패. 서버 연결을 확인하세요.');
     } finally {
@@ -101,7 +109,13 @@ function Onboarding({ onComplete, googleUser }) {
       <div className="max-w-2xl w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
         <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
-        <p className="text-slate-400 mb-8 relative z-10">원활한 맞춤형 지능형 분석을 위해 현재 당신이 해당하는 객체 단위를 설정합니다.</p>
+        <p className="text-slate-400 mb-8 relative z-10">
+          {!googleUser?.isGuest ? (
+            <span className="text-emerald-400 font-bold">✨ 구글 공식 인증된 사업자(Store) 모드로 자동 설정됩니다. 다른 단위도 선택 가능합니다.</span>
+          ) : (
+            <span className="text-orange-400 font-bold">⚠️ 게스트 모드로 진입 중입니다. 매장(Store) 데이터 업로드 시 신뢰도 패널티가 적용됩니다.</span>
+          )}
+        </p>
         
         <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
           <div className="space-y-4">
@@ -110,7 +124,9 @@ function Onboarding({ onComplete, googleUser }) {
               {LEVELS.map(l => (
                 <div key={l.id} onClick={() => setLevelId(l.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${levelId === l.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
                   <div className="mb-3 text-blue-400">{l.icon}</div>
-                  <div className="font-bold mb-1 text-sm">{l.name}</div>
+                  <div className="font-bold mb-1 text-sm flex items-center gap-1">
+                    {l.name} {l.id === 'store' && !googleUser?.isGuest && <ShieldCheck size={12} className="text-emerald-400" title="공식 인증" />}
+                  </div>
                   <div className="text-[10px] opacity-70 break-keep">{l.desc}</div>
                 </div>
               ))}
@@ -282,9 +298,13 @@ function MainApp({ userContext, googleUser, onLogout }) {
             <span className="text-sm font-black text-white tracking-wider">MDGA</span>
           </div>
           <div className="flex items-center gap-3">
-            {googleUser?.picture && (
-              <img src={googleUser.picture} alt="profile" className="w-6 h-6 rounded-full border border-slate-700" />
-            )}
+            {googleUser?.isGuest ? (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full border border-orange-500/30 text-[10px] font-bold">
+                <span>Guest</span>
+              </div>
+            ) : googleUser?.picture ? (
+              <img src={googleUser.picture} alt="profile" className="w-6 h-6 rounded-full border border-emerald-500/50 shadow-sm shadow-emerald-500/20" />
+            ) : null}
             <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
               Logout
             </button>
@@ -487,6 +507,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
       <AnimatePresence>
         {showIngest && (
           <IngestModal
+            isGuest={googleUser?.isGuest}
             onClose={() => setShowIngest(false)}
             onSuccess={() => {
               setShowIngest(false);
@@ -527,7 +548,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
   );
 }
 
-function IngestModal({ onClose, onSuccess, locationPath }) {
+function IngestModal({ isGuest, onClose, onSuccess, locationPath }) {
   const [rawText, setRawText] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -551,6 +572,7 @@ function IngestModal({ onClose, onSuccess, locationPath }) {
     if (rawText) formData.append('raw_text', rawText);
     if (file) formData.append('file', file);
     formData.append('location', locationPath);
+    if (isGuest) formData.append('is_guest', 'true');
     
     try {
       const response = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
@@ -573,6 +595,11 @@ function IngestModal({ onClose, onSuccess, locationPath }) {
         <div className="p-5 space-y-4">
           {!res ? (
             <>
+              {isGuest ? (
+                <p className="text-xs text-orange-400 text-center font-bold">⚠️ 게스트 모드: 업로드되는 데이터는 신뢰도 가중치에서 패널티를 받습니다.</p>
+              ) : (
+                <p className="text-xs text-emerald-400 text-center font-bold">✨ 구글 공식 인증 계정: 업로드 데이터에 높은 신뢰도 가중치가 부여됩니다.</p>
+              )}
               <p className="text-xs text-slate-400 text-center">텍스트는 물론, 매장의 전경이나 영수증을 업로드하면 Vision AI가 분석하여 자산화합니다.</p>
               
               {preview && (

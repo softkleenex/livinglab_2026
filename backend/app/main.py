@@ -261,12 +261,14 @@ async def explore(path: str = ""):
 async def ingest(
     raw_text: str = Form(None), 
     file: UploadFile = File(None),
-    location: str = Form(...) # e.g. "북구/산격동/경북대 북문/테스트상점"
+    location: str = Form(...), # e.g. "북구/산격동/경북대 북문/테스트상점"
+    is_guest: str = Form("false")
 ):
     try:
         content = raw_text if raw_text else ""
         path_list = [p for p in location.split("/") if p]
         drive_link = None
+        is_guest_bool = is_guest.lower() == "true"
         
         if file: 
             content += f"\n[Attached File] {file.filename}"
@@ -316,8 +318,13 @@ async def ingest(
         # Scope definition (Store-specific vs Regional general)
         scope = "store_specific" if len(path_list) >= 4 else "regional_general"
         
-        # Trust Index assignment to the individual data entry
-        base_trust = 85.0 if file else 70.0
+        # Trust Index assignment based on guest status
+        if is_guest_bool:
+            base_trust = 40.0 if file else 30.0
+            insights = "[⚠️ 게스트 모드] " + insights
+        else:
+            base_trust = 85.0 if file else 75.0
+            
         trust_index = round(base_trust + random.uniform(0.0, 14.9), 1)
         
         entry = {
