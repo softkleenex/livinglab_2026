@@ -391,39 +391,39 @@ function MainApp({ userContext, googleUser, onLogout }) {
                     <Badge label="STORE LEVEL" color="bg-blue-600/10 text-blue-400 border-blue-500/20" />
                     <h2 className="text-3xl md:text-5xl font-black text-white">{personalData.store.name}</h2>
                     <p className="text-slate-400 text-sm">
-                      {(userContext.industry === '스마트팜' || userContext.industry === '농업') 
-                        ? '스마트팜 전용 생산/출고/매출 통합 관리 대시보드' 
+                      {(userContext.industry && userContext.industry !== '공공') 
+                        ? `[${userContext.industry}] 전용 비즈니스 통합 관리 대시보드` 
                         : '내 매장 현황 및 데이터 자산화 보상 분석'}
                     </p>
                   </div>
                 </div>
 
-                {/* Smart Farm Specific Dashboard */}
-                {(userContext.industry === '스마트팜' || userContext.industry === '농업') ? (
+                {/* B2B / General Industry Specific Dashboard */}
+                {(userContext.industry && userContext.industry !== '공공') ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden">
                         <div className="absolute top-0 right-0 bg-blue-600/20 text-blue-400 text-[9px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-blue-500/20 uppercase">
                           Trust: {personalData.store.trust_index ? personalData.store.trust_index.toFixed(1) : 50.0}%
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1"><TrendingUp size={12}/> 일간 매출 금액</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1"><TrendingUp size={12}/> 일간 주요 실적 (매출/생산)</p>
                         <motion.p key={personalData.store.total_value} initial={{ scale: 1.1, color: '#34d399' }} animate={{ scale: 1, color: '#34d399' }} className="text-2xl font-bold text-emerald-400">
                           ₩{(personalData.store.total_value * 2.5).toLocaleString()}
                         </motion.p>
-                        <p className="text-[10px] text-slate-500 mt-2">전일 대비 +4.2%</p>
+                        <p className="text-[10px] text-slate-500 mt-2">상권/산업 평균: ₩{personalData.parent.avg_value.toLocaleString()}</p>
                       </div>
                       <div className="bg-[#101725] p-5 rounded-2xl border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)] relative">
                         <div className="absolute top-0 right-0 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-emerald-500/20 uppercase">
                           AI Predicted
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1"><Database size={12}/> 익월 추천 파종량</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1"><Database size={12}/> 익월 AI 추천/예측 지표</p>
                         <div className="flex items-end gap-3">
                           <motion.p key={personalData.store.pulse} initial={{ scale: 1.5, color: '#10b981' }} animate={{ scale: 1, color: '#10b981' }} className="text-2xl font-bold text-white">
-                            15,400 주
+                            +{(personalData.store.pulse * 1.5).toFixed(0)}% 성장
                           </motion.p>
                           <Sparkline data={personalData.store.history.map(v => v * 1.2)} color="#10b981" />
                         </div>
-                        <p className="text-[10px] text-emerald-500 mt-2 font-bold flex items-center gap-1">연평균 판매 데이터 분석 완료</p>
+                        <p className="text-[10px] text-emerald-500 mt-2 font-bold flex items-center gap-1">업계 트렌드 및 기상/환경 분석 완료</p>
                       </div>
                     </div>
                     
@@ -437,18 +437,18 @@ function MainApp({ userContext, googleUser, onLogout }) {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <button className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer">
                           <FileText size={24} className="text-slate-400" />
-                          <span className="text-xs font-bold text-slate-300">수기 영농일지 연동</span>
+                          <span className="text-xs font-bold text-slate-300">현장/수기 일지 연동</span>
                           <span className="text-[9px] text-slate-500">스마트폰 사진/텍스트 추출</span>
                         </button>
                         <button className="flex flex-col items-center justify-center gap-2 p-4 bg-blue-900/10 hover:bg-blue-900/20 border border-blue-900/30 hover:border-blue-500/50 rounded-xl transition-all cursor-pointer">
                           <Users size={24} className="text-blue-400" />
-                          <span className="text-xs font-bold text-blue-300">쇼핑몰 (토글) 연동</span>
-                          <span className="text-[9px] text-blue-500/70">일별 주문 데이터 (연동됨)</span>
+                          <span className="text-xs font-bold text-blue-300">주문/플랫폼 연동</span>
+                          <span className="text-[9px] text-blue-500/70">일별 주문/예약 데이터</span>
                         </button>
                         <button className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer">
                           <Upload size={24} className="text-slate-400" />
-                          <span className="text-xs font-bold text-slate-300">택배사 API 연동</span>
-                          <span className="text-[9px] text-slate-500">실제 출고량 크롤링</span>
+                          <span className="text-xs font-bold text-slate-300">외부 API / 출고 연동</span>
+                          <span className="text-[9px] text-slate-500">물류/택배사 상태 크롤링</span>
                         </button>
                       </div>
                     </div>
@@ -1016,7 +1016,8 @@ function ReportModal({ onClose, locationPath, userContext }) {
   const [report, setReport] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const isSmartFarm = userContext?.industry === '스마트팜' || userContext?.industry === '농업';
+  const isB2B = userContext?.industry && userContext?.industry !== '공공';
+  const industryName = userContext?.industry || '비즈니스';
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -1030,13 +1031,13 @@ function ReportModal({ onClose, locationPath, userContext }) {
       }
     };
     fetchReport();
-  }, [locationPath, isSmartFarm]);
+  }, [locationPath, isB2B, userContext?.industry]);
 
   const handleDownload = () => {
     const element = document.createElement("a");
     const file = new Blob([report], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = isSmartFarm ? `SmartFarm_AI_Report_${new Date().toISOString().split('T')[0]}.txt` : `MDGA_주간_경영_리포트_${new Date().toISOString().split('T')[0]}.txt`;
+    element.download = isB2B ? `${industryName}_AI_Report_${new Date().toISOString().split('T')[0]}.txt` : `MDGA_주간_경영_리포트_${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -1047,15 +1048,15 @@ function ReportModal({ onClose, locationPath, userContext }) {
       <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[80vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative">
         <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] rounded-t-3xl shrink-0">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg text-white ${isSmartFarm ? 'bg-emerald-600' : 'bg-blue-600'}`}><FileText size={18}/></div>
-            <h3 className="text-base font-bold text-white uppercase">{isSmartFarm ? 'AI 파종량 추천 분석 리포트' : '주간 경영 요약 뉴스레터'}</h3>
+            <div className={`p-2 rounded-lg text-white ${isB2B ? 'bg-emerald-600' : 'bg-blue-600'}`}><FileText size={18}/></div>
+            <h3 className="text-base font-bold text-white uppercase">{isB2B ? `AI ${industryName} 데이터 분석 리포트` : '주간 경영 요약 뉴스레터'}</h3>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={20}/></button>
         </div>
         <div className="p-5 overflow-y-auto grow custom-scrollbar">
           {loading ? (
             <div className="py-10 flex flex-col items-center justify-center gap-4">
-              <RefreshCw className={`animate-spin ${isSmartFarm ? 'text-emerald-500' : 'text-blue-500'}`} size={32}/>
+              <RefreshCw className={`animate-spin ${isB2B ? 'text-emerald-500' : 'text-blue-500'}`} size={32}/>
               <p className="text-sm text-slate-400 font-medium">이번 주 데이터를 분석하여 보고서를 작성 중입니다...</p>
             </div>
           ) : (
@@ -1065,7 +1066,7 @@ function ReportModal({ onClose, locationPath, userContext }) {
               </div>
               <button 
                 onClick={handleDownload}
-                className={`w-full py-3 border rounded-xl font-bold text-sm transition-colors flex justify-center items-center gap-2 mt-auto shrink-0 ${isSmartFarm ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white' : 'bg-blue-600/20 text-blue-400 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
+                className={`w-full py-3 border rounded-xl font-bold text-sm transition-colors flex justify-center items-center gap-2 mt-auto shrink-0 ${isB2B ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white' : 'bg-blue-600/20 text-blue-400 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
               >
                 <Download size={16} /> 리포트 텍스트 파일로 저장
               </button>

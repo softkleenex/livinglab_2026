@@ -483,47 +483,31 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
         
     history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]])
     
-    if industry in ["스마트팜", "농업"]:
-        # Fetch real weather data based on the node's location or default Daegu coords
-        location = obj.get("metadata", {}).get("location", [35.8714, 128.6014])
-        weather_info = await get_weather_forecast(location[0], location[1])
+    # Fetch real weather data generically, useful for many industries (e.g. F&B, Agriculture, Tourism)
+    location = obj.get("metadata", {}).get("location", [35.8714, 128.6014])
+    weather_info = await get_weather_forecast(location[0], location[1])
 
-        prompt = f"""
-        당신은 '{obj['name']}' 스마트팜/농장의 전문 AI 농업 컨설턴트입니다.
-        이번 주 운영자가 업로드한 데이터(영농일지/출고량)와 AI 피드백 히스토리는 다음과 같습니다:
-        {history_text}
-        
-        [실시간 기상청/Open-Meteo 연동 데이터]: {weather_info}
-        
-        이 내용을 바탕으로 스마트팜 운영자에게 제공할 'AI 데이터 분석 및 재배량 추천 리포트'를 작성해주세요.
-        형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
-        
-        [현재 생산/출고 동향 요약]
-        ...
-        [익월 파종/재배 추천량 및 근거]
-        (구체적인 추천 수치와 기후({weather_info})/트렌드 예측을 포함한 논리적 근거)
-        ...
-        [다음 주 핵심 액션 플랜]
-        ...
-        """
-    else:
-        prompt = f"""
-        당신은 '{obj['name']}' 매장의 전담 최고경영자(CEO) 컨설턴트입니다.
-        이번 주 소상공인이 업로드한 데이터와 AI가 주었던 피드백 히스토리는 다음과 같습니다:
-        {history_text}
-        
-        이 내용을 바탕으로 소상공인에게 제공할 '주간 경영 요약 뉴스레터'를 작성해주세요.
-        형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
-        
-        [이번 주 요약]
-        ...
-        [칭찬할 점]
-        ...
-        [개선 및 주의할 점]
-        ...
-        [다음 주 핵심 액션 플랜]
-        ...
-        """
+    prompt = f"""
+    당신은 '{obj['name']}' 매장/기업의 전담 최고경영자(CEO) 컨설턴트입니다.
+    대상 산업군(Industry)은 '{industry}'입니다. 반드시 이 산업군의 특성(예: 요식업이면 재고/방문객, 제조업/스마트팜이면 생산량/출고량, 도소매면 재고/유통 등)에 맞춰 리포트를 작성해야 합니다.
+    
+    이번 주 운영자가 업로드한 데이터(영수증, 장부, 영농일지 등)와 AI 피드백 히스토리는 다음과 같습니다:
+    {history_text}
+    
+    [실시간 기상청/Open-Meteo 연동 데이터]: {weather_info}
+    기상 데이터가 해당 산업에 미칠 영향(예: 비가 오면 배달 증가, 기온이 오르면 작물 생장 촉진 또는 냉방비 증가 등)을 분석에 포함하세요.
+    
+    이 내용을 바탕으로 운영자에게 제공할 'AI 데이터 분석 및 주간 경영/생산 리포트'를 작성해주세요.
+    형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
+    
+    [{industry} 산업 맞춤형 주간 요약]
+    ...
+    [데이터 기반 핵심 분석 및 인사이트]
+    (산업 특성에 맞는 구체적인 수치 예측과 기후({weather_info})/트렌드를 포함한 논리적 근거 제시)
+    ...
+    [다음 주 핵심 액션 플랜]
+    ...
+    """
     try:
         res = model.generate_content(prompt)
         report_text = res.text
