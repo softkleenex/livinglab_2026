@@ -20,7 +20,7 @@ echo "☁️ 2단계: Cloudflare Pages 배포 시작..."
 echo "==============================================="
 
 # npx wrangler pages deploy [디렉토리] [--project-name=...]
-npx wrangler pages deploy dist --project-name=livinglab-2026
+npx wrangler pages deploy dist --project-name=mdga-2026
 
 if [ $? -eq 0 ]; then
     echo "==============================================="
