@@ -114,6 +114,8 @@ class HierarchyEngine:
         curr["metadata"]["nodes"] += 1
         for i, p in enumerate(path_list):
             if p not in curr["children"]:
+                lat = 35.8714 + random.uniform(-0.05, 0.05)
+                lng = 128.6014 + random.uniform(-0.05, 0.05)
                 curr["children"][p] = {
                     "name": p, "type": types_list[i] if i < len(types_list) else "Node",
                     "metadata": {
@@ -121,7 +123,8 @@ class HierarchyEngine:
                         "nodes": 1, 
                         "pulse_rate": random.randint(65, 90), 
                         "total_value": 0,
-                        "history": [random.randint(60, 80) for _ in range(5)]
+                        "history": [random.randint(60, 80) for _ in range(5)],
+                        "location": [lat, lng]
                     },
                     "children": {}, "data_entries": []
                 }
@@ -253,7 +256,7 @@ async def explore(path: str = ""):
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
         "total_value": obj["metadata"].get("total_value", 0),
         "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
-        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
+        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
         "entries": entries
     }
 
@@ -449,8 +452,27 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+import httpx
+
+async def get_weather_forecast(lat: float, lng: float) -> str:
+    try:
+        # Open-Meteo API (No key required)
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=7"
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=5.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                max_temps = data['daily']['temperature_2m_max']
+                precip = data['daily']['precipitation_sum']
+                avg_max = sum(max_temps) / len(max_temps)
+                total_precip = sum(precip)
+                return f"향후 7일 평균 최고기온 {avg_max:.1f}°C, 총 강수량 {total_precip:.1f}mm 예상."
+            return "기상 데이터 수집 지연."
+    except Exception as e:
+        return "기상 데이터 API 오류."
+
 @app.get("/api/dashboard/report")
-async def generate_weekly_report(path: str):
+async def generate_weekly_report(path: str, industry: str = "공공"):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found")
@@ -461,23 +483,47 @@ async def generate_weekly_report(path: str):
         
     history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]])
     
-    prompt = f"""
-    당신은 '{obj['name']}' 매장의 전담 최고경영자(CEO) 컨설턴트입니다.
-    이번 주 소상공인이 업로드한 데이터와 AI가 주었던 피드백 히스토리는 다음과 같습니다:
-    {history_text}
-    
-    이 내용을 바탕으로 소상공인에게 제공할 '주간 경영 요약 뉴스레터'를 작성해주세요.
-    형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
-    
-    [이번 주 요약]
-    ...
-    [칭찬할 점]
-    ...
-    [개선 및 주의할 점]
-    ...
-    [다음 주 핵심 액션 플랜]
-    ...
-    """
+    if industry in ["스마트팜", "농업"]:
+        # Fetch real weather data based on the node's location or default Daegu coords
+        location = obj.get("metadata", {}).get("location", [35.8714, 128.6014])
+        weather_info = await get_weather_forecast(location[0], location[1])
+
+        prompt = f"""
+        당신은 '{obj['name']}' 스마트팜/농장의 전문 AI 농업 컨설턴트입니다.
+        이번 주 운영자가 업로드한 데이터(영농일지/출고량)와 AI 피드백 히스토리는 다음과 같습니다:
+        {history_text}
+        
+        [실시간 기상청/Open-Meteo 연동 데이터]: {weather_info}
+        
+        이 내용을 바탕으로 스마트팜 운영자에게 제공할 'AI 데이터 분석 및 재배량 추천 리포트'를 작성해주세요.
+        형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
+        
+        [현재 생산/출고 동향 요약]
+        ...
+        [익월 파종/재배 추천량 및 근거]
+        (구체적인 추천 수치와 기후({weather_info})/트렌드 예측을 포함한 논리적 근거)
+        ...
+        [다음 주 핵심 액션 플랜]
+        ...
+        """
+    else:
+        prompt = f"""
+        당신은 '{obj['name']}' 매장의 전담 최고경영자(CEO) 컨설턴트입니다.
+        이번 주 소상공인이 업로드한 데이터와 AI가 주었던 피드백 히스토리는 다음과 같습니다:
+        {history_text}
+        
+        이 내용을 바탕으로 소상공인에게 제공할 '주간 경영 요약 뉴스레터'를 작성해주세요.
+        형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
+        
+        [이번 주 요약]
+        ...
+        [칭찬할 점]
+        ...
+        [개선 및 주의할 점]
+        ...
+        [다음 주 핵심 액션 플랜]
+        ...
+        """
     try:
         res = model.generate_content(prompt)
         report_text = res.text
@@ -528,7 +574,7 @@ async def explore(path: str = ""):
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
         "total_value": obj["metadata"].get("total_value", 0),
         "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
-        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", [])} for k, v in obj["children"].items() ],
+        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
         "entries": entries
     }
 
