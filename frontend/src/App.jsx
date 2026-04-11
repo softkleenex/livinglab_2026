@@ -10,10 +10,11 @@ import { jwtDecode } from "jwt-decode";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-const ROLES = [
-  { id: 'store', name: '소상공인 (Store Level)', icon: <Store size={24}/>, desc: '내 매장 데이터 분석 및 피딩' },
-  { id: 'leader', name: '상권 리더 (Street/Dong)', icon: <Users size={24}/>, desc: '관할 상권 트렌드 및 지표' },
-  { id: 'gov', name: '정책 담당자 (Gu/City)', icon: <Building2 size={24}/>, desc: '디지털 트윈 맵 및 정책 시뮬레이션' }
+const LEVELS = [
+  { id: 'store', role: 'store', name: '가게 (Store)', icon: <Store size={24}/>, desc: '매출, 가게 정보, 리뷰 등 내 매장 데이터' },
+  { id: 'street', role: 'leader', name: '거리 (Street)', icon: <Map size={24}/>, desc: '해당 거리 내 사업자들의 취합 데이터' },
+  { id: 'dong', role: 'leader', name: '동 (Dong)', icon: <Users size={24}/>, desc: '거리 데이터들의 집합 (동 단위 트렌드)' },
+  { id: 'gu', role: 'gov', name: '구 (Gu)', icon: <Building2 size={24}/>, desc: '동 데이터들의 집합 (구별 산업 특성)' }
 ];
 
 function App() {
@@ -63,7 +64,7 @@ function GoogleLoginScreen({ onLogin }) {
 }
 
 function Onboarding({ onComplete, googleUser }) {
-  const [role, setRole] = useState('');
+  const [levelId, setLevelId] = useState('');
   const [industry, setIndustry] = useState('');
   const [locGu, setLocGu] = useState('');
   const [locDong, setLocDong] = useState('');
@@ -73,20 +74,21 @@ function Onboarding({ onComplete, googleUser }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!role) return alert('역할을 선택해주세요.');
+    if (!levelId) return alert('객체 단위를 선택해주세요.');
     
+    const selectedLevel = LEVELS.find(l => l.id === levelId);
     let location = ['대구광역시'];
     if (locGu) location.push(locGu);
     if (locDong) location.push(locDong);
     if (locStreet) location.push(locStreet);
-    if (role === 'store' && locStore) location.push(locStore);
+    if (levelId === 'store' && locStore) location.push(locStore);
 
     setLoading(true);
     try {
       await axios.post(`${API_BASE_URL}/api/user/context`, {
-        role, industry: industry || '공공', location
+        role: selectedLevel.role, industry: industry || '공공', location
       });
-      onComplete({ role, industry, location });
+      onComplete({ role: selectedLevel.role, industry, location });
     } catch (err) {
       alert('초기화 실패. 서버 연결을 확인하세요.');
     } finally {
@@ -99,26 +101,26 @@ function Onboarding({ onComplete, googleUser }) {
       <div className="max-w-2xl w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
         <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
-        <p className="text-slate-400 mb-8 relative z-10">원활한 맞춤형 지능형 분석을 위해 역할을 설정합니다.</p>
+        <p className="text-slate-400 mb-8 relative z-10">원활한 맞춤형 지능형 분석을 위해 현재 당신이 해당하는 객체 단위를 설정합니다.</p>
         
         <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">1. Select Persona</label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {ROLES.map(r => (
-                <div key={r.id} onClick={() => setRole(r.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${role === r.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
-                  <div className="mb-3 text-blue-400">{r.icon}</div>
-                  <div className="font-bold mb-1 text-sm">{r.name}</div>
-                  <div className="text-[10px] opacity-70 break-keep">{r.desc}</div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">1. Select Target Object</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {LEVELS.map(l => (
+                <div key={l.id} onClick={() => setLevelId(l.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${levelId === l.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+                  <div className="mb-3 text-blue-400">{l.icon}</div>
+                  <div className="font-bold mb-1 text-sm">{l.name}</div>
+                  <div className="text-[10px] opacity-70 break-keep">{l.desc}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <AnimatePresence>
-            {role && (
+            {levelId && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6">
-                {role === 'store' && (
+                {levelId === 'store' && (
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry (산업군)</label>
                     <input required placeholder="예: 요식업, 카페, 도소매" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
@@ -129,13 +131,13 @@ function Onboarding({ onComplete, googleUser }) {
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Location Definition</label>
                   <div className="grid grid-cols-2 gap-4">
                     <input required placeholder="구 (예: 북구)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
-                    {(role === 'store' || role === 'leader') && (
+                    {(levelId === 'store' || levelId === 'street' || levelId === 'dong') && (
                       <input required placeholder="동 (예: 산격동)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
                     )}
-                    {(role === 'store' || role === 'leader') && (
-                      <input required={role==='store'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    {(levelId === 'store' || levelId === 'street') && (
+                      <input required={levelId==='store' || levelId==='street'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
                     )}
-                    {role === 'store' && (
+                    {levelId === 'store' && (
                       <input required placeholder="매장명 (예: MDGA 카페)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
                     )}
                   </div>
@@ -144,7 +146,7 @@ function Onboarding({ onComplete, googleUser }) {
             )}
           </AnimatePresence>
 
-          <button type="submit" disabled={!role || loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
+          <button type="submit" disabled={!levelId || loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
             {loading ? <RefreshCw className="animate-spin" size={18}/> : "Enter Workspace"}
           </button>
         </form>
