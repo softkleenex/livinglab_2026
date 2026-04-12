@@ -161,6 +161,28 @@ async def explore(path: str = ""):
         "entries": entries
     }
 
+@app.get("/api/agora/feed")
+async def get_agora_feed(db: Session = Depends(get_db)):
+    try:
+        entries = db.query(DataEntry).order_by(DataEntry.created_at.desc()).limit(20).all()
+        feed = []
+        for e in entries:
+            # Anonymize store name by taking only Gu/Dong
+            path_parts = e.location_path.split("/")
+            anon_location = f"{path_parts[1]} {path_parts[2]}" if len(path_parts) >= 3 else "대구광역시 익명"
+            feed.append({
+                "id": e.id,
+                "location": anon_location,
+                "industry": e.industry,
+                "insights": e.insights,
+                "timestamp": str(e.created_at.strftime("%Y-%m-%d %H:%M")),
+                "trust_index": e.trust_index,
+                "likes": random.randint(5, 150)
+            })
+        return {"status": "success", "feed": feed}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/ingest")
 async def ingest(
     raw_text: str = Form(None), 
@@ -501,23 +523,3 @@ async def export_csv(path: str):
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-@app.get("/api/hierarchy/explore")
-async def explore(path: str = ""):
-    path_list = [p for p in path.split("/") if p] if path else []
-    obj = engine.get_object(path_list)
-    if not obj: raise HTTPException(status_code=404, detail="Path not found")
-    
-    entries = obj.get("data_entries", [])
-    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
-    
-    return {
-        "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
-        "total_value": obj["metadata"].get("total_value", 0),
-        "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
-        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
-        "entries": entries
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

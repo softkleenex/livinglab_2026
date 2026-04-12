@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2, MapPin, Info, Coins, Mic, ShoppingCart, Target
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2, MapPin, Info, Coins, Mic, ShoppingCart, Target, MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReportModal from './components/modals/ReportModal.jsx';
@@ -15,6 +15,7 @@ import DigitalTwinMap from './components/dashboard/DigitalTwinMap.jsx';
 import MDGACopilot from './components/dashboard/MDGACopilot.jsx';
 import DataMarket from './components/dashboard/DataMarket.jsx';
 import QuestBoard from './components/dashboard/QuestBoard.jsx';
+import AgoraFeed from './components/dashboard/AgoraFeed.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
@@ -656,6 +657,8 @@ function MainApp({ userContext, googleUser, onLogout }) {
               <DataMarket addToast={addToast} />
             ) : activeTab === 'quest' ? (
               <QuestBoard addToast={addToast} />
+            ) : activeTab === 'agora' ? (
+              <AgoraFeed addToast={addToast} />
             ) : null}
           </AnimatePresence>
         </div>
@@ -668,6 +671,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
         )}
         <BottomNavLink icon={<Map size={20}/>} label="트윈 맵" active={activeTab === 'explorer' && !showIngest} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
         <BottomNavLink icon={<ShoppingCart size={20}/>} label="마켓" active={activeTab === 'market' && !showIngest} onClick={()=>{setActiveTab('market'); setShowIngest(false);}} />
+        <BottomNavLink icon={<MessageSquare size={20}/>} label="아고라" active={activeTab === 'agora' && !showIngest} onClick={()=>{setActiveTab('agora'); setShowIngest(false);}} />
         {userContext.role === 'store' && (
           <BottomNavLink icon={<Target size={20}/>} label="퀘스트" active={activeTab === 'quest' && !showIngest} onClick={()=>{setActiveTab('quest'); setShowIngest(false);}} />
         )}
