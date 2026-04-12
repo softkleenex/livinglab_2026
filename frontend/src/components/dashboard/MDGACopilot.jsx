@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles } from 'lucide-react';
+import { Bot, X, Send, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
@@ -12,11 +12,36 @@ export default function MDGACopilot({ locationPath, industry }) {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [playingId, setPlayingId] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    // Cleanup audio on close
+    if (!isOpen && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setPlayingId(null);
+    }
+  }, [isOpen]);
+
+  const handleSpeak = (id, text) => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      if (playingId === id) {
+        setPlayingId(null);
+        return;
+      }
+    }
+    setPlayingId(id);
+    const utterance = new SpeechSynthesisUtterance(text.replace(/[*#_]/g, ''));
+    utterance.lang = 'ko-KR';
+    utterance.rate = 1.1;
+    utterance.onend = () => setPlayingId(null);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -80,14 +105,25 @@ export default function MDGACopilot({ locationPath, industry }) {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gradient-to-b from-[#0E1420] to-[#101725]">
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
-                    m.sender === 'user' 
-                      ? 'bg-blue-600 text-white rounded-br-sm' 
-                      : m.error 
-                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-bl-sm'
-                        : 'bg-slate-800 text-slate-200 rounded-bl-sm shadow-md'
-                  }`}>
-                    {m.text}
+                  <div className="relative group">
+                    <div className={`max-w-[240px] p-3 rounded-2xl text-xs leading-relaxed ${
+                      m.sender === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-sm' 
+                        : m.error 
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-bl-sm'
+                          : 'bg-slate-800 text-slate-200 rounded-bl-sm shadow-md'
+                    }`}>
+                      {m.text}
+                    </div>
+                    {m.sender === 'ai' && !m.error && (
+                      <button 
+                        onClick={() => handleSpeak(m.id, m.text)} 
+                        className="absolute -right-8 top-1 p-1.5 text-slate-500 hover:text-blue-400 bg-[#0E1420] border border-slate-700 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                        title="TTS 읽어주기"
+                      >
+                        {playingId === m.id ? <VolumeX size={12} className="text-rose-400 animate-pulse" /> : <Volume2 size={12} />}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
