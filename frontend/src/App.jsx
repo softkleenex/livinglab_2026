@@ -19,7 +19,7 @@ import AgoraFeed from './components/dashboard/AgoraFeed.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
 const customMarkerIcon = new L.DivIcon({
@@ -92,16 +92,30 @@ function GoogleLoginScreen({ onLogin }) {
   );
 }
 
+function MapController({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, 14, { animate: true, duration: 1.5 });
+  }, [center, map]);
+  return null;
+}
+
 function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet }) {
   useMapEvents({
     click(e) {
-      // Mock reverse geocoding for presentation
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
       setMapCenter([lat, lng]);
-      setLocGu(lat > 35.87 ? '북구' : '중구');
-      setLocDong(lng > 128.6 ? '산격동' : '삼덕동');
-      setLocStreet(lat > 35.87 ? '연암로 스마트팜 밸리' : '동성로');
+      
+      if (lat > 35.86 && lng < 128.61) {
+        setLocGu('북구'); setLocDong('산격동'); setLocStreet('연암로 스마트팜 밸리');
+      } else if (lat < 35.86 && lng > 128.61) {
+        setLocGu('수성구'); setLocDong('두산동'); setLocStreet('수성못 수변상권');
+      } else if (lat < 35.85 && lng < 128.55) {
+        setLocGu('달서구'); setLocDong('성서동'); setLocStreet('성서산업단지');
+      } else {
+        setLocGu('중구'); setLocDong('삼덕동'); setLocStreet('동성로');
+      }
     }
   });
   return null;
@@ -116,6 +130,14 @@ function Onboarding({ onComplete, googleUser }) {
   const [locStore, setLocStore] = useState('');
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState([35.8714, 128.6014]); // Daegu center
+
+  useEffect(() => {
+    if (locDong.includes('산격')) setMapCenter([35.8821, 128.6083]);
+    else if (locDong.includes('삼덕') || locStreet.includes('동성')) setMapCenter([35.8655, 128.6015]);
+    else if (locDong.includes('두산') || locStreet.includes('수성')) setMapCenter([35.8258, 128.6212]);
+    else if (locDong.includes('범어')) setMapCenter([35.8593, 128.6250]);
+    else if (locDong.includes('성서')) setMapCenter([35.8451, 128.5085]);
+  }, [locDong, locStreet]);
 
   const handleLocateMe = () => {
     if (navigator.geolocation) {
@@ -211,6 +233,7 @@ function Onboarding({ onComplete, googleUser }) {
                         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                       />
+                      <MapController center={mapCenter} />
                       <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} />
                       <Marker position={mapCenter} icon={customMarkerIcon} />
                     </MapContainer>
@@ -612,9 +635,20 @@ function MainApp({ userContext, googleUser, onLogout }) {
                   </div>
                   <div className="flex items-center gap-3">
                     {currentPath.length > 0 && (
-                      <button onClick={goBack} className="p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-slate-300"><ArrowLeft size={20} /></button>
+                      <button onClick={goBack} className="p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-slate-300 shadow-md"><ArrowLeft size={20} /></button>
                     )}
-                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase break-keep leading-tight">{explorerData.current}</h2>
+                    <div className="flex flex-col">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs font-bold text-slate-400 mb-1">
+                        <button onClick={() => setCurrentPath([])} className="hover:text-blue-400 transition-colors flex items-center gap-1"><MapPin size={10}/> 대구광역시</button>
+                        {currentPath.map((p, idx) => (
+                          <React.Fragment key={idx}>
+                            <ChevronRight size={12} className="text-slate-600" />
+                            <button onClick={() => setCurrentPath(currentPath.slice(0, idx + 1))} className="hover:text-blue-400 transition-colors">{p}</button>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      <h2 className="text-3xl md:text-5xl font-black text-white uppercase break-keep leading-tight">{explorerData.current}</h2>
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 pt-2">
                     <BigStat label="Aggregated Value" value={`₩${(explorerData.total_value || explorerData.metadata.total_value || 0).toLocaleString()}`} />
