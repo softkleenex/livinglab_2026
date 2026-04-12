@@ -159,8 +159,8 @@ function Onboarding({ onComplete, googleUser }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1A] text-slate-200 flex items-center justify-center p-4 selection:bg-blue-500/30">
-      <div className="max-w-3xl w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#0A0F1A] text-slate-200 flex items-center justify-center p-4 pb-24 sm:pb-4 selection:bg-blue-500/30 overflow-y-auto">
+      <div className="max-w-3xl w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden mt-8 sm:mt-0">
         <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
         <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
         <p className="text-slate-400 mb-8 relative z-10">

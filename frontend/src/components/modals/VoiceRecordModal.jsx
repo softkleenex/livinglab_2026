@@ -93,8 +93,12 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
             ) : transcript ? (
               <motion.div key="transcript" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-4">
                 <div className="bg-[#0A0F1A] p-4 rounded-xl border border-blue-500/30 relative">
-                  <span className="absolute -top-2.5 left-4 bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border border-blue-500/30">STT Result</span>
-                  <p className="text-sm text-slate-200 leading-relaxed font-medium pt-2">{transcript}</p>
+                  <span className="absolute -top-2.5 left-4 bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border border-blue-500/30">STT Result (수정 가능)</span>
+                  <textarea 
+                    value={transcript} 
+                    onChange={(e) => setTranscript(e.target.value)}
+                    className="w-full bg-transparent text-sm text-slate-200 leading-relaxed font-medium pt-2 outline-none resize-none min-h-[80px]" 
+                  />
                 </div>
                 <button onClick={handleIngest} disabled={loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 transition-all flex justify-center items-center gap-2 disabled:opacity-50 uppercase tracking-widest">
                   {loading ? <RefreshCw className="animate-spin" size={18}/> : "텍스트로 자산화하기"}
