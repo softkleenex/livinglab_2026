@@ -117,6 +117,23 @@ function Onboarding({ onComplete, googleUser }) {
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState([35.8714, 128.6014]); // Daegu center
 
+  const handleLocateMe = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setMapCenter([lat, lng]);
+          // Mock reverse geocoding for presentation based on current location
+          setLocGu('수성구');
+          setLocDong('범어동');
+          setLocStreet('범어네거리');
+        },
+        () => alert("위치 정보를 가져올 수 없습니다. 브라우저 권한을 확인하세요.")
+      );
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!levelId) return alert('객체 단위를 선택해주세요.');
@@ -159,7 +176,7 @@ function Onboarding({ onComplete, googleUser }) {
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">1. Select Target Object</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {LEVELS.map(l => (
-                <div key={l.id} onClick={() => setLevelId(l.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${levelId === l.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+                <div key={l.id} onClick={() => setLevelId(l.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${levelId === l.id ? 'bg-blue-600/20 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
                   <div className="mb-3 text-blue-400">{l.icon}</div>
                   <div className="font-bold mb-1 text-sm flex items-center gap-1">
                     {l.name} {l.id === 'store' && !googleUser?.isGuest && <ShieldCheck size={12} className="text-emerald-400" title="공식 인증" />}
@@ -176,40 +193,53 @@ function Onboarding({ onComplete, googleUser }) {
                 {levelId === 'store' && (
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry (산업군)</label>
-                    <input required placeholder="예: 요식업, 카페, 도소매" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    <input required placeholder="예: 요식업, 카페, 도소매, 스마트팜" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
                   </div>
                 )}
                 
                 <div className="space-y-4">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">2. Location Definition</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">2. Location Definition</label>
+                    <button type="button" onClick={handleLocateMe} className="text-[10px] font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+                      <MapPin size={12}/> 내 위치로 설정
+                    </button>
+                  </div>
                   
-                  <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-800 relative z-0 shadow-inner">
+                  <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-700 relative z-0 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                     <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%', background: '#0A0F1A' }} zoomControl={false}>
                       <TileLayer
                         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                       />
                       <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} />
                       <Marker position={mapCenter} icon={customMarkerIcon} />
                     </MapContainer>
                     <div className="absolute bottom-4 left-4 z-[400] pointer-events-none">
-                       <div className="bg-[#0E1420]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-700/50 shadow-xl flex items-center gap-2">
-                         <MapPin size={14} className="text-blue-400"/>
-                         <span className="text-[10px] font-bold text-slate-300">지도를 클릭하여 위치를 설정하세요</span>
+                       <div className="bg-[#0E1420]/95 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-700/50 shadow-xl flex items-center gap-2">
+                         <MapPin size={14} className="text-blue-400 animate-bounce"/>
+                         <span className="text-[10px] font-bold text-slate-300">지도를 클릭하면 아래 텍스트가 자동 완성됩니다.</span>
                        </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <input required placeholder="구 (예: 북구)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                    <div className="relative group">
+                      <input required placeholder="구 (예: 북구)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+                    </div>
                     {(levelId === 'store' || levelId === 'street' || levelId === 'dong') && (
-                      <input required placeholder="동 (예: 산격동)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                      <div className="relative group">
+                        <input required placeholder="동 (예: 산격동)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+                      </div>
                     )}
                     {(levelId === 'store' || levelId === 'street') && (
-                      <input required={levelId==='store' || levelId==='street'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                      <div className="relative group col-span-2 sm:col-span-1">
+                        <input required={levelId==='store' || levelId==='street'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+                      </div>
                     )}
                     {levelId === 'store' && (
-                      <input required placeholder="매장명 (예: MDGA 카페)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white" />
+                      <div className="relative group col-span-2 sm:col-span-1">
+                        <input required placeholder="매장명 (예: MDGA 카페)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -217,7 +247,7 @@ function Onboarding({ onComplete, googleUser }) {
             )}
           </AnimatePresence>
 
-          <button type="submit" disabled={!levelId || loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
+          <button type="submit" disabled={!levelId || loading} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:scale-[1.01] hover:shadow-[0_5px_20px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
             {loading ? <RefreshCw className="animate-spin" size={18}/> : "Enter Workspace"}
           </button>
         </form>
