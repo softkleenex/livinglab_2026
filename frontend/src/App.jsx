@@ -323,6 +323,24 @@ function MainApp({ userContext, googleUser, onLogout }) {
     document.body.removeChild(element);
   };
 
+  const handleExportCSV = async () => {
+    addToast("CSV 데이터 다운로드를 시작합니다...", "info");
+    try {
+      const pathStr = userContext.location.join('/');
+      const res = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `MDGA_Export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      addToast("성공적으로 다운로드되었습니다.", "success");
+    } catch(err) {
+      addToast("CSV 다운로드 중 오류가 발생했습니다.", "error");
+    }
+  };
+
   const handleDemoInject = async () => {
     setLoading(true);
     addToast("데모 데이터를 생성 중입니다...", 'info');
@@ -494,9 +512,14 @@ function MainApp({ userContext, googleUser, onLogout }) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI Consultings (보상)</h3>
-                    <button onClick={() => setShowReport(true)} className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-colors uppercase">
-                      <FileText size={12} /> 주간 리포트 발행
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={handleExportCSV} className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/20 transition-colors uppercase">
+                        <Download size={12} /> CSV 다운로드
+                      </button>
+                      <button onClick={() => setShowReport(true)} className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-colors uppercase">
+                        <FileText size={12} /> 주간 리포트 발행
+                      </button>
+                    </div>
                   </div>
                   {personalData.store.entries.length === 0 ? (
                     <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center flex flex-col items-center gap-4">

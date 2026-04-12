@@ -88,6 +88,9 @@ def get_drive_service():
         return None
 
 from app.core.engine import engine, HierarchyEngine
+from sqlalchemy.orm import Session
+from app.core.database import get_db, DataEntry
+from fastapi import Depends
 
 # --- 🚀 API Endpoints ---
 
@@ -163,7 +166,9 @@ async def ingest(
     raw_text: str = Form(None), 
     file: UploadFile = File(None),
     location: str = Form(...), # e.g. "북구/산격동/경북대 북문/테스트상점"
-    is_guest: str = Form("false")
+    is_guest: str = Form("false"),
+    industry: str = Form("공공"),
+    db: Session = Depends(get_db)
 ):
     try:
         content = raw_text if raw_text else ""
@@ -246,6 +251,21 @@ async def ingest(
         entry["effective_value"] = effective_value
         
         engine.add_value_bottom_up(path_list, effective_value)
+        
+        # Save to DB
+        new_entry = DataEntry(
+            location_path=location,
+            industry=industry,
+            is_guest=1 if is_guest_bool else 0,
+            raw_text=content,
+            drive_link=drive_link,
+            insights=insights,
+            trust_index=trust_index,
+            effective_value=effective_value,
+            hash_val=trust_hash
+        )
+        db.add(new_entry)
+        db.commit()
         
         # Broadcast to websockets
         import asyncio
@@ -414,34 +434,40 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
         
     return {"status": "success", "report": report_text}
 
-@app.get("/api/dashboard/personal")
-async def get_personal_dashboard(path: str):
+import io
+import csv
+from fastapi.responses import StreamingResponse
+
+@app.get("/api/dashboard/export")
+async def export_csv(path: str):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(path_list)
-    if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
-    
-    # Get parent object to compare
-    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    if not obj: raise HTTPException(status_code=404, detail="Store not found.")
     
     entries = obj.get("data_entries", [])
-    avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
     
-    return {
-        "store": {
-            "name": obj["name"],
-            "total_value": obj["metadata"].get("total_value", 0),
-            "pulse": obj["metadata"].get("pulse_rate", 0),
-            "trust_index": round(avg_trust, 1),
-            "history": obj["metadata"].get("history", []),
-            "entries": entries
-        },
-        "parent": {
-            "name": parent_obj["name"],
-            "type": parent_obj["type"],
-            "avg_value": parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1)),
-            "pulse": parent_obj["metadata"].get("pulse_rate", 0)
-        }
-    }
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Timestamp", "Hash", "Scope", "Trust Index", "Effective Value", "Raw Text", "Insights"])
+    
+    for e in entries:
+        writer.writerow([
+            e.get("timestamp", ""),
+            e.get("hash", ""),
+            e.get("scope", ""),
+            e.get("trust_index", ""),
+            e.get("effective_value", ""),
+            e.get("raw_text", "N/A"),
+            e.get("insights", "")
+        ])
+    
+    output.seek(0)
+    filename = f"MDGA_Data_Export_{obj['name']}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @app.get("/api/hierarchy/explore")
 async def explore(path: str = ""):
