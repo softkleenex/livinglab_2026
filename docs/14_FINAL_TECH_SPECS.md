@@ -43,6 +43,7 @@
 *   **Framework:** FastAPI (비동기 I/O 최적화).
 *   **Database:** SQLAlchemy ORM (`app/core/database.py`). 로컬에서는 SQLite, 실서버(Render)에서는 환경변수(`DATABASE_URL`)를 감지해 PostgreSQL로 자동 전환. 데이터 영구 보존(Persistence) 달성.
 *   **Engine Logic:** `app/core/engine.py`로 핵심 트리 노드 탐색 및 롤업 엔진 분리.
+*   **Hyper-Realistic Seed Data:** 앱 초기 구동 시, 단순한 더미 데이터가 아닌 "스마트팜", "요식업", "첨단 제조업" 등 실제 B2B 환경에 부합하는 고품질 모의 데이터(매출 수천만 원 단위, 디테일한 고용/생산 인사이트 포함)를 DB와 계층 트리에 자동 주입(`seed_initial_data`)하여 시연(Demo) 완성도를 극대화.
 *   **External Integrations:**
     *   `httpx`: 비동기 기상청 데이터(Open-Meteo) 호출.
     *   `google.generativeai`: Gemini 1.5 모델 호출 (Vision 및 Text 처리).
