@@ -157,7 +157,7 @@ async def explore(path: str = ""):
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
         "total_value": obj["metadata"].get("total_value", 0),
         "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
-        "children": [ {"name": k, "type": v["type"], "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
+        "children": [ {"name": k, "type": v["type"], "value": v["metadata"].get("total_value", 0), "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
         "entries": entries
     }
 

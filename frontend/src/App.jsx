@@ -681,6 +681,10 @@ function MainApp({ userContext, googleUser, onLogout }) {
                             </div>
                           </div>
                           <div className="text-right flex items-center gap-4">
+                            <div className="hidden sm:flex flex-col items-end gap-1 mt-2 mr-4 border-r border-slate-800 pr-4">
+                                <p className="text-[10px] text-slate-500 font-bold">ASSET VALUE</p>
+                                <p className="text-xs font-bold text-yellow-400 font-mono tracking-widest">₩{(child.value || 0).toLocaleString()}</p>
+                            </div>
                             <div className="hidden sm:flex flex-col items-end gap-1 mt-2">
                                 <p className="text-[10px] text-slate-500 font-bold">ACTIVITY</p>
                                 <div className="flex items-center gap-2">
