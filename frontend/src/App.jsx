@@ -9,6 +9,7 @@ import ReportModal from './components/modals/ReportModal.jsx';
 import WalletModal from './components/modals/WalletModal.jsx';
 import IngestModal from './components/modals/IngestModal.jsx';
 import VoiceRecordModal from './components/modals/VoiceRecordModal.jsx';
+import UpgradeModal from './components/modals/UpgradeModal.jsx';
 import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
@@ -233,6 +234,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
   const [showReport, setShowReport] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   const addToast = (message, type = 'info') => {
@@ -370,7 +372,14 @@ function MainApp({ userContext, googleUser, onLogout }) {
         <header className="h-14 shrink-0 border-b border-slate-800/80 bg-[#0A0F1A]/95 backdrop-blur-xl px-4 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-blue-600 rounded-lg shadow-md"><Radar size={16} className="text-white"/></div>
-            <span className="text-sm font-black text-white tracking-wider">MDGA</span>
+            <span className="text-sm font-black text-white tracking-wider flex items-center gap-2">
+              MDGA
+              {!googleUser?.isGuest && (
+                <button onClick={() => setShowUpgrade(true)} className="text-[9px] bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 rounded text-white font-bold uppercase tracking-widest shadow-md shadow-violet-500/30 hover:scale-105 transition-transform">
+                  Upgrade
+                </button>
+              )}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowWallet(true)} className="flex items-center gap-1.5 px-2 py-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded-lg border border-yellow-500/30 transition-colors">
@@ -715,6 +724,13 @@ function MainApp({ userContext, googleUser, onLogout }) {
           <WalletModal
             onClose={() => setShowWallet(false)}
             personalData={personalData}
+            addToast={addToast}
+          />
+        )}
+        {showUpgrade && (
+          <UpgradeModal
+            onClose={() => setShowUpgrade(false)}
+            addToast={addToast}
           />
         )}
       </AnimatePresence>
