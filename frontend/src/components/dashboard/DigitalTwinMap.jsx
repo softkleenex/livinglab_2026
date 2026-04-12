@@ -11,7 +11,7 @@ const customMarkerIcon = new L.DivIcon({
   iconAnchor: [18, 36],
 });
 
-export default function DigitalTwinMap({ childrenData }) {
+export default function DigitalTwinMap({ childrenData, onMarkerClick }) {
   if (!childrenData || childrenData.length === 0) return null;
 
   return (
@@ -24,7 +24,16 @@ export default function DigitalTwinMap({ childrenData }) {
         {childrenData.map((child) => {
           const latLng = child.location || [35.8714, 128.6014];
           return (
-            <Marker key={child.name} position={latLng} icon={customMarkerIcon} />
+            <Marker 
+              key={child.name} 
+              position={latLng} 
+              icon={customMarkerIcon} 
+              eventHandlers={{
+                click: () => {
+                  if (onMarkerClick) onMarkerClick(child.name);
+                }
+              }}
+            />
           );
         })}
       </MapContainer>

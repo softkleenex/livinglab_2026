@@ -660,7 +660,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
                 {explorerData.children && explorerData.children.length > 0 && (
                   <div className="space-y-4">
                     {/* Digital Twin Map for Gov/Explorer */}
-                    <DigitalTwinMap childrenData={explorerData.children} />
+                    <DigitalTwinMap childrenData={explorerData.children} onMarkerClick={navigateTo} />
 
                     <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes Leaderboard</h3>
                     <div className="grid grid-cols-1 gap-3">
