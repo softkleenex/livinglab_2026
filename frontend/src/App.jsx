@@ -17,6 +17,7 @@ import MDGACopilot from './components/dashboard/MDGACopilot.jsx';
 import DataMarket from './components/dashboard/DataMarket.jsx';
 import QuestBoard from './components/dashboard/QuestBoard.jsx';
 import AgoraFeed from './components/dashboard/AgoraFeed.jsx';
+import LiveTicker from './components/dashboard/LiveTicker.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
@@ -457,6 +458,9 @@ function MainApp({ userContext, googleUser, onLogout }) {
             </button>
           </div>
         </header>
+
+        {/* Live Network Ticker */}
+        <LiveTicker />
 
         {/* Path Breadcrumbs */}
         <div className="px-4 py-2 border-b border-slate-800/40 bg-[#0A0F1A] flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
