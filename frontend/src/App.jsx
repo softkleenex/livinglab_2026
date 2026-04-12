@@ -101,7 +101,7 @@ function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet }) 
       setMapCenter([lat, lng]);
       setLocGu(lat > 35.87 ? '북구' : '중구');
       setLocDong(lng > 128.6 ? '산격동' : '삼덕동');
-      setLocStreet(lat > 35.87 ? '경북대 북문' : '동성로');
+      setLocStreet(lat > 35.87 ? '연암로 스마트팜 밸리' : '동성로');
     }
   });
   return null;
@@ -233,12 +233,12 @@ function Onboarding({ onComplete, googleUser }) {
                     )}
                     {(levelId === 'store' || levelId === 'street') && (
                       <div className="relative group col-span-2 sm:col-span-1">
-                        <input required={levelId==='store' || levelId==='street'} placeholder="거리/상권 (예: 경북대 북문)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+                        <input required={levelId==='store' || levelId==='street'} placeholder="거리/상권 (예: 연암로 스마트팜 밸리)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
                       </div>
                     )}
                     {levelId === 'store' && (
                       <div className="relative group col-span-2 sm:col-span-1">
-                        <input required placeholder="매장명 (예: MDGA 카페)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+                        <input required placeholder="매장명 (예: 지니스팜 제1농장)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
                       </div>
                     )}
                   </div>
