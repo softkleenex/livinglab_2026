@@ -2,9 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2, MapPin, Info, Coins
+  Radar, Map, Zap, ArrowLeft, Upload, Database, ShieldCheck, Plus, X, Layers, Lock, TrendingUp, BarChart3, PieChart, RefreshCw, Folder, BrainCircuit, Store, Users, Building2, ChevronRight, FileText, Download, Trash2, MapPin, Info, Coins, Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReportModal from './components/modals/ReportModal.jsx';
+import WalletModal from './components/modals/WalletModal.jsx';
+import IngestModal from './components/modals/IngestModal.jsx';
+import VoiceRecordModal from './components/modals/VoiceRecordModal.jsx';
+import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
@@ -227,6 +232,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
   const [showIngest, setShowIngest] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showVoice, setShowVoice] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   const addToast = (message, type = 'info') => {
@@ -434,21 +440,27 @@ function MainApp({ userContext, googleUser, onLogout }) {
                         </h3>
                         <Badge label="BETA" color="bg-orange-500/10 text-orange-400 border-orange-500/20" />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer">
                           <FileText size={24} className="text-slate-400" />
                           <span className="text-xs font-bold text-slate-300">현장/수기 일지 연동</span>
-                          <span className="text-[9px] text-slate-500">스마트폰 사진/텍스트 추출</span>
+                          <span className="text-[9px] text-slate-500">사진/텍스트 추출</span>
                         </button>
-                        <button className="flex flex-col items-center justify-center gap-2 p-4 bg-blue-900/10 hover:bg-blue-900/20 border border-blue-900/30 hover:border-blue-500/50 rounded-xl transition-all cursor-pointer">
-                          <Users size={24} className="text-blue-400" />
-                          <span className="text-xs font-bold text-blue-300">주문/플랫폼 연동</span>
-                          <span className="text-[9px] text-blue-500/70">일별 주문/예약 데이터</span>
+                        <button onClick={() => setShowVoice(true)} className="flex flex-col items-center justify-center gap-2 p-4 bg-blue-900/10 hover:bg-blue-900/20 border border-blue-900/30 hover:border-blue-500/50 rounded-xl transition-all cursor-pointer group relative overflow-hidden">
+                          <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 animate-pulse"></div>
+                          <Mic size={24} className="text-blue-400 relative z-10" />
+                          <span className="text-xs font-bold text-blue-300 relative z-10">AI 음성 기록 (STT)</span>
+                          <span className="text-[9px] text-blue-500/70 relative z-10">말로 하는 현장 기록</span>
+                        </button>
+                        <button className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer">
+                          <Users size={24} className="text-slate-400" />
+                          <span className="text-xs font-bold text-slate-300">주문/플랫폼 연동</span>
+                          <span className="text-[9px] text-slate-500">일별 주문/예약 연동</span>
                         </button>
                         <button className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer">
                           <Upload size={24} className="text-slate-400" />
-                          <span className="text-xs font-bold text-slate-300">외부 API / 출고 연동</span>
-                          <span className="text-[9px] text-slate-500">물류/택배사 상태 크롤링</span>
+                          <span className="text-xs font-bold text-slate-300">외부 API 연동</span>
+                          <span className="text-[9px] text-slate-500">물류/택배 상태 수집</span>
                         </button>
                       </div>
                     </div>
@@ -656,6 +668,19 @@ function MainApp({ userContext, googleUser, onLogout }) {
             locationPath={userContext.location.join('/')}
           />
         )}
+        {showVoice && (
+          <VoiceRecordModal
+            isGuest={googleUser?.isGuest}
+            onClose={() => setShowVoice(false)}
+            onSuccess={() => {
+              setShowVoice(false);
+              addToast("성공적으로 음성이 텍스트로 기록 및 자산화되었습니다.", "success");
+              if (activeTab === 'personal') fetchPersonal();
+              else fetchExplorer();
+            }}
+            locationPath={userContext.location.join('/')}
+          />
+        )}
         {showReport && (
           <ReportModal
             onClose={() => setShowReport(false)}
@@ -710,231 +735,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
   );
 }
 
-function IngestModal({ isGuest, onClose, onSuccess, locationPath }) {
-  const [rawText, setRawText] = useState('');
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [res, setRes] = useState(null);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    if (selectedFile && selectedFile.type.startsWith('image/')) {
-      const url = URL.createObjectURL(selectedFile);
-      setPreview(url);
-    } else {
-      setPreview(null);
-    }
-  };
-
-  const handleIngest = async () => {
-    setLoading(true);
-    const formData = new FormData();
-    if (rawText) formData.append('raw_text', rawText);
-    if (file) formData.append('file', file);
-    formData.append('location', locationPath);
-    if (isGuest) formData.append('is_guest', 'true');
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
-      setRes(response.data);
-      setTimeout(onSuccess, 2500);
-    } catch (err) { alert("업로드 실패"); }
-    finally { setLoading(false); }
-  };
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg rounded-3xl border border-slate-700/80 shadow-2xl overflow-hidden relative">
-        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420]">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg text-white"><Upload size={18}/></div>
-            <h3 className="text-base font-bold text-white uppercase">Data & Vision Ingest</h3>
-          </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white"><X size={20}/></button>
-        </div>
-        <div className="p-5 space-y-4">
-          {!res ? (
-            <>
-              {isGuest ? (
-                <p className="text-xs text-orange-400 text-center font-bold">⚠️ 게스트 모드: 업로드되는 데이터는 신뢰도 가중치에서 패널티를 받습니다.</p>
-              ) : (
-                <p className="text-xs text-emerald-400 text-center font-bold">✨ 구글 공식 인증 계정: 업로드 데이터에 높은 신뢰도 가중치가 부여됩니다.</p>
-              )}
-              <p className="text-xs text-slate-400 text-center">텍스트는 물론, 매장의 전경이나 영수증을 업로드하면 Vision AI가 분석하여 자산화합니다.</p>
-              
-              {preview && (
-                <div className="relative w-full h-32 bg-black rounded-xl overflow-hidden border border-slate-800">
-                  <img src={preview} alt="preview" className="w-full h-full object-cover opacity-80" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-blue-900/30">
-                    <span className="bg-[#0A0F1A]/80 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm border border-blue-500/30">Vision AI Ready</span>
-                  </div>
-                </div>
-              )}
-              
-              <textarea value={rawText} onChange={e=>setRawText(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none text-slate-200" rows={preview ? 2 : 4} placeholder="여기에 텍스트 상황을 입력하세요..." />
-              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-500/10 file:text-blue-400 bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
-              
-              <label className="flex items-start gap-2 opacity-50 cursor-not-allowed">
-                <input type="checkbox" disabled checked={false} className="mt-1" />
-                <span className="text-xs text-slate-400">다른 사용자의 데이터 다운로드 허용 안 함<br/><span className="text-[10px] text-red-400 font-bold">(현재 개발 중으로 필수 공개 설정됨)</span></span>
-              </label>
-
-              <button onClick={handleIngest} disabled={loading || (!rawText && !file)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? <RefreshCw className="animate-spin" size={16}/> : "업로드 및 자산화"}
-              </button>
-            </>
-          ) : (
-            <div className="py-10 text-center space-y-4">
-              <ShieldCheck size={48} className="text-emerald-400 mx-auto" />
-              <h4 className="text-lg font-bold text-white">업로드 완료</h4>
-              <p className="text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full inline-block">+ ₩{res.value_added.toLocaleString()} 자산 증가</p>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function GovernanceSim({ explorerData }) {
-  const [budget, setBudget] = useState(100000000);
-  const [simRes, setSimRes] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
-
-  const runSim = async () => {
-    if(!explorerData) return;
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const fd = new FormData();
-      fd.append('budget', budget);
-      fd.append('region', explorerData.current);
-      const res = await axios.post(`${API_BASE_URL}/api/simulate/governance`, fd);
-      setSimRes(res.data.simulation);
-    } catch(err) { 
-      setErrorMsg("시뮬레이션 서버 연결에 실패했습니다.");
-    } finally { 
-      setLoading(false); 
-    }
-  }
-
-  if (!explorerData) return null;
-
-  // Mock chart data generation for the result
-  const chartData = [
-    { label: "서비스업", value: Math.floor(Math.random() * 40 + 20), color: "#3b82f6" },
-    { label: "제조/농업", value: Math.floor(Math.random() * 30 + 15), color: "#10b981" },
-    { label: "도소매업", value: Math.floor(Math.random() * 25 + 10), color: "#f59e0b" },
-    { label: "관광/기타", value: Math.floor(Math.random() * 20 + 5), color: "#8b5cf6" },
-  ].sort((a,b) => b.value - a.value);
-
-  const maxVal = Math.max(...chartData.map(d => d.value));
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-4xl mx-auto w-full pb-8 px-2 sm:px-0">
-      <div className="flex flex-col gap-2">
-        <Badge label="GOV LEVEL" color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
-        <h2 className="text-2xl md:text-4xl font-black text-white">Policy Simulator</h2>
-        <p className="text-slate-400 text-[10px] sm:text-xs mt-1">AI 기반 예산 투입 효과 시뮬레이션 시스템</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 bg-[#101725] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-lg space-y-6 h-fit relative overflow-hidden">
-          <div className="absolute -right-10 -top-10 opacity-5"><PieChart size={150} /></div>
-          
-          <div className="space-y-2 relative z-10">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-              <MapPin size={12}/> Target Node
-            </label>
-            <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-800 text-sm font-bold text-blue-400">{explorerData.current}</div>
-          </div>
-
-          <div className="space-y-2 relative z-10">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest break-keep">투입 예산 (Budget)</label>
-              <span className="text-xs font-bold text-emerald-400">₩{parseInt(budget).toLocaleString()}</span>
-            </div>
-            <input type="range" min="10000000" max="1000000000" step="10000000" value={budget} onChange={(e)=>setBudget(e.target.value)} className="w-full h-1.5 bg-slate-800 rounded-full appearance-none accent-blue-600" />
-          </div>
-          
-          {errorMsg && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 font-bold flex items-center gap-2">
-              <X size={14} className="shrink-0"/> {errorMsg}
-            </div>
-          )}
-
-          <button onClick={runSim} disabled={loading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-xs sm:text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 transition-all uppercase tracking-widest relative z-10">
-            {loading ? <><RefreshCw className="animate-spin" size={16}/> 시뮬레이션 중...</> : "Run Simulation"}
-          </button>
-        </div>
-        
-        <div className="lg:col-span-3">
-          {simRes ? (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#101725] p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-md">
-                  <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1.5 break-keep"><TrendingUp size={12}/> 예상 ROI 배수</p>
-                  <p className="text-2xl sm:text-3xl font-black text-emerald-400">{simRes.roi_multiplier}</p>
-                </div>
-                <div className="bg-[#101725] p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-md">
-                  <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1.5 break-keep"><Users size={12}/> 일자리 창출</p>
-                  <p className="text-2xl sm:text-3xl font-black text-blue-400">{simRes.job_creation}</p>
-                </div>
-              </div>
-              
-              <div className="bg-[#101725] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
-                <h4 className="text-xs font-bold text-slate-300 mb-6 flex items-center gap-2 tracking-widest uppercase"><BarChart3 size={16} className="text-blue-400"/> 산업별 파급 효과 (Impact Index)</h4>
-                <div className="space-y-4">
-                  {chartData.map((d, i) => (
-                    <div key={i} className="space-y-1.5">
-                      <div className="flex justify-between text-[10px] font-bold">
-                        <span className="text-slate-400">{d.label}</span>
-                        <span style={{color: d.color}}>{d.value} pts</span>
-                      </div>
-                      <div className="h-2 w-full bg-slate-800/80 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }} 
-                          animate={{ width: `${(d.value / maxVal) * 100}%` }} 
-                          transition={{ duration: 1, delay: i * 0.1, type: 'spring' }}
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: d.color }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-blue-900/10 p-4 sm:p-5 rounded-2xl border border-blue-500/20 shadow-inner">
-                <h4 className="text-[10px] font-bold text-blue-400 mb-2 flex items-center gap-1.5 uppercase tracking-widest"><BrainCircuit size={14}/> AI Policy Recommendation</h4>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{simRes.ai_recommendation}</p>
-                <div className="mt-4 pt-4 border-t border-blue-500/20 grid grid-cols-2 gap-3 text-[10px]">
-                  <div>
-                    <span className="text-blue-400 font-bold block mb-0.5">Boost Sector</span> 
-                    <span className="text-slate-300">{simRes.sector_boost}</span>
-                  </div>
-                  <div>
-                    <span className="text-rose-400 font-bold block mb-0.5 flex items-center gap-1"><X size={10}/> Warning</span> 
-                    <span className="text-slate-300 break-keep">{simRes.vulnerability_warning}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <div className="h-full min-h-[300px] border-2 border-dashed border-slate-800/80 rounded-2xl flex flex-col items-center justify-center text-slate-500 gap-3 p-4 text-center">
-              <Layers size={40} className="opacity-20" />
-              <p className="text-sm font-bold uppercase tracking-widest">No Simulation Data</p>
-              <p className="text-[10px] break-keep">타겟과 예산을 설정하고 Run을 클릭하세요.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 const SidebarLink = React.memo(({ icon, label, active, onClick }) => {
   return (
@@ -1012,122 +813,6 @@ const Badge = React.memo(({ label, icon, color }) => {
   );
 });
 
-function ReportModal({ onClose, locationPath, userContext }) {
-  const [report, setReport] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  const isB2B = userContext?.industry && userContext?.industry !== '공공';
-  const industryName = userContext?.industry || '비즈니스';
-
-  useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/dashboard/report?path=${locationPath}&industry=${userContext?.industry || '공공'}`);
-        setReport(res.data.report);
-      } catch (err) {
-        setReport("리포트를 생성하지 못했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchReport();
-  }, [locationPath, isB2B, userContext?.industry]);
-
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([report], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = isB2B ? `${industryName}_AI_Report_${new Date().toISOString().split('T')[0]}.txt` : `MDGA_주간_경영_리포트_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[80vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative">
-        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] rounded-t-3xl shrink-0">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg text-white ${isB2B ? 'bg-emerald-600' : 'bg-blue-600'}`}><FileText size={18}/></div>
-            <h3 className="text-base font-bold text-white uppercase">{isB2B ? `AI ${industryName} 데이터 분석 리포트` : '주간 경영 요약 뉴스레터'}</h3>
-          </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={20}/></button>
-        </div>
-        <div className="p-5 overflow-y-auto grow custom-scrollbar">
-          {loading ? (
-            <div className="py-10 flex flex-col items-center justify-center gap-4">
-              <RefreshCw className={`animate-spin ${isB2B ? 'text-emerald-500' : 'text-blue-500'}`} size={32}/>
-              <p className="text-sm text-slate-400 font-medium">이번 주 데이터를 분석하여 보고서를 작성 중입니다...</p>
-            </div>
-          ) : (
-            <div className="flex flex-col h-full">
-              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium flex-grow mb-6">
-                {report}
-              </div>
-              <button 
-                onClick={handleDownload}
-                className={`w-full py-3 border rounded-xl font-bold text-sm transition-colors flex justify-center items-center gap-2 mt-auto shrink-0 ${isB2B ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white' : 'bg-blue-600/20 text-blue-400 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
-              >
-                <Download size={16} /> 리포트 텍스트 파일로 저장
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function WalletModal({ onClose, personalData }) {
-  const balance = personalData ? personalData.store.total_value : 0;
-  const history = personalData ? personalData.store.entries : [];
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-sm rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative overflow-hidden">
-        <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none"><Coins size={200} /></div>
-        
-        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-500/20 text-yellow-400 rounded-lg border border-yellow-500/30 shadow-inner"><Coins size={18}/></div>
-            <h3 className="text-base font-black text-white tracking-widest">MDGA WALLET</h3>
-          </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={20}/></button>
-        </div>
-
-        <div className="p-6 relative z-10 bg-gradient-to-b from-[#101725] to-[#0A0F1A]">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-center">Total Balance</p>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <span className="text-4xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-              {balance.toLocaleString()}
-            </span>
-            <span className="text-sm font-bold text-yellow-500/50 mt-2">$MDGA</span>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Transaction History</h4>
-            {history.length === 0 ? (
-              <p className="text-xs text-slate-600 text-center py-4">아직 보상 내역이 없습니다.<br/>데이터를 피딩하고 보상을 받으세요!</p>
-            ) : (
-              <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                {[...history].reverse().map((e, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-[#0E1420] p-3 rounded-xl border border-slate-800/50">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 font-bold">{e.timestamp.split(' ')[0]}</span>
-                      <span className="text-xs text-slate-300 font-medium">데이터 피딩 보상</span>
-                    </div>
-                    <div className="text-sm font-black text-emerald-400">
-                      +{e.effective_value ? e.effective_value.toLocaleString() : '1,000'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 export default App;
