@@ -12,6 +12,7 @@ import VoiceRecordModal from './components/modals/VoiceRecordModal.jsx';
 import UpgradeModal from './components/modals/UpgradeModal.jsx';
 import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
 import DigitalTwinMap from './components/dashboard/DigitalTwinMap.jsx';
+import PulseChart from './components/dashboard/PulseChart.jsx';
 import MDGACopilot from './components/dashboard/MDGACopilot.jsx';
 import DataMarket from './components/dashboard/DataMarket.jsx';
 import QuestBoard from './components/dashboard/QuestBoard.jsx';
@@ -512,7 +513,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
                           <motion.p key={personalData.store.pulse} initial={{ scale: 1.5, color: '#10b981' }} animate={{ scale: 1, color: '#10b981' }} className="text-2xl font-bold text-white">
                             +{(personalData.store.pulse * 1.5).toFixed(0)}% 성장
                           </motion.p>
-                          <Sparkline data={personalData.store.history.map(v => v * 1.2)} color="#10b981" />
+                          <div className="absolute inset-x-0 bottom-0"><PulseChart data={personalData.store.history.map(v => v * 1.2)} color="#10b981" title="AI Forecast" subtitle="Growth trajectory" /></div>
                         </div>
                         <p className="text-[10px] text-emerald-500 mt-2 font-bold flex items-center gap-1">업계 트렌드 및 기상/환경 분석 완료</p>
                       </div>
@@ -569,7 +570,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
                         <motion.p key={personalData.store.pulse} initial={{ scale: 1.5, color: '#60a5fa' }} animate={{ scale: 1, color: '#3b82f6' }} className="text-2xl font-bold text-blue-400">
                           {personalData.store.pulse} BPM
                         </motion.p>
-                        <Sparkline data={personalData.store.history} color="#3b82f6" />
+                        <div className="w-full mt-4"><PulseChart data={personalData.store.history} color="#3b82f6" title="Store Pulse" subtitle="BPM tracking" /></div>
                       </div>
                       <p className="text-[10px] text-slate-500 mt-2">상권 평균: {personalData.parent.pulse} BPM</p>
                     </div>
