@@ -11,6 +11,7 @@ import IngestModal from './components/modals/IngestModal.jsx';
 import VoiceRecordModal from './components/modals/VoiceRecordModal.jsx';
 import UpgradeModal from './components/modals/UpgradeModal.jsx';
 import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
+import DigitalTwinMap from './components/dashboard/DigitalTwinMap.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
@@ -591,26 +592,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
                 {explorerData.children && explorerData.children.length > 0 && (
                   <div className="space-y-4">
                     {/* Digital Twin Map for Gov/Explorer */}
-                    <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-800 relative z-0 shadow-inner mb-6">
-                      <MapContainer center={[35.8714, 128.6014]} zoom={12} style={{ height: '100%', width: '100%', background: '#0A0F1A' }} zoomControl={false}>
-                        <TileLayer
-                          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        />
-                        {explorerData.children.map((child, idx) => {
-                          const latLng = child.location || [35.8714, 128.6014];
-                          return (
-                            <Marker key={child.name} position={latLng} icon={customMarkerIcon} />
-                          );
-                        })}
-                      </MapContainer>
-                      <div className="absolute top-4 left-4 z-[400] pointer-events-none">
-                         <div className="bg-[#0E1420]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-700/50 shadow-xl flex items-center gap-2">
-                           <Map size={14} className="text-emerald-400"/>
-                           <span className="text-[10px] font-bold text-slate-300">디지털 트윈 모니터링 (가상 위치)</span>
-                         </div>
-                      </div>
-                    </div>
+                    <DigitalTwinMap childrenData={explorerData.children} />
 
                     <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Layers size={14} className="text-blue-500"/> Sub Nodes Leaderboard</h3>
                     <div className="grid grid-cols-1 gap-3">
