@@ -434,6 +434,38 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
         
     return {"status": "success", "report": report_text}
 
+class ChatPayload(BaseModel):
+    path: str
+    industry: str
+    message: str
+
+@app.post("/api/chat")
+async def chat_with_copilot(payload: ChatPayload):
+    path_list = [p for p in payload.path.split("/") if p]
+    obj = engine.get_object(path_list)
+    if not obj: raise HTTPException(status_code=404, detail="Store not found")
+    
+    entries = obj.get("data_entries", [])
+    history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]]) if entries else "아직 데이터가 없습니다."
+    
+    prompt = f"""
+    당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot)입니다.
+    현재 매장의 최근 데이터 피딩 기록:
+    {history_text}
+    
+    사용자의 질문: "{payload.message}"
+    
+    위 데이터를 바탕으로 사용자에게 친절하고 전문적으로 2~3문장 내외로 답변해주세요. 
+    만약 데이터와 무관한 질문이라도 산업군에 맞는 조언을 추가해주세요.
+    """
+    try:
+        res = model.generate_content(prompt)
+        reply = res.text
+    except Exception:
+        reply = "죄송합니다. 현재 네트워크 문제로 답변을 드릴 수 없습니다."
+        
+    return {"status": "success", "reply": reply}
+
 import io
 import csv
 from fastapi.responses import StreamingResponse

@@ -12,6 +12,7 @@ import VoiceRecordModal from './components/modals/VoiceRecordModal.jsx';
 import UpgradeModal from './components/modals/UpgradeModal.jsx';
 import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
 import DigitalTwinMap from './components/dashboard/DigitalTwinMap.jsx';
+import MDGACopilot from './components/dashboard/MDGACopilot.jsx';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import 'leaflet/dist/leaflet.css';
@@ -716,6 +717,9 @@ function MainApp({ userContext, googleUser, onLogout }) {
           />
         )}
       </AnimatePresence>
+
+      {/* Floating AI Copilot */}
+      <MDGACopilot locationPath={userContext.location.join('/')} industry={userContext.industry} />
 
       {/* Global Notifications (Toasts) */}
       <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none flex flex-col gap-2">
