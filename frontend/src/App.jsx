@@ -13,6 +13,7 @@ import UpgradeModal from './components/modals/UpgradeModal.jsx';
 import GovernanceSim from './components/dashboard/GovernanceSim.jsx';
 import DigitalTwinMap from './components/dashboard/DigitalTwinMap.jsx';
 import PulseChart from './components/dashboard/PulseChart.jsx';
+import IoTSensors from './components/dashboard/IoTSensors.jsx';
 import MDGACopilot from './components/dashboard/MDGACopilot.jsx';
 import DataMarket from './components/dashboard/DataMarket.jsx';
 import QuestBoard from './components/dashboard/QuestBoard.jsx';
@@ -522,6 +523,8 @@ function MainApp({ userContext, googleUser, onLogout }) {
                         <p className="text-[10px] text-emerald-500 mt-2 font-bold flex items-center gap-1">업계 트렌드 및 기상/환경 분석 완료</p>
                       </div>
                     </div>
+                    
+                    <IoTSensors industry={userContext.industry} />
                     
                     <div className="bg-[#101725] p-6 rounded-2xl border border-slate-800 shadow-lg">
                       <div className="flex items-center justify-between mb-4">
