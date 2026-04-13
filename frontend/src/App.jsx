@@ -97,7 +97,35 @@ function GoogleLoginScreen({ onLogin }) {
   );
 }
 
+const getMockAddress = (lat, lng) => {
+  const regions = [
+    { lat: 35.8821, lng: 128.6083, gu: '북구', dong: '산격동', street: '연암로 스마트팜 밸리' },
+    { lat: 35.891, lng: 128.643, gu: '동구', dong: '불로동', street: '금호강 생태단지' },
+    { lat: 35.8655, lng: 128.6015, gu: '중구', dong: '삼덕동', street: '동성로' },
+    { lat: 35.869, lng: 128.615, gu: '중구', dong: '동인동', street: '신천역 상권' },
+    { lat: 35.8593, lng: 128.6250, gu: '수성구', dong: '범어동', street: '범어네거리' },
+    { lat: 35.8258, lng: 128.6212, gu: '수성구', dong: '두산동', street: '수성못 수변상권' },
+    { lat: 35.819, lng: 128.537, gu: '달서구', dong: '상인동', street: '상인역 번화가' },
+    { lat: 35.814, lng: 128.522, gu: '달서구', dong: '진천동', street: '진천역 상권' },
+    { lat: 35.8451, lng: 128.5085, gu: '달서구', dong: '성서동', street: '성서산업단지' },
+    { lat: 35.884, lng: 128.595, gu: '북구', dong: '침산동', street: '경북대 창업캠퍼스' },
+    { lat: 35.694, lng: 128.455, gu: '달성군', dong: '현풍읍', street: '테크노폴리스' },
+    { lat: 35.858, lng: 128.458, gu: '달성군', dong: '다사읍', street: '국가산업단지' },
+    { lat: 35.862, lng: 128.544, gu: '서구', dong: '중리동', street: '서대구공단' },
+    { lat: 35.879, lng: 128.628, gu: '동구', dong: '신암동', street: '동대구역 복합환승' }
+  ];
+  
+  let closest = regions[0];
+  let minD = Infinity;
+  for (let r of regions) {
+    const d = Math.pow(r.lat - lat, 2) + Math.pow(r.lng - lng, 2);
+    if (d < minD) { minD = d; closest = r; }
+  }
+  return closest;
+};
+
 function MapController({ center }) {
+
   const map = useMap();
   useEffect(() => {
     map.flyTo(center, 14, { animate: true, duration: 1.5 });
@@ -105,22 +133,18 @@ function MapController({ center }) {
   return null;
 }
 
-function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet }) {
+function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore }) {
   useMapEvents({
     click(e) {
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
       setMapCenter([lat, lng]);
       
-      if (lat > 35.86 && lng < 128.61) {
-        setLocGu('북구'); setLocDong('산격동'); setLocStreet('연암로 스마트팜 밸리');
-      } else if (lat < 35.86 && lng > 128.61) {
-        setLocGu('수성구'); setLocDong('두산동'); setLocStreet('수성못 수변상권');
-      } else if (lat < 35.85 && lng < 128.55) {
-        setLocGu('달서구'); setLocDong('성서동'); setLocStreet('성서산업단지');
-      } else {
-        setLocGu('중구'); setLocDong('삼덕동'); setLocStreet('동성로');
-      }
+      const addr = getMockAddress(lat, lng);
+      setLocGu(addr.gu);
+      setLocDong(addr.dong);
+      setLocStreet(addr.street);
+      setLocStore(''); // Store is cleared to force user selection
     }
   });
   return null;
@@ -177,13 +201,16 @@ function Onboarding({ onComplete, googleUser }) {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setMapCenter([lat, lng]);
-          // Mock reverse geocoding for presentation based on current location
-          setLocGu('수성구');
-          setLocDong('범어동');
-          setLocStreet('범어네거리');
+          const addr = getMockAddress(lat, lng);
+          setLocGu(addr.gu);
+          setLocDong(addr.dong);
+          setLocStreet(addr.street);
+          setLocStore(''); // Clear store
         },
-        () => alert("위치 정보를 가져올 수 없습니다. 브라우저 권한을 확인하세요.")
+        () => alert("위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 권한을 허용해주세요.")
       );
+    } else {
+      alert("Geolocation이 지원되지 않는 브라우저입니다.");
     }
   };
 
@@ -265,7 +292,7 @@ function Onboarding({ onComplete, googleUser }) {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                       />
                       <MapController center={mapCenter} />
-                      <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} />
+                      <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} setLocStore={setLocStore} />
                       <Marker position={mapCenter} icon={customMarkerIcon} />
                     </MapContainer>
                     <div className="absolute bottom-4 left-4 z-[400] pointer-events-none">
