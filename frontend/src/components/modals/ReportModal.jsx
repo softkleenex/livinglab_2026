@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { FileText, X, RefreshCw, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { FileText, X, RefreshCw, Download, Volume2, VolumeX, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
 export default function ReportModal({ onClose, locationPath, userContext }) {
   const [report, setReport] = useState('');
   const [loading, setLoading] = useState(true);
+  const [speaking, setSpeaking] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const utteranceRef = useRef(null);
 
   const isB2B = userContext?.industry && userContext?.industry !== '공공';
   const industryName = userContext?.industry || '비즈니스';
@@ -24,6 +27,10 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
       }
     };
     fetchReport();
+    
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    };
   }, [locationPath, isB2B, userContext?.industry]);
 
   const handleDownload = () => {
@@ -36,35 +43,92 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
     document.body.removeChild(element);
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(report);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const toggleTTS = () => {
+    if (!('speechSynthesis' in window)) return alert('TTS를 지원하지 않는 브라우저입니다.');
+    
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+    } else {
+      const cleanText = report.replace(/[*#_\[\]]/g, '');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 1.15;
+      utterance.onend = () => setSpeaking(false);
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+      setSpeaking(true);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg max-h-[80vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative">
-        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] rounded-t-3xl shrink-0">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-2xl max-h-[85vh] rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420] shrink-0">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg text-white ${isB2B ? 'bg-emerald-600' : 'bg-blue-600'}`}><FileText size={18}/></div>
-            <h3 className="text-base font-bold text-white uppercase">{isB2B ? `AI ${industryName} 데이터 분석 리포트` : '주간 경영 요약 뉴스레터'}</h3>
+            <div className={`p-2 rounded-xl text-white shadow-lg ${isB2B ? 'bg-emerald-600 shadow-emerald-600/20' : 'bg-blue-600 shadow-blue-600/20'}`}><FileText size={18}/></div>
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-wider">{isB2B ? `AI ${industryName} 데이터 분석 리포트` : '주간 경영 요약 뉴스레터'}</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{locationPath}</p>
+            </div>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={20}/></button>
-        </div>
-        <div className="p-5 overflow-y-auto grow custom-scrollbar">
-          {loading ? (
-            <div className="py-10 flex flex-col items-center justify-center gap-4">
-              <RefreshCw className={`animate-spin ${isB2B ? 'text-emerald-500' : 'text-blue-500'}`} size={32}/>
-              <p className="text-sm text-slate-400 font-medium">이번 주 데이터를 분석하여 보고서를 작성 중입니다...</p>
-            </div>
-          ) : (
-            <div className="flex flex-col h-full">
-              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium flex-grow mb-6">
-                {report}
-              </div>
-              <button 
-                onClick={handleDownload}
-                className={`w-full py-3 border rounded-xl font-bold text-sm transition-colors flex justify-center items-center gap-2 mt-auto shrink-0 ${isB2B ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white' : 'bg-blue-600/20 text-blue-400 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
-              >
-                <Download size={16} /> 리포트 텍스트 파일로 저장
+          <div className="flex items-center gap-2">
+            {!loading && (
+              <button onClick={toggleTTS} className={`p-2 rounded-xl border transition-all ${speaking ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white hover:bg-slate-700'}`} title="AI 브리핑 듣기">
+                {speaking ? <VolumeX size={16}/> : <Volume2 size={16}/>}
               </button>
-            </div>
-          )}
+            )}
+            <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-rose-500/20 hover:border-rose-500/50 rounded-xl border border-transparent transition-all"><X size={20}/></button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto grow custom-scrollbar bg-gradient-to-b from-[#101725] to-[#0A0F1A]">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div key="loader" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="py-20 flex flex-col items-center justify-center gap-6">
+                <div className="relative">
+                  <RefreshCw className={`animate-spin ${isB2B ? 'text-emerald-500' : 'text-blue-500'}`} size={40}/>
+                  <div className={`absolute inset-0 blur-xl opacity-50 ${isB2B ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-base text-white font-bold tracking-wide">데이터 교차 분석 및 리포트 작성 중...</p>
+                  <p className="text-xs text-slate-500">상권/지역 평균 지표와 매장 실시간 펄스(Pulse)를 비교하고 있습니다.</p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="content" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="flex flex-col h-full">
+                <div className="text-[13px] sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium flex-grow mb-8 font-mono bg-[#0E1420] p-5 rounded-2xl border border-slate-800 shadow-inner">
+                  {report}
+                </div>
+                
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-auto shrink-0">
+                  <button 
+                    onClick={handleCopy}
+                    className="flex-1 py-3.5 bg-[#0E1420] text-slate-300 border border-slate-700 hover:bg-slate-800 hover:border-slate-500 rounded-xl font-bold text-xs transition-all flex justify-center items-center gap-2"
+                  >
+                    {copied ? <Check size={16} className="text-emerald-400"/> : <Copy size={16}/>} 
+                    {copied ? '복사 완료!' : '텍스트 복사'}
+                  </button>
+                  <button 
+                    onClick={handleDownload}
+                    className={`flex-1 py-3.5 border rounded-xl font-black text-xs transition-all flex justify-center items-center gap-2 shadow-lg ${isB2B ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/50 hover:bg-emerald-600 hover:text-white hover:shadow-emerald-500/30' : 'bg-blue-600/20 text-blue-400 border-blue-500/50 hover:bg-blue-600 hover:text-white hover:shadow-blue-500/30'}`}
+                  >
+                    <Download size={16} /> 원문 다운로드 (.txt)
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </motion.div>
