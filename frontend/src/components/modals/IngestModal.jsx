@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-export default function IngestModal({ isGuest, onClose, onSuccess, locationPath }) {
+export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, addToast }) {
   const [rawText, setRawText] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -35,7 +35,9 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath 
       const response = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
       setRes(response.data);
       setTimeout(onSuccess, 2500);
-    } catch (err) { alert("업로드 실패"); }
+    } catch (err) { 
+      addToast("업로드에 실패했습니다. 사진 용량이나 네트워크를 확인해주세요.", "error"); 
+    }
     finally { setLoading(false); }
   };
 

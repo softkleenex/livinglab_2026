@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-export default function VoiceRecordModal({ isGuest, onClose, onSuccess, locationPath }) {
+export default function VoiceRecordModal({ isGuest, onClose, onSuccess, locationPath, addToast }) {
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -48,7 +48,8 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
       await axios.post(`${API_BASE_URL}/api/ingest`, formData);
       onSuccess();
     } catch (err) { 
-      alert("업로드 실패"); 
+      if (addToast) addToast("업로드에 실패했습니다. 음성 인식 결과를 다시 확인해주세요.", "error");
+      else alert("업로드 실패"); 
     } finally { 
       setLoading(false); 
     }

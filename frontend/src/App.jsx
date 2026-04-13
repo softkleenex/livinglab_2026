@@ -823,6 +823,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
               else fetchExplorer();
             }}
             locationPath={userContext.location.join('/')}
+            addToast={addToast}
           />
         )}
         {showVoice && (
@@ -836,6 +837,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
               else fetchExplorer();
             }}
             locationPath={userContext.location.join('/')}
+            addToast={addToast}
           />
         )}
         {showReport && (
