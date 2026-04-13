@@ -279,7 +279,7 @@ async def ingest(
             target_obj = engine.create_or_get_path(path_list, ["Gu", "Dong", "Street", "Store"])
 
         # Deep Analysis via LLM
-        prompt_parts = [f"다음은 {location} 지역 소상공인이 올린 데이터입니다. 데이터를 분석하고 매장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"]
+        prompt_parts = [f"다음은 {location} 지역 사업장이 올린 데이터입니다. 데이터를 분석하고 사업장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"]
         if file and file.content_type.startswith('image/'):
             try:
                 img = Image.open(io.BytesIO(file_data))
@@ -299,7 +299,7 @@ async def ingest(
             elif any(keyword in content for keyword in ["반토막", "떨어", "부족", "없어", "감소"]):
                 insights = "가상 지능 분석: 기상 악화(우천 등)로 인한 일시적인 유동인구 감소입니다. 배달 프로모션 비율을 높이거나, 비 오는 날 전용 쿠폰을 단골 고객에게 발송해 방어 전략을 취하세요."
             elif file and file.content_type.startswith('image/'):
-                insights = "가상 지능 분석 (비전): 업로드하신 매장/영수증 이미지가 성공적으로 스캔되었습니다. 진열장 레이아웃이 매우 깔끔하며, 추가적인 조명 배치가 고객 체류 시간을 15% 늘릴 수 있습니다."
+                insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
         
@@ -399,7 +399,7 @@ async def demo_inject(path: str):
         mock_insights = [
             {"date": "2026-04-05", "text": "가상 지능 분석: 주말 매출이 지난주 대비 15% 상승했습니다. 특히 아메리카노와 케이크 세트 메뉴의 반응이 좋습니다. 세트 메뉴 프로모션을 연장하는 것을 권장합니다.", "trust": 88.5},
             {"date": "2026-04-07", "text": "가상 지능 분석: 원두 재고 소진 속도가 예상보다 빠릅니다. 내일까지 원두가 5kg 미만으로 떨어질 수 있으니, 즉시 인근 로스터리에서 비상 구매를 하거나 거래처에 긴급 배송을 요청하세요.", "trust": 92.0},
-            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 매장 전경 이미지를 스캔했습니다. 진열장 레이아웃이 깔끔하나, 간접 조명을 추가 배치하면 고객 체류 시간을 15% 더 늘릴 수 있습니다.", "trust": 95.5, "link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"}
+            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 현장 이미지를 스캔했습니다. 프로세스 및 공간 배치가 효율적이나, 추가적인 모니터링 센서 도입 시 효율을 15% 더 늘릴 수 있습니다.", "trust": 95.5, "link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"}
         ]
         
         total_effective_value = 0
@@ -485,7 +485,7 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
     
     entries = obj.get("data_entries", [])
     if not entries:
-        return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 매장의 일상이나 영수증을 먼저 피딩(업로드)해 주세요!"}
+        return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 사업장의 일상이나 현장 데이터를 먼저 피딩(업로드)해 주세요!"}
         
     history_text = "\n".join([f"- {e['timestamp']}: {e['insights']} (신뢰도: {e.get('trust_index', 50)}%)" for e in entries[-7:]])
     
@@ -498,7 +498,7 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
     weather_info = await get_weather_forecast(location[0], location[1])
 
     prompt = f"""
-    당신은 '{obj['name']}' 매장/기업의 전담 최고경영자(CEO) 컨설턴트이자 최고 데이터 분석가(CDO)입니다.
+    당신은 '{obj['name']}' 사업장/기업의 전담 최고경영자(CEO) 컨설턴트이자 최고 데이터 분석가(CDO)입니다.
     대상 산업군(Industry)은 '{industry}'입니다. 
 
     [정량적 데이터 지표 (Quantitative Data)]
@@ -557,9 +557,9 @@ async def chat_with_copilot(payload: ChatPayload):
     prompt = f"""
     당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot)입니다.
     
-    [실시간 매장 데이터]
+    [실시간 사업장 현황]
     - 누적 매출/생산 가치: {current_value}원 (상권 평균: {parent_avg}원)
-    - 매장 활성도: {current_pulse} BPM
+    - 사업장 활성도: {current_pulse} BPM
     
     [최근 데이터 피딩 기록]
     {history_text}
@@ -621,7 +621,7 @@ async def export_csv(path: str, industry: str = "공공"):
         if industry == '스마트팜':
             insight = random.choice(['토양 수분량 최적화 달성', '스마트 관수 시스템 가동', '병해충 사전 예측 및 방제', '신규 엽채류 수확 및 출하', '온실 온도 0.5도 하향 조정 완료'])
         elif industry in ['요식업', '식음료']:
-            insight = random.choice(['주말 디너 웨이팅 20팀 돌파', '신메뉴 리뷰 평점 4.8 달성', '배달 플랫폼 우수 매장 선정', '식자재 폐기율 5% 감소', '단체 회식 예약 3건 접수'])
+            insight = random.choice(['주말 디너 웨이팅 20팀 돌파', '신메뉴 리뷰 평점 4.8 달성', '배달 플랫폼 우수 사업장 선정', '식자재 폐기율 5% 감소', '단체 회식 예약 3건 접수'])
         elif industry in ['IT/제조', '제조업']:
             insight = random.choice(['공정 불량률 0.1% 개선', 'A라인 가동률 98% 달성', '스마트 팩토리 센서 데이터 동기화', '신규 부품 품질 검수 통과', '야간 무인 가동 테스트 성공'])
         else:

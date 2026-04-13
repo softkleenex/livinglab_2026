@@ -210,7 +210,7 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  <div className="bg-[#101725] p-8 rounded-2xl border border-slate-800 text-center flex flex-col items-center gap-4 shadow-lg">
  <Database size={40} className="text-slate-700" />
  <p className="text-sm font-bold text-slate-400">자산화된 데이터가 없습니다.</p>
- <p className="text-[10px] text-slate-500 leading-relaxed break-keep">가게 사진이나 영수증을 업로드하고 AI 컨설팅을 받아보세요.</p>
+ <p className="text-[10px] text-slate-500 leading-relaxed break-keep">현장 사진이나 데이터를 업로드하고 AI 컨설팅을 받아보세요.</p>
  <button onClick={handleDemoInject} className="px-4 py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-colors w-full mt-2">
  데모 데이터 자동 주입
  </button>

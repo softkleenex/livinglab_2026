@@ -8,7 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.
 export default function MDGACopilot({ locationPath, industry }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "안녕하세요! MDGA AI Copilot입니다. 매장 데이터나 운영에 대해 무엇이든 물어보세요.", sender: 'ai' }
+    { id: 1, text: "안녕하세요! MDGA AI Copilot입니다. 사업장 데이터나 운영에 대해 무엇이든 물어보세요.", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

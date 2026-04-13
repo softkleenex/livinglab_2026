@@ -59,7 +59,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
               ) : (
                 <p className="text-xs text-emerald-400 text-center font-bold">✨ 구글 공식 인증 계정: 업로드 데이터에 높은 신뢰도 가중치가 부여됩니다.</p>
               )}
-              <p className="text-xs text-slate-400 text-center">텍스트는 물론, 매장의 전경이나 영수증을 업로드하면 Vision AI가 분석하여 자산화합니다.</p>
+              <p className="text-xs text-slate-400 text-center">텍스트는 물론, 사업장의 전경이나 데이터를 업로드하면 Vision AI가 분석하여 자산화합니다.</p>
               
               {preview && (
                 <div className="relative w-full h-32 bg-black rounded-xl overflow-hidden border border-slate-800">

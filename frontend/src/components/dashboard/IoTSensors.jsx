@@ -3,14 +3,15 @@ import { motion } from 'framer-motion';
 import { Thermometer, Droplets, Wind, Zap } from 'lucide-react';
 
 export default function IoTSensors({ industry }) {
-  const isFarmOrFactory = industry && (industry.includes('스마트팜') || industry.includes('농업') || industry.includes('제조'));
+  const isFarm = industry && (industry.includes('스마트팜') || industry.includes('농업'));
+  const isManuf = industry && (industry.includes('제조') || industry.includes('물류'));
   
-  if (!isFarmOrFactory) return null;
+  if (!isFarm && !isManuf) return null;
 
   const [sensors, setSensors] = useState([
-    { id: 1, label: "내부 온도", value: 24.5, unit: "°C", icon: Thermometer, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
-    { id: 2, label: "토양 습도", value: 68.2, unit: "%", icon: Droplets, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-    { id: 3, label: "CO2 농도", value: 450, unit: "ppm", icon: Wind, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+    { id: 1, label: isFarm ? "내부 온도" : "설비 온도", value: 24.5, unit: "°C", icon: Thermometer, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+    { id: 2, label: isFarm ? "토양 습도" : "모터 진동", value: 68.2, unit: isFarm ? "%" : "Hz", icon: Droplets, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+    { id: 3, label: isFarm ? "CO2 농도" : "가동률", value: isFarm ? 450 : 98, unit: isFarm ? "ppm" : "%", icon: Wind, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
     { id: 4, label: "전력 소모량", value: 1.2, unit: "kW", icon: Zap, color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" }
   ]);
 

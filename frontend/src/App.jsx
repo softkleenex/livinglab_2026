@@ -313,7 +313,7 @@ function Onboarding({ onComplete, googleUser }) {
  {levelId === 'store' && (
  <div className="space-y-2">
  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry (산업군)</label>
- <input required placeholder="예: 요식업, 카페, 도소매, 스마트팜" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+ <input required placeholder="예: 스마트팜, 제조업, IT서비스, 요식업" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
  </div>
  )}
  
