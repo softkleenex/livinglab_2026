@@ -417,35 +417,51 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found")
     
+    # Get Parent context for competitiveness
+    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    parent_avg = parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1))
+    
     entries = obj.get("data_entries", [])
     if not entries:
         return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 매장의 일상이나 영수증을 먼저 피딩(업로드)해 주세요!"}
         
-    history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]])
+    history_text = "\n".join([f"- {e['timestamp']}: {e['insights']} (신뢰도: {e.get('trust_index', 50)}%)" for e in entries[-7:]])
     
-    # Fetch real weather data generically, useful for many industries (e.g. F&B, Agriculture, Tourism)
+    # Quantitative Metrics
+    current_value = obj["metadata"].get("total_value", 0)
+    current_pulse = obj["metadata"].get("pulse_rate", 0)
+    
+    # Fetch real weather data
     location = obj.get("metadata", {}).get("location", [35.8714, 128.6014])
     weather_info = await get_weather_forecast(location[0], location[1])
 
     prompt = f"""
-    당신은 '{obj['name']}' 매장/기업의 전담 최고경영자(CEO) 컨설턴트입니다.
-    대상 산업군(Industry)은 '{industry}'입니다. 반드시 이 산업군의 특성(예: 요식업이면 재고/방문객, 제조업/스마트팜이면 생산량/출고량, 도소매면 재고/유통 등)에 맞춰 리포트를 작성해야 합니다.
+    당신은 '{obj['name']}' 매장/기업의 전담 최고경영자(CEO) 컨설턴트이자 최고 데이터 분석가(CDO)입니다.
+    대상 산업군(Industry)은 '{industry}'입니다. 
+
+    [정량적 데이터 지표 (Quantitative Data)]
+    - 누적 자산(매출/생산가치): {current_value}원
+    - 상권/지역({parent_obj['name']}) 평균 자산: {parent_avg}원
+    - 현재 조직 활성도(Pulse): {current_pulse} BPM
+    - 주간 기상 및 환경 예측: {weather_info}
     
-    이번 주 운영자가 업로드한 데이터(영수증, 장부, 영농일지 등)와 AI 피드백 히스토리는 다음과 같습니다:
+    [정성적 데이터 피딩 히스토리 (Qualitative Data)]
     {history_text}
     
-    [실시간 기상청/Open-Meteo 연동 데이터]: {weather_info}
-    기상 데이터가 해당 산업에 미칠 영향(예: 비가 오면 배달 증가, 기온이 오르면 작물 생장 촉진 또는 냉방비 증가 등)을 분석에 포함하세요.
-    
-    이 내용을 바탕으로 운영자에게 제공할 'AI 데이터 분석 및 주간 경영/생산 리포트'를 작성해주세요.
+    위의 '정량적 지표'와 '정성적 히스토리', 그리고 '기상 예측'을 입체적으로 교차 분석(Cross-validation)하여,
+    '{industry}' 산업 특성에 맞는 고도화된 주간 경영/생산 분석 리포트를 작성해 주세요.
+    특히, 소속 상권({parent_obj['name']}) 평균 대비 경쟁력을 수치 기반으로 분석해 주세요.
+
     형식은 다음을 지켜주세요 (마크다운 없이 일반 텍스트와 이모지로만 깔끔하게 구성):
     
     [{industry} 산업 맞춤형 주간 요약]
+    (단순 요약이 아닌, 데이터 지표의 변화와 원인을 짚어줄 것)
     ...
-    [데이터 기반 핵심 분석 및 인사이트]
-    (산업 특성에 맞는 구체적인 수치 예측과 기후({weather_info})/트렌드를 포함한 논리적 근거 제시)
+    [데이터 기반 핵심 분석 및 상권 비교]
+    (지역 평균({parent_avg}원) 대비 성과 분석 및 기상 데이터를 융합한 인사이트 도출)
     ...
     [다음 주 핵심 액션 플랜]
+    (1, 2, 3번으로 넘버링하여 구체적이고 당장 실행 가능한 지시사항 전달)
     ...
     """
     try:
@@ -467,17 +483,28 @@ async def chat_with_copilot(payload: ChatPayload):
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found")
     
+    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    parent_avg = parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1))
+    
     entries = obj.get("data_entries", [])
     history_text = "\n".join([f"- {e['timestamp']}: {e['insights']}" for e in entries[-5:]]) if entries else "아직 데이터가 없습니다."
     
+    current_value = obj["metadata"].get("total_value", 0)
+    current_pulse = obj["metadata"].get("pulse_rate", 0)
+    
     prompt = f"""
     당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot)입니다.
-    현재 매장의 최근 데이터 피딩 기록:
+    
+    [실시간 매장 데이터]
+    - 누적 매출/생산 가치: {current_value}원 (상권 평균: {parent_avg}원)
+    - 매장 활성도: {current_pulse} BPM
+    
+    [최근 데이터 피딩 기록]
     {history_text}
     
     사용자의 질문: "{payload.message}"
     
-    위 데이터를 바탕으로 사용자에게 친절하고 전문적으로 2~3문장 내외로 답변해주세요. 
+    위의 구체적인 수치 데이터와 기록을 반드시 인용하면서, 사용자에게 친절하고 전문적으로 2~3문장 내외로 답변해주세요. 
     만약 데이터와 무관한 질문이라도 산업군에 맞는 조언을 추가해주세요.
     """
     try:
