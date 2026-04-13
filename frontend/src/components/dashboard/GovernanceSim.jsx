@@ -50,7 +50,7 @@ export default function GovernanceSim({ explorerData }) {
  return (
  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-4xl mx-auto w-full pb-8 px-2 ">
  <div className="flex flex-col gap-2">
- <Badge label="GOV LEVEL" color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
+ <Badge label={`${explorerData?.type || 'GOV'} LEVEL SIMULATION`} color="bg-rose-500/10 text-rose-400 border-rose-500/20" />
  <h2 className="text-2xl font-black text-white">Policy Simulator</h2>
  <p className="text-slate-400 text-[10px] mt-1">AI 기반 예산 투입 효과 시뮬레이션 시스템</p>
  </div>

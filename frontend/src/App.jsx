@@ -37,7 +37,7 @@ const customMarkerIcon = new L.DivIcon({
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
 const LEVELS = [
- { id: 'store', role: 'store', name: '가게 (Store)', icon: <Store size={24}/>, desc: '매출, 가게 정보, 리뷰 등 내 매장 데이터' },
+ { id: 'store', role: 'store', name: '사업장 (Store)', icon: <Store size={24}/>, desc: '매출, 현황, 리뷰 등 내 사업장 데이터' },
  { id: 'street', role: 'leader', name: '거리 (Street)', icon: <Map size={24}/>, desc: '해당 거리 내 사업자들의 취합 데이터' },
  { id: 'dong', role: 'leader', name: '동 (Dong)', icon: <Users size={24}/>, desc: '거리 데이터들의 집합 (동 단위 트렌드)' },
  { id: 'gu', role: 'gov', name: '구 (Gu)', icon: <Building2 size={24}/>, desc: '동 데이터들의 집합 (구별 산업 특성)' }
@@ -255,8 +255,8 @@ function Onboarding({ onComplete, googleUser }) {
  const selectedLevel = LEVELS.find(l => l.id === levelId);
  let location = ['대구광역시'];
  if (locGu) location.push(locGu);
- if (locDong) location.push(locDong);
- if (locStreet) location.push(locStreet);
+ if ((levelId === 'dong' || levelId === 'street' || levelId === 'store') && locDong) location.push(locDong);
+ if ((levelId === 'street' || levelId === 'store') && locStreet) location.push(locStreet);
  if (levelId === 'store' && locStore) location.push(locStore);
 
  setLoading(true);
@@ -277,11 +277,17 @@ function Onboarding({ onComplete, googleUser }) {
  <div className="w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden mt-4 shrink-0">
  <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
  <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
- <p className="text-slate-400 mb-8 relative z-10">
- {!googleUser?.isGuest ? (
- <span className="text-emerald-400 font-bold">✨ 구글 공식 인증된 사업자(Store) 모드로 자동 설정됩니다. 다른 단위도 선택 가능합니다.</span>
+ <p className="text-slate-400 mb-8 relative z-10 text-[11px] leading-relaxed break-keep">
+ {levelId === 'store' ? (
+   !googleUser?.isGuest ? (
+     <span className="text-emerald-400 font-bold">✨ 구글 인증 사업장(Store) 모드입니다. 데이터 피딩 시 신뢰도 보너스가 적용됩니다.</span>
+   ) : (
+     <span className="text-orange-400 font-bold">⚠️ 게스트 모드로 진입 중입니다. 사업장(Store) 피딩 시 신뢰도 패널티가 적용됩니다.</span>
+   )
+ ) : levelId ? (
+   <span className="text-blue-400 font-bold">🏢 {LEVELS.find(l => l.id === levelId)?.name.split(' ')[0]} 관리자/정책 담당자 모드로 진입 중입니다. 관할 구역 데이터를 조회합니다.</span>
  ) : (
- <span className="text-orange-400 font-bold">⚠️ 게스트 모드로 진입 중입니다. 매장(Store) 데이터 업로드 시 신뢰도 패널티가 적용됩니다.</span>
+   <span className="text-slate-400 font-bold">🎯 본인의 페르소나(객체 단위)를 먼저 선택해 주세요.</span>
  )}
  </p>
  
@@ -429,7 +435,7 @@ function Onboarding({ onComplete, googleUser }) {
  )}
  {(existingStores.length === 0 || isNewStore) && (
  <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
- <input required placeholder="새로운 매장/농장 이름을 입력하세요" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ <input required placeholder="새로운 사업장/농장 이름을 입력하세요" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
  </motion.div>
  )}
  </div>
@@ -450,7 +456,7 @@ function Onboarding({ onComplete, googleUser }) {
 }
 
 function MainApp({ userContext, googleUser, onLogout }) {
- const [currentPath, setCurrentPath] = useState(userContext.role === 'gov' ? [] : userContext.location.slice(1));
+ const [currentPath, setCurrentPath] = useState(userContext.role === 'store' ? userContext.location.slice(1, -1) : userContext.location.slice(1));
  const [explorerData, setExplorerData] = useState(null);
  const [personalData, setPersonalData] = useState(null);
  const [loading, setLoading] = useState(true);
@@ -524,7 +530,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
  setPersonalData(res.data);
  } catch (err) {
  setPersonalData(null);
- addToast("내 매장 데이터를 불러오는데 실패했습니다.", 'error');
+ addToast("내 사업장 데이터를 불러오는데 실패했습니다.", 'error');
  } finally {
  setLoading(false);
  }
@@ -659,7 +665,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
  {/* Bottom Nav (App-like for all views) */}
  <nav className="flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 absolute bottom-0 left-0 right-0 w-full">
  {userContext.role === 'store' && (
- <BottomNavLink icon={<Store size={20}/>} label="내 매장" active={activeTab === 'personal' && !showIngest} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
+ <BottomNavLink icon={<Store size={20}/>} label="내 사업장" active={activeTab === 'personal' && !showIngest} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
  )}
  <BottomNavLink icon={<Map size={20}/>} label="트윈 맵" active={activeTab === 'explorer' && !showIngest} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
  <BottomNavLink icon={<ShoppingCart size={20}/>} label="마켓" active={activeTab === 'market' && !showIngest} onClick={()=>{setActiveTab('market'); setShowIngest(false);}} />

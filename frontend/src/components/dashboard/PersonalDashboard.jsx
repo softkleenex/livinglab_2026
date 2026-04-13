@@ -75,7 +75,7 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  <p className="text-slate-400 text-xs ">
  {isB2B 
  ? `[${userContext.industry}] 전용 비즈니스 통합 관리 대시보드` 
- : '내 매장 현황 및 데이터 자산화 보상 분석'}
+ : '내 사업장 현황 및 데이터 자산화 보상 분석'}
  </p>
  </div>
  </div>
@@ -144,7 +144,7 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 9 }} />
  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
  <Tooltip contentStyle={{ backgroundColor: '#0E1420', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '10px' }} />
- <Radar name="내 매장 (Store)" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
+ <Radar name="내 사업장 (Site)" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
  <Radar name="상권 평균 (Avg)" dataKey="B" stroke="#10b981" fill="#10b981" fillOpacity={0.2} />
  </RadarChart>
  </ResponsiveContainer>
