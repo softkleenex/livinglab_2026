@@ -133,6 +133,32 @@ function Onboarding({ onComplete, googleUser }) {
   const [locStore, setLocStore] = useState('');
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState([35.8714, 128.6014]); // Daegu center
+  const [existingStores, setExistingStores] = useState([]);
+  const [isNewStore, setIsNewStore] = useState(false);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      if (levelId === 'store' && locGu && locDong && locStreet) {
+        try {
+          const pathStr = `대구광역시/${locGu}/${locDong}/${locStreet}`;
+          const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
+          if (res.data && res.data.children) {
+            setExistingStores(res.data.children.map(c => c.name));
+            if (!res.data.children.find(c => c.name === locStore)) {
+               setLocStore('');
+            }
+          }
+        } catch (e) {
+          setExistingStores([]);
+        }
+      } else {
+        setExistingStores([]);
+      }
+    };
+    // Debounce slightly
+    const timer = setTimeout(fetchStores, 500);
+    return () => clearTimeout(timer);
+  }, [locGu, locDong, locStreet, levelId]);
 
   useEffect(() => {
     if (locDong.includes('산격')) setMapCenter([35.8821, 128.6083]);
@@ -263,8 +289,34 @@ function Onboarding({ onComplete, googleUser }) {
                       </div>
                     )}
                     {levelId === 'store' && (
-                      <div className="relative group col-span-2 sm:col-span-1">
-                        <input required placeholder="매장명 (예: 지니스팜 제1농장)" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+                      <div className="col-span-2 sm:col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
+                        <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> Select or Add Store</label>
+                        {existingStores.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {existingStores.map(store => (
+                              <button 
+                                key={store} 
+                                type="button"
+                                onClick={() => { setLocStore(store); setIsNewStore(false); }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locStore === store && !isNewStore ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
+                              >
+                                {store}
+                              </button>
+                            ))}
+                            <button 
+                              type="button"
+                              onClick={() => { setLocStore(''); setIsNewStore(true); }}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed transition-all ${isNewStore ? 'bg-blue-600/20 text-blue-400 border-blue-500' : 'border-slate-600 text-slate-500 hover:text-slate-300'}`}
+                            >
+                              <Plus size={12} className="inline mr-1"/> 신규 등록
+                            </button>
+                          </div>
+                        )}
+                        {(existingStores.length === 0 || isNewStore) && (
+                          <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
+                            <input required placeholder="새로운 매장/농장 이름을 입력하세요" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+                          </motion.div>
+                        )}
                       </div>
                     )}
                   </div>
