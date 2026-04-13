@@ -89,8 +89,70 @@ def get_drive_service():
 
 from app.core.engine import engine, HierarchyEngine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry
+from app.core.database import get_db, DataEntry, SessionLocal
 from fastapi import Depends
+
+@app.on_event("startup")
+def seed_agora_data():
+    db = SessionLocal()
+    try:
+        if db.query(DataEntry).count() == 0:
+            mock_entries = [
+                {
+                    "location_path": "대구광역시/북구/산격동/연암로 스마트팜 밸리",
+                    "industry": "스마트팜",
+                    "insights": "[AI 분석] 최근 3일간 온실 야간 온도를 2도 낮춘 결과, 파프리카 생장 속도는 유지되면서 난방비 에너지가 18% 절감되었습니다. 인근 3개 농가 교차 검증 완료.",
+                    "trust_index": 98.5,
+                    "effective_value": 150000.0,
+                    "hash_val": "seed_farm_01",
+                    "created_at": datetime.datetime.utcnow() - datetime.timedelta(hours=2)
+                },
+                {
+                    "location_path": "대구광역시/달서구/성서동/성서산업단지",
+                    "industry": "제조업",
+                    "insights": "[AI 분석] 3번 라인 모터 진동 센서(IoT)에서 비정상 주파수가 감지되었습니다. 이전 12건의 고장 데이터와 대조한 결과, 베어링 마모일 확률이 88%로 예측됩니다. 조기 점검을 권장합니다.",
+                    "trust_index": 96.2,
+                    "effective_value": 2400000.0,
+                    "hash_val": "seed_manuf_01",
+                    "created_at": datetime.datetime.utcnow() - datetime.timedelta(hours=5)
+                },
+                {
+                    "location_path": "대구광역시/수성구/범어동/범어네거리",
+                    "industry": "요식업",
+                    "insights": "[AI 분석] 2분기 배달 앱 매출 분석 결과, 우천 시 '비대면 결제' 비율이 45% 상승하며, 평균 객단가가 12% 증가하는 패턴을 확인했습니다. 날씨 연동 프로모션 최적화가 필요합니다.",
+                    "trust_index": 92.1,
+                    "effective_value": 45000.0,
+                    "hash_val": "seed_food_01",
+                    "created_at": datetime.datetime.utcnow() - datetime.timedelta(hours=12)
+                },
+                {
+                    "location_path": "대구광역시/달성군/유가읍/테크노폴리스 외곽",
+                    "industry": "스마트팜",
+                    "insights": "[AI 분석] 토양 EC(전기전도도) 센서 데이터 군집 분석 결과, 특정 비료 비율에서 딸기 당도가 최대 1.2 Brix 향상되는 최적 배양액 혼합비를 도출했습니다. 해당 배합비는 마켓에서 자산화되었습니다.",
+                    "trust_index": 99.0,
+                    "effective_value": 350000.0,
+                    "hash_val": "seed_farm_02",
+                    "created_at": datetime.datetime.utcnow() - datetime.timedelta(days=1)
+                },
+                {
+                    "location_path": "대구광역시/북구/검단동/유통단지",
+                    "industry": "물류업",
+                    "insights": "[AI 분석] 야간 상하차 트래픽 분석 결과, 새벽 2시~4시 사이의 병목 현상이 차량 동선 최적화로 30% 개선될 여지가 있습니다. 관련 라우팅 알고리즘 시뮬레이션 결과를 첨부합니다.",
+                    "trust_index": 89.4,
+                    "effective_value": 500000.0,
+                    "hash_val": "seed_logi_01",
+                    "created_at": datetime.datetime.utcnow() - datetime.timedelta(days=2)
+                }
+            ]
+            for m in mock_entries:
+                entry = DataEntry(**m)
+                db.add(entry)
+            db.commit()
+            print("🌱 Successfully seeded Agora DataEntry items!")
+    except Exception as e:
+        print(f"Error seeding data: {e}")
+    finally:
+        db.close()
 
 # --- 🚀 API Endpoints ---
 
