@@ -46,11 +46,27 @@ export default function DataMarket({ addToast }) {
     }
   ];
 
-  const handleBuy = () => {
+  const handleBuy = (item) => {
     setBuying(true);
     setTimeout(() => {
       setBuying(false);
-      addToast("결제가 완료되었습니다. 데이터 다운로드가 시작됩니다.", "success");
+      addToast(`결제가 완료되었습니다. ${item.title} 다운로드가 시작됩니다.`, "success");
+      
+      let csvContent = "Date,Region,Value,Category\n";
+      for(let i=0; i<50; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        csvContent += `${d.toISOString().split('T')[0]},대구광역시,${Math.floor(Math.random() * 100000)},${item.tags[0] || '분석'}\n`;
+      }
+      
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `MDGA_Dataset_${item.title.replace(/\s+/g, '_')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }, 1500);
   };
 
@@ -134,7 +150,7 @@ export default function DataMarket({ addToast }) {
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Price</span>
                     <span className="text-xl font-black text-yellow-400 flex items-center gap-1"><img src="/favicon.svg" className="w-4 h-4 opacity-70 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt=""/> {dataset.price.toLocaleString()} <span className="text-[10px] text-yellow-500/50">$MDGA</span></span>
                   </div>
-                  <button onClick={handleBuy} disabled={buying} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-900/20 flex items-center gap-2 transition-all disabled:opacity-50">
+                  <button onClick={() => handleBuy(dataset)} disabled={buying} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-900/20 flex items-center gap-2 transition-all disabled:opacity-50">
                     {buying ? <RefreshCw size={14} className="animate-spin"/> : <ShoppingCart size={14}/>} Buy Data
                   </button>
                 </div>
