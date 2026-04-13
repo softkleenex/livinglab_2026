@@ -8,5 +8,5 @@ app/data/*.json
 backend/client_secret.json
 backend/token.json
 **/__pycache__/
-\nchrome/
 chrome/
+*.db
