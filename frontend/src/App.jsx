@@ -557,7 +557,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
     addToast("CSV 데이터 다운로드를 시작합니다...", "info");
     try {
       const pathStr = userContext.location.join('/');
-      const res = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}`, { responseType: 'blob' });
+      const res = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(userContext.industry || '공공')}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -572,19 +572,8 @@ function MainApp({ userContext, googleUser, onLogout }) {
   };
 
   const handleDemoInject = async () => {
-    setLoading(true);
-    addToast("데모 데이터를 생성 중입니다...", 'info');
-    try {
-      const pathStr = userContext.location.join('/');
-      await axios.post(`${API_BASE_URL}/api/demo/inject?path=${pathStr}`);
-      addToast("데모 데이터 주입이 완료되었습니다.", 'success');
-      fetchPersonal();
-    } catch(e) { 
-      addToast("데모 데이터 주입에 실패했습니다.", 'error'); 
-    }
-    finally { setLoading(false); }
+    alert("현재 데이터 통합 연동은 베타 테스트 중입니다. B2B 스마트팜, 첨단제조업 등 사전 준비된 산업체 계정으로 전환(글로벌 파트너사 목록에서 빠른 이동)하여 진행해 주십시오.");
   };
-
   const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
   const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
 
