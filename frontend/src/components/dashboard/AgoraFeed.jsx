@@ -13,10 +13,14 @@ const Badge = React.memo(({ label, icon, color }) => {
   );
 });
 
-export default function AgoraFeed({ addToast }) {
+export default function AgoraFeed({ addToast, userContext }) {
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const locGu = userContext?.location?.[1] || '대구광역시';
+  const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
+  const isManuf = userContext?.industry?.includes('제조') || userContext?.industry?.includes('물류');
 
   const fetchFeed = async () => {
     setLoading(true);
@@ -49,7 +53,7 @@ export default function AgoraFeed({ addToast }) {
         </div>
         <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Community Feed</h2>
         <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-          MDGA 생태계에 업로드된 데이터에서 AI가 추출한 유용한 인사이트가 실시간으로 비식별화되어 공유됩니다. 유용한 정보에 후원(Like)해 보세요!
+          {locGu} 지역 {isFarm ? '농업/스마트팜' : isManuf ? '제조/물류' : '상권/비즈니스'} 생태계에 업로드된 데이터에서 AI가 추출한 유용한 인사이트가 실시간으로 비식별화되어 공유됩니다. 유용한 정보에 후원(Like)해 보세요!
         </p>
       </div>
 

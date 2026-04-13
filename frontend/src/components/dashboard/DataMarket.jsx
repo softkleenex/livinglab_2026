@@ -10,38 +10,42 @@ const Badge = React.memo(({ label, icon, color }) => {
  );
 });
 
-export default function DataMarket({ addToast }) {
+export default function DataMarket({ addToast, userContext }) {
  const [buying, setBuying] = useState(false);
+
+ const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
+ const isManuf = userContext?.industry?.includes('제조') || userContext?.industry?.includes('물류');
+ const locGu = userContext?.location?.[1] || '대구광역시';
 
  const mockDataSets = [
  {
  id: 1,
- title: "대구 북구 요식업 24년 1분기 트렌드",
- provider: "경대북문 상권 리더 연합",
+ title: isFarm ? `${locGu} 온실 생육-날씨 상관관계 분석` : isManuf ? `${locGu} 산업단지 야간 물류 트래픽` : `${locGu} 상권 24년 1분기 소비 트렌드`,
+ provider: isFarm ? "지니스팜 및 3개 농가" : isManuf ? "스마트물류(주) 컨소시엄" : "지역 상인 연합회",
  trust: 94.5,
  price: 15000,
  rows: "12,450",
- tags: ["요식업", "매출", "시간대별"],
+ tags: isFarm ? ["스마트팜", "생육", "기상"] : isManuf ? ["물류", "트래픽", "야간"] : ["매출", "시간대별", "유동인구"],
  popular: true
  },
  {
  id: 2,
- title: "산격동 스마트팜 생육-날씨 상관관계",
- provider: "지니스팜 및 3개 농가",
+ title: isFarm ? "특용작물 병해충 발생 빈도와 습도" : isManuf ? "정밀가공 불량률 패턴 분석" : "MZ세대 야간 카페 방문 비율 데이터",
+ provider: isFarm ? "스마트팜 혁신밸리" : isManuf ? "테크노폴리스 연합" : "대형 베이커리 네트워크",
  trust: 98.2,
  price: 25000,
  rows: "45,200",
- tags: ["스마트팜", "생육", "기상"],
+ tags: isFarm ? ["병해충", "습도", "예측"] : isManuf ? ["제조", "불량률", "공정"] : ["카페", "배달", "수요예측"],
  popular: true
  },
  {
  id: 3,
- title: "수성구 카페/베이커리 배달 수요 변화",
- provider: "수성못 카페 연합회",
+ title: isFarm ? "로컬 유통망 농산물 시세 변동 기록" : isManuf ? "폐배터리 재활용 공정 효율 데이터" : "주말 관광객 오프라인 결제 리텐션",
+ provider: isFarm ? "농산물 도매센터" : isManuf ? "에코 재생에너지" : "수성못 상인회",
  trust: 89.1,
  price: 8500,
  rows: "8,900",
- tags: ["카페", "배달", "수요예측"],
+ tags: isFarm ? ["시세", "유통", "예측"] : isManuf ? ["재활용", "효율", "에너지"] : ["관광", "리텐션", "소비"],
  popular: false
  }
  ];
@@ -91,7 +95,11 @@ export default function DataMarket({ addToast }) {
  <div>
  <p className="text-[10px] text-slate-500 font-bold mb-2">INDUSTRY</p>
  <div className="flex flex-wrap gap-2">
- {['요식업', '스마트팜', '도소매', '서비스'].map(tag => (
+ {isFarm ? ['생육데이터', '기상/온습도', '병해충', '유통/시세'].map(tag => (
+ <button key={tag} className="text-[10px] px-3 py-1.5 bg-slate-800/50 hover:bg-indigo-600/20 hover:text-indigo-400 text-slate-400 border border-slate-700 rounded-lg transition-colors">{tag}</button>
+ )) : isManuf ? ['설비/센서', '물류/교통', '에너지', '품질관리'].map(tag => (
+ <button key={tag} className="text-[10px] px-3 py-1.5 bg-slate-800/50 hover:bg-indigo-600/20 hover:text-indigo-400 text-slate-400 border border-slate-700 rounded-lg transition-colors">{tag}</button>
+ )) : ['매출/결제', '유동인구', '부동산', '날씨'].map(tag => (
  <button key={tag} className="text-[10px] px-3 py-1.5 bg-slate-800/50 hover:bg-indigo-600/20 hover:text-indigo-400 text-slate-400 border border-slate-700 rounded-lg transition-colors">{tag}</button>
  ))}
  </div>

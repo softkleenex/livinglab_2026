@@ -652,11 +652,11 @@ function MainApp({ userContext, googleUser, onLogout }) {
  ) : activeTab === 'governance' ? (
  <GovernanceSim explorerData={explorerData} />
  ) : activeTab === 'market' ? (
- <DataMarket addToast={addToast} />
+ <DataMarket addToast={addToast} userContext={userContext} />
  ) : activeTab === 'quest' ? (
- <QuestBoard addToast={addToast} />
+ <QuestBoard addToast={addToast} userContext={userContext} />
  ) : activeTab === 'agora' ? (
- <AgoraFeed addToast={addToast} />
+ <AgoraFeed addToast={addToast} userContext={userContext} />
  ) : null}
  </AnimatePresence>
  </div>

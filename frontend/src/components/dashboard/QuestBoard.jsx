@@ -10,37 +10,41 @@ const Badge = React.memo(({ label, icon, color }) => {
   );
 });
 
-export default function QuestBoard({ addToast }) {
+export default function QuestBoard({ addToast, userContext }) {
+  const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
+  const isManuf = userContext?.industry?.includes('제조') || userContext?.industry?.includes('물류');
+  const locGu = userContext?.location?.[1] || '대구광역시';
+
   const [quests, setQuests] = useState([
     {
       id: 1,
-      title: "우천 시 배달 매출 변화 데이터",
-      issuer: "대구광역시 북구청 (상권활성화과)",
-      reward: 500,
+      title: isFarm ? `${locGu} 온실 환경 및 생육 데이터` : isManuf ? `${locGu} 산업단지 야간 전력 사용량 분석` : "우천 시 상권 매출 변화 데이터",
+      issuer: isFarm ? "농림축산식품부 (데이터전략팀)" : isManuf ? "한국산업단지공단" : `${locGu} (상권활성화과)`,
+      reward: isFarm ? 1500 : isManuf ? 2000 : 500,
       deadline: "2일 남음",
-      type: "매출/날씨",
+      type: isFarm ? "환경/생육" : isManuf ? "전력/생산" : "매출/날씨",
       status: "open", // open, doing, done
-      desc: "비가 오는 날의 배달 매출 비율이 어떻게 변하는지 분석하기 위해 배달앱 매출 화면을 캡처하여 업로드해주세요."
+      desc: isFarm ? "특정 온도 대역에서의 작물 성장 속도 변화 데이터를 텍스트로 피딩해주세요." : isManuf ? "야간 교대 근무 시 공장 내 전력 소비 패턴 데이터를 업로드해주세요." : "비가 오는 날의 오프라인 방문객 및 매출 비율이 어떻게 변하는지 분석하기 위해 결제 화면을 캡처하여 업로드해주세요."
     },
     {
       id: 2,
-      title: "스마트팜 주말 방문객 설문 데이터",
-      issuer: "농림축산식품부 (데이터전략팀)",
+      title: isFarm ? "농기계 자율주행 AI 학습 이미지" : isManuf ? "불량품 비전 AI 판독 이미지" : "지역 축제 기간 방문객 설문 데이터",
+      issuer: isFarm ? "한국농업기술진흥원" : isManuf ? "중소벤처기업부" : `${locGu} 관광과`,
       reward: 1200,
       deadline: "5시간 남음",
-      type: "설문/방문객",
+      type: "비전 AI",
       status: "open",
-      desc: "주말 체험형 스마트팜을 방문한 고객들의 만족도 및 체류 시간 데이터를 텍스트로 피딩해주세요."
+      desc: isFarm ? "자율주행 트랙터 학습용으로 농로 및 장애물 사진을 업로드해주세요." : isManuf ? "생산 라인에서 발생하는 표면 스크래치 불량 사진을 수집 중입니다." : "지역 행사 기간 동안 방문한 고객들의 체류 시간 및 만족도 데이터를 피딩해주세요."
     },
     {
       id: 3,
-      title: "야간 시간대(22시 이후) 유동인구 스캔",
-      issuer: "경대북문 상인회",
+      title: isFarm ? "작물 병해충 초기 증상 스캔" : isManuf ? "설비 진동 센서 이상 데이터" : "야간 시간대(22시 이후) 유동인구 스캔",
+      issuer: isFarm ? "스마트팜 혁신밸리" : isManuf ? "설비안전협회" : "지역 상인회 연합",
       reward: 300,
       deadline: "상시",
-      type: "비전 AI",
+      type: isFarm ? "이미지 판독" : isManuf ? "IoT 센서" : "비전 AI",
       status: "done",
-      desc: "야간 상권 활성화 정책 수립을 위해 밤 10시 이후 매장 앞 전경 사진을 업로드해주세요."
+      desc: isFarm ? "잎의 변색 등 병해충 초기 증상 사진을 업로드해주세요." : isManuf ? "진동 센서에서 감지된 이상 주파수 로그를 텍스트로 업로드해주세요." : "야간 상권 활성화 정책 수립을 위해 밤 10시 이후 매장 앞 전경 사진을 업로드해주세요."
     }
   ]);
 
