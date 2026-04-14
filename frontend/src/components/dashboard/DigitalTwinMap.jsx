@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import React, { useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Map } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -11,16 +11,29 @@ const customMarkerIcon = new L.DivIcon({
   iconAnchor: [18, 36],
 });
 
+function DynamicMapBounds({ childrenData }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!childrenData || childrenData.length === 0) return;
+    const bounds = L.latLngBounds(childrenData.map(c => c.location || [35.8714, 128.6014]));
+    map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14, duration: 1.5 });
+  }, [childrenData, map]);
+  return null;
+}
+
 export default function DigitalTwinMap({ childrenData, onMarkerClick }) {
   if (!childrenData || childrenData.length === 0) return null;
+  
+  const initialCenter = childrenData[0]?.location || [35.8714, 128.6014];
 
   return (
     <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-800 relative z-0 shadow-inner mb-6">
-      <MapContainer center={[35.8714, 128.6014]} zoom={12} style={{ height: '100%', width: '100%', background: '#0A0F1A' }} zoomControl={false}>
+      <MapContainer center={initialCenter} zoom={12} style={{ height: '100%', width: '100%', background: '#0A0F1A' }} zoomControl={false}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
+        <DynamicMapBounds childrenData={childrenData} />
         {childrenData.map((child) => {
           const latLng = child.location || [35.8714, 128.6014];
           return (

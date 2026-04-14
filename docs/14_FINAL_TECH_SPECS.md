@@ -66,3 +66,10 @@
 
 ## 5. 결론
 이 명세서는 MDGA가 단순히 "아이디어"에 머물지 않고, 확장 가능한 백엔드 DB 구조, 세련된 UI/UX 애니메이션, 그리고 실제 라이브 서비스(PWA, CDN 배포)로 동작하는 **현업 수준의 상용 소프트웨어(Enterprise-ready SaaS)**임을 입증합니다.
+## 5. Google Drive Data Lake Integration
+*   **Hierarchical Dynamic Routing:** 백엔드는 업로드된 데이터의 위치 정보(예: `대구광역시/달서구/성서산업단지/미래반도체`)를 기반으로 Google Drive API를 호출하여, 실시간으로 폴더 계층(Tree) 구조를 탐색 및 자동 생성합니다.
+*   **Origin & Generated 분리 저장:** 
+    *   최하단 사업장(Store) 폴더 내부에 `origin`과 `generated` 폴더를 자동 구축합니다.
+    *   **origin:** 사용자가 업로드한 원본 텍스트(RawText) 및 원본 이미지 파일 보관.
+    *   **generated:** Gemini 1.5 Pro 모델이 원본 데이터를 분석하여 도출한 산업군 특화 컨설팅 인사이트(AI_Insight) 텍스트 파일 보관.
+*   **영구 삭제 동기화:** 사용자가 프론트엔드 대시보드에서 데이터 삭제 시, DB 레코드 삭제 및 신뢰도/자산가치 차감뿐만 아니라, Google Drive API를 통해 실제 드라이브 내 원본 파일까지 완전히 영구 삭제(Garbage Collection)하여 스토리지 누수를 방지합니다.
