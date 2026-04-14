@@ -641,11 +641,13 @@ async def export_csv(path: str, industry: str = "공공"):
             insight
         ])
     
+    import urllib.parse
     output.seek(0)
     filename = f"MDGA_Data_Export_{obj['name']}.csv"
+    encoded_filename = urllib.parse.quote(filename)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename*=utf-8''{encoded_filename}"}
     )
 
