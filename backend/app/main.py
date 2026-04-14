@@ -87,6 +87,20 @@ def get_drive_service():
     except Exception:
         return None
 
+def get_or_create_drive_folder(service, parent_id, folder_name):
+    query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
+    response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    files = response.get('files', [])
+    if files:
+        return files[0].get('id')
+    file_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [parent_id]
+    }
+    folder = service.files().create(body=file_metadata, fields='id').execute()
+    return folder.get('id')
+
 from app.core.engine import engine, HierarchyEngine
 from sqlalchemy.orm import Session
 from app.core.database import get_db, DataEntry, SessionLocal
@@ -260,19 +274,29 @@ async def ingest(
         drive_link = None
         is_guest_bool = is_guest.lower() == "true"
         
-        if file: 
+        if file:
             content += f"\n[Attached File] {file.filename}"
             file_data = await file.read()
             try:
                 drive_service = get_drive_service()
                 if drive_service:
-                    file_metadata = {'name': f"Ingest_{datetime.date.today()}_{file.filename}", 'parents': [FOLDER_ID]}
+                    # 1. Create hierarchy folders
+                    current_folder_id = FOLDER_ID
+                    for p in path_list:
+                        current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
+
+                    # 2. Create 'origin' and 'generated' folders inside the leaf node
+                    origin_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "origin")
+                    generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
+
+                    # 3. Upload file to 'origin'
+                    file_metadata = {'name': f"Ingest_{datetime.date.today()}_{file.filename}", 'parents': [origin_folder_id]}
                     media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
                     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
                     drive_link = uploaded_file.get('webViewLink')
             except Exception as e:
+                print("Drive Error:", e)
                 drive_link = "Storage Error"
-
         # Find target object
         target_obj = engine.get_object(path_list)
         if not target_obj:
