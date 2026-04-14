@@ -375,6 +375,20 @@ async def delete_entry(path: str, hash_val: str):
         if not target_entry:
             raise HTTPException(status_code=404, detail="Entry not found")
             
+        # Optional: Attempt to delete from Google Drive if a link exists
+        drive_link = target_entry.get("drive_link")
+        if drive_link and "drive.google.com/file/d/" in drive_link:
+            try:
+                import re
+                match = re.search(r'/file/d/([a-zA-Z0-9_-]+)/', drive_link)
+                if match:
+                    file_id = match.group(1)
+                    drive_service = get_drive_service()
+                    if drive_service:
+                        drive_service.files().delete(fileId=file_id).execute()
+            except Exception as drive_err:
+                print(f"Failed to delete file from Google Drive: {drive_err}")
+
         target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
         
         # Roll-down value based on the entry's effective value
