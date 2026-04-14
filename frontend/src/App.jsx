@@ -299,57 +299,43 @@ function Onboarding({ onComplete, googleUser }) {
  <MapPin size={12} className="text-blue-500"/> 자치구 (Gu)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- 
- <input required placeholder="직접입력" value={locGu} onChange={e=>setLocGu(e.target.value)} className="bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 outline-none text-white w-20 ml-2" />
+ <input required placeholder="직접입력" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 outline-none text-white" />
  </div>
  </div>
  )}
 
  {/* DONG Level */}
- {(levelId === 'dong' || levelId === 'street' || levelId === 'store') && locGu && (
+ {(levelId === 'dong' || levelId === 'street' || levelId === 'store') && (
  <div className="space-y-2">
  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
  <MapPin size={12} className="text-emerald-500"/> 행정동 (Dong)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- 
- <input required={(levelId === 'store' || levelId === 'street' || levelId === 'dong')} placeholder="직접입력" value={locDong} onChange={e=>setLocDong(e.target.value)} className="bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white w-20 ml-2" />
+ <input required={(levelId === 'store' || levelId === 'street' || levelId === 'dong')} placeholder="직접입력" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white" />
  </div>
  </div>
  )}
 
  {/* STREET Level */}
- {(levelId === 'street' || levelId === 'store') && locDong && (
+ {(levelId === 'street' || levelId === 'store') && (
  <div className="space-y-2">
  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
  <MapPin size={12} className="text-rose-500"/> 거리/상권 (Street)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- 
- <input required={levelId==='store' || levelId==='street'} placeholder="직접입력" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-rose-500 outline-none text-white w-24 ml-2" />
+ <input required={levelId==='store' || levelId==='street'} placeholder="직접입력" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-rose-500 outline-none text-white" />
  </div>
  </div>
  )}
+ 
+ {/* STORE Level */}
  {levelId === 'store' && (
- <div className="col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
- <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> Select or Add Store</label>
+ <div className="space-y-2 pt-2 border-t border-slate-800/60">
+ <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 사업장 (Store)</label>
+ <input required placeholder="새로운 사업장/농장 이름을 입력하세요" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ </div>
+ )}
  
- <button 
- type="button"
- onClick={() => { setLocStore(''); setIsNewStore(true); }}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed transition-all ${isNewStore ? 'bg-blue-600/20 text-blue-400 border-blue-500' : 'border-slate-600 text-slate-500 hover:text-slate-300'}`}
- >
- <Plus size={12} className="inline mr-1"/> 신규 등록
- </button>
- </div>
- )}
- {(existingStores.length === 0 || isNewStore) && (
- <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
- <input required placeholder="새로운 사업장/농장 이름을 입력하세요" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
- </motion.div>
- )}
- </div>
- )}
  </div>
  </div>
  </motion.div>
