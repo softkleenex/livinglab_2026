@@ -273,30 +273,12 @@ async def ingest(
         path_list = [p for p in location.split("/") if p]
         drive_link = None
         is_guest_bool = is_guest.lower() == "true"
+        file_data = None
         
         if file:
             content += f"\n[Attached File] {file.filename}"
             file_data = await file.read()
-            try:
-                drive_service = get_drive_service()
-                if drive_service:
-                    # 1. Create hierarchy folders
-                    current_folder_id = FOLDER_ID
-                    for p in path_list:
-                        current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
 
-                    # 2. Create 'origin' and 'generated' folders inside the leaf node
-                    origin_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "origin")
-                    generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
-
-                    # 3. Upload file to 'origin'
-                    file_metadata = {'name': f"Ingest_{datetime.date.today()}_{file.filename}", 'parents': [origin_folder_id]}
-                    media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
-                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
-                    drive_link = uploaded_file.get('webViewLink')
-            except Exception as e:
-                print("Drive Error:", e)
-                drive_link = "Storage Error"
         # Find target object
         target_obj = engine.get_object(path_list)
         if not target_obj:
@@ -317,15 +299,46 @@ async def ingest(
             insights = model.generate_content(prompt_parts).text
         except Exception as e:
             traceback.print_exc()
-            # Fallback mock insights based on content length or keywords
-            if any(keyword in content for keyword in ["폭발적", "많이", "증가", "대박"]):
-                insights = "가상 지능 분석: 최근 유입된 인구(예: 신규 오피스)가 매출 상승의 주요 원인입니다. 점심 한정 세트 메뉴를 신설하여 1인당 객단가(AOV)를 높이는 전략을 추천합니다."
-            elif any(keyword in content for keyword in ["반토막", "떨어", "부족", "없어", "감소"]):
-                insights = "가상 지능 분석: 기상 악화(우천 등)로 인한 일시적인 유동인구 감소입니다. 배달 프로모션 비율을 높이거나, 비 오는 날 전용 쿠폰을 단골 고객에게 발송해 방어 전략을 취하세요."
-            elif file and file.content_type.startswith('image/'):
+            if file and file.content_type.startswith('image/'):
                 insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
+
+        # Google Drive Integration for Data Lake (Origin & Generated)
+        try:
+            drive_service = get_drive_service()
+            if drive_service:
+                current_folder_id = FOLDER_ID
+                for p in path_list:
+                    current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
+
+                origin_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "origin")
+                generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
+
+                now_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+                # Upload File to origin
+                if file:
+                    file_metadata = {'name': f"Ingest_{now_str}_{file.filename}", 'parents': [origin_folder_id]}
+                    media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
+                    drive_link = uploaded_file.get('webViewLink')
+                
+                # Upload raw_text to origin if it exists
+                if raw_text:
+                    txt_metadata = {'name': f"RawText_{now_str}.txt", 'parents': [origin_folder_id]}
+                    txt_media = MediaIoBaseUpload(io.BytesIO(raw_text.encode('utf-8')), mimetype='text/plain', resumable=True)
+                    drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
+
+                # Upload insights to generated
+                if insights:
+                    insight_metadata = {'name': f"AI_Insight_{now_str}.txt", 'parents': [generated_folder_id]}
+                    insight_media = MediaIoBaseUpload(io.BytesIO(insights.encode('utf-8')), mimetype='text/plain', resumable=True)
+                    drive_service.files().create(body=insight_metadata, media_body=insight_media, fields='id', supportsAllDrives=True).execute()
+
+        except Exception as e:
+            print("Drive Error:", e)
+            if not drive_link: drive_link = "Storage Error"
         
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
         
