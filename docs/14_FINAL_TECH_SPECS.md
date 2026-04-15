@@ -73,3 +73,9 @@
     *   **origin:** 사용자가 업로드한 원본 텍스트(RawText) 및 원본 이미지 파일 보관.
     *   **generated:** Gemini 1.5 Pro 모델이 원본 데이터를 분석하여 도출한 산업군 특화 컨설팅 인사이트(AI_Insight) 텍스트 파일 보관.
 *   **영구 삭제 동기화:** 사용자가 프론트엔드 대시보드에서 데이터 삭제 시, DB 레코드 삭제 및 신뢰도/자산가치 차감뿐만 아니라, Google Drive API를 통해 실제 드라이브 내 원본 파일까지 완전히 영구 삭제(Garbage Collection)하여 스토리지 누수를 방지합니다.
+
+## 6. Dynamic Node Hierarchy Engine (100% No Hardcoding)
+*   **Zero-Mock Data Architecture:** 앱 내부에 존재하던 모든 '대구광역시' 및 특정 상권의 하드코딩된 더미 데이터를 프론트엔드와 백엔드에서 100% 제거했습니다.
+*   **Real-time DB Roll-up:** 서버가 시작될 때, 미리 정해진 데이터가 아닌 실제 PostgreSQL 데이터베이스(DataEntry)에 저장된 사용자들의 피딩(업로드) 내역들을 스캔하여 `HierarchyEngine` (트리 구조)을 실시간으로 역산(Reverse Engineering) 및 재조립합니다.
+*   **Infinite Geo-Scaling:** 사용자가 온보딩 단계에서 `강원특별자치도 / 강릉시 / 우두동 / 우주항공산단` 처럼 전혀 새로운 지역이나 산업군을 직접 입력하고 진입하더라도, 백엔드는 이를 파싱하여 즉석에서 새로운 노드를 창조하고 관련 지리적 좌표(Lat/Lng)를 자동 할당(Auto-Centering)합니다.
+*   **Precision Roll-back:** 사용자가 자신의 피딩 데이터를 삭제할 경우, 즉각 구글 드라이브 스토리지의 파일 삭제와 함께 부모 노드(상권, 동, 구)에 더해졌던 자산 가치(Value)와 활성도(Pulse)가 1원 단위의 오차 없이 정확히 역산(Roll-back)되는 무결성 장부(Ledger) 시스템을 탑재했습니다.
