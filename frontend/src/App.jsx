@@ -112,22 +112,39 @@ function MapController({ center }) {
  return null;
 }
 
-function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore }) {
- useMapEvents({
- click(e) {
- const lat = e.latlng.lat;
- const lng = e.latlng.lng;
- setMapCenter([lat, lng]);
- 
- const addr = getMockAddress(lat, lng);
- setLocGu(addr.gu);
- setLocDong(addr.dong);
- setLocStreet(addr.street);
- setLocStore(addr.name);
- setIndustry(addr.industry);
- }
- });
- return null;
+const reverseGeocode = async (lat, lng) => {
+  try {
+    const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+    const addr = res.data.address;
+    if(!addr) throw new Error();
+    return {
+      gu: addr.city || addr.county || addr.town || '알수없는 구',
+      dong: addr.suburb || addr.neighbourhood || addr.village || '알수없는 동',
+      street: addr.road || '알수없는 거리',
+      name: addr.building || addr.shop || addr.amenity || '새로운 사업장',
+      industry: 'IT/서비스'
+    };
+  } catch(e) {
+    return { gu: '미분류 구', dong: '미분류 동', street: '미분류 거리', name: '신규 사업장', industry: '기타' };
+  }
+};
+
+function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore, setIndustry }) {
+  const map = useMapEvents({
+    click: async (e) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      setMapCenter([lat, lng]);
+      
+      const addr = await reverseGeocode(lat, lng);
+      setLocGu(addr.gu);
+      setLocDong(addr.dong);
+      setLocStreet(addr.street);
+      setLocStore(addr.name);
+      setIndustry(addr.industry);
+    }
+  });
+  return null;
 }
 
 function Onboarding({ onComplete, googleUser }) {
@@ -177,11 +194,11 @@ function Onboarding({ onComplete, googleUser }) {
  const handleLocateMe = () => {
  if (navigator.geolocation) {
  navigator.geolocation.getCurrentPosition(
- (position) => {
+ async (position) => {
  const lat = position.coords.latitude;
  const lng = position.coords.longitude;
- const addr = getMockAddress(lat, lng);
- setMapCenter([addr.lat, addr.lng]); // Snap exactly to the nearest store
+ setMapCenter([lat, lng]); 
+ const addr = await reverseGeocode(lat, lng);
  setLocGu(addr.gu);
  setLocDong(addr.dong);
  setLocStreet(addr.street);
