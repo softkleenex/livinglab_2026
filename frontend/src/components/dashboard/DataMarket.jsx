@@ -15,7 +15,7 @@ export default function DataMarket({ addToast, userContext }) {
 
  const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
  const isManuf = userContext?.industry?.includes('제조') || userContext?.industry?.includes('물류');
- const locGu = userContext?.location?.[1] || '대구광역시';
+ const locGu = userContext?.location?.[0] || '전체 지역';
 
  const mockDataSets = [
  {
@@ -60,7 +60,7 @@ export default function DataMarket({ addToast, userContext }) {
  for(let i=0; i<50; i++) {
  const d = new Date();
  d.setDate(d.getDate() - i);
- csvContent += `${d.toISOString().split('T')[0]},대구광역시,${Math.floor(Math.random() * 100000)},${item.tags[0] || '분석'}\n`;
+ csvContent += `${d.toISOString().split('T')[0]},${locGu},${Math.floor(Math.random() * 100000)},${item.tags[0] || '분석'}\n`;
  }
  
  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });

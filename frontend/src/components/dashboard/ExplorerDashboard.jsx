@@ -36,8 +36,7 @@ export default function ExplorerDashboard({ explorerData, currentPath, goBack, s
  )}
  <div className="flex flex-col">
  <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-slate-400 mb-1">
- <button onClick={() => setCurrentPath([])} className="hover:text-blue-400 transition-colors flex items-center gap-1"><MapPin size={10}/> 대구광역시</button>
- {currentPath.map((p, idx) => (
+ <button onClick={() => setCurrentPath([])} className="hover:text-blue-400 transition-colors flex items-center gap-1"><MapPin size={10}/> 전체 (Root)</button> {currentPath.map((p, idx) => (
  <React.Fragment key={idx}>
  <ChevronRight size={12} className="text-slate-600" />
  <button onClick={() => setCurrentPath(currentPath.slice(0, idx + 1))} className="hover:text-blue-400 transition-colors">{p}</button>

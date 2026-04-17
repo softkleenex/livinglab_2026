@@ -6,7 +6,7 @@ import json
 class HierarchyEngine:
     def __init__(self):
         self.db = {
-            "name": "대구광역시", "type": "City",
+            "name": "전체 (Root)", "type": "City",
             "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": 0, "nodes": 0, "history": []},
             "children": {},
             "data_entries": []

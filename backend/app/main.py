@@ -221,7 +221,7 @@ async def get_agora_feed(db: Session = Depends(get_db)):
         for e in entries:
             # Anonymize store name by taking only Gu/Dong
             path_parts = e.location_path.split("/")
-            anon_location = f"{path_parts[1]} {path_parts[2]}" if len(path_parts) >= 3 else "대구광역시 익명"
+            anon_location = f"{path_parts[0]} {path_parts[1]}" if len(path_parts) >= 2 else "지역 익명"
             feed.append({
                 "id": e.id,
                 "location": anon_location,
@@ -373,23 +373,35 @@ async def ingest(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/admin/clear_db")
+def clear_db(db: Session = Depends(get_db)):
+    db.query(DataEntry).delete()
+    db.commit()
+    engine.db["children"] = {}
+    engine.db["metadata"]["nodes"] = 0
+    engine.db["metadata"]["total_value"] = 0
+    return "DB Cleared"
+
 @app.delete("/api/ingest/delete")
-async def delete_entry(path: str, hash_val: str):
+async def delete_entry(path: str, hash_val: str, db: Session = Depends(get_db)):
     try:
         path_list = [p for p in path.split("/") if p]
         target_obj = engine.get_object(path_list)
-        
+
         if not target_obj:
             raise HTTPException(status_code=404, detail="Path not found")
-            
+
         entries = target_obj.get("data_entries", [])
-        
+
         target_entry = next((e for e in entries if e.get("hash") == hash_val), None)
         if not target_entry:
             raise HTTPException(status_code=404, detail="Entry not found")
-            
-        # Optional: Attempt to delete from Google Drive if a link exists
-        drive_link = target_entry.get("drive_link")
+
+        # Delete from DB
+        db.query(DataEntry).filter(DataEntry.hash_val == hash_val).delete()
+        db.commit()
+
+        # Optional: Attempt to delete from Google Drive if a link exists        drive_link = target_entry.get("drive_link")
         if drive_link and "drive.google.com/file/d/" in drive_link:
             try:
                 import re

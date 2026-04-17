@@ -146,7 +146,7 @@ function Onboarding({ onComplete, googleUser }) {
  const fetchStores = async () => {
  if (levelId === 'store' && locGu && locDong && locStreet) {
  try {
- const pathStr = `대구광역시/${locGu}/${locDong}/${locStreet}`;
+ const pathStr = `${locGu}/${locDong}/${locStreet}`;
  const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
  if (res.data && res.data.children) {
  setExistingStores(res.data.children.map(c => c.name));
@@ -200,8 +200,7 @@ function Onboarding({ onComplete, googleUser }) {
  if (!levelId) return alert('객체 단위를 선택해주세요.');
  
  const selectedLevel = LEVELS.find(l => l.id === levelId);
- let location = ['대구광역시'];
- if (locGu) location.push(locGu);
+ let location = []; if (locGu) location.push(locGu);
  if ((levelId === 'dong' || levelId === 'street' || levelId === 'store') && locDong) location.push(locDong);
  if ((levelId === 'street' || levelId === 'store') && locStreet) location.push(locStreet);
  if (levelId === 'store' && locStore) location.push(locStore);
@@ -352,7 +351,7 @@ function Onboarding({ onComplete, googleUser }) {
 }
 
 function MainApp({ userContext, googleUser, onLogout }) {
- const [currentPath, setCurrentPath] = useState(userContext.role === 'store' ? userContext.location.slice(1, -1) : userContext.location.slice(1));
+ const [currentPath, setCurrentPath] = useState(userContext.role === 'store' ? userContext.location.slice(0, -1) : userContext.location);
  const [explorerData, setExplorerData] = useState(null);
  const [personalData, setPersonalData] = useState(null);
  const [loading, setLoading] = useState(true);
@@ -408,7 +407,7 @@ function MainApp({ userContext, googleUser, onLogout }) {
  const fetchExplorer = React.useCallback(async () => {
  setLoading(true);
  try {
- const pathStr = ['대구광역시', ...currentPath].join('/');
+ const pathStr = currentPath.join('/');
  const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
  setExplorerData(res.data);
  } catch (err) { 

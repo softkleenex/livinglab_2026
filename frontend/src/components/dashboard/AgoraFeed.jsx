@@ -18,7 +18,7 @@ export default function AgoraFeed({ addToast, userContext }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const locGu = userContext?.location?.[1] || '대구광역시';
+  const locGu = userContext?.location?.[0] || '전체 지역';
   const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
   const isManuf = userContext?.industry?.includes('제조') || userContext?.industry?.includes('물류');
 
