@@ -388,8 +388,41 @@ function Onboarding({ onComplete, googleUser }) {
  <button type="submit" disabled={!levelId || loading} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black text-sm shadow-[0_5px_15px_rgba(37,99,235,0.3)] hover:scale-[1.01] hover:shadow-[0_5px_20px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all flex justify-center items-center gap-2 uppercase tracking-widest mt-8">
  {loading ? <RefreshCw className="animate-spin" size={18}/> : "Enter Workspace"}
  </button>
- </form>
- </div>
+
+ <div className="mt-4 pt-4 border-t border-slate-800/60">
+    <button type="button" onClick={handleFetchAllStores} className="w-full py-3 bg-slate-800/50 text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors flex justify-center items-center gap-2">
+       {showAllStores ? "목록 닫기" : "기존에 등록된 모든 객체(사업장) 찾아보기"}
+    </button>
+
+    <AnimatePresence>
+      {showAllStores && (
+        <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} exit={{opacity:0, height:0}} className="mt-4 space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+           {loadingAllStores ? (
+              <div className="p-4 text-center text-xs text-slate-500 flex justify-center items-center gap-2">
+                 <RefreshCw size={14} className="animate-spin" /> 데이터를 불러오는 중...
+              </div>
+           ) : allStoresList.length === 0 ? (
+              <div className="p-4 text-center text-xs text-slate-500">등록된 객체가 없습니다.</div>
+           ) : (
+              allStoresList.map((s, idx) => (
+                 <div key={idx} onClick={() => {
+                    setLevelId('store');
+                    setLocGu(s.gu); setLocDong(s.dong); setLocStreet(s.street); setLocStore(s.name); setIndustry(s.industry);
+                    setShowAllStores(false);
+                 }} className="p-3 bg-[#101725] border border-slate-800 hover:border-blue-500/50 rounded-xl cursor-pointer transition-colors group">
+                    <div className="flex justify-between items-center mb-1">
+                       <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{s.name}</span>
+                       <span className="text-[9px] px-2 py-0.5 bg-slate-800 text-slate-400 rounded-md">{s.industry}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500">{s.gu} &gt; {s.dong} &gt; {s.street}</div>
+                 </div>
+              ))
+           )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+  </form> </div>
  </div>
  );
 }
