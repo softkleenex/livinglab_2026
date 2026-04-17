@@ -201,10 +201,10 @@ async def explore(path: str = ""):
     path_list = [p for p in path.split("/") if p] if path else []
     obj = engine.get_object(path_list)
     if not obj: raise HTTPException(status_code=404, detail="Path not found")
-    
+
     entries = obj.get("data_entries", [])
     avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
-    
+
     return {
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
         "total_value": obj["metadata"].get("total_value", 0),
@@ -213,6 +213,44 @@ async def explore(path: str = ""):
         "entries": entries
     }
 
+@app.get("/api/stores/all")
+async def get_all_stores(db: Session = Depends(get_db)):
+    try:
+        # Get unique locations from data_entries
+        entries = db.query(DataEntry).distinct(DataEntry.location_path).all()
+        stores = []
+        for e in entries:
+            parts = e.location_path.split("/")
+            if len(parts) >= 4:
+                stores.append({
+                    "path": e.location_path,
+                    "gu": parts[0],
+                    "dong": parts[1] if len(parts) > 1 else "",
+                    "street": parts[2] if len(parts) > 2 else "",
+                    "name": parts[-1],
+                    "industry": e.industry
+                })
+
+        # Also grab any stores currently in the engine tree that might not have entries yet
+        def traverse_tree(node, current_path):
+            if node.get("type") == "Store" and node.get("name") != "전체 (Root)":
+                parts = current_path
+                if not any(s["path"] == "/".join(parts) for s in stores):
+                    stores.append({
+                        "path": "/".join(parts),
+                        "gu": parts[0] if len(parts) > 0 else "",
+                        "dong": parts[1] if len(parts) > 1 else "",
+                        "street": parts[2] if len(parts) > 2 else "",
+                        "name": parts[-1],
+                        "industry": "기타"
+                    })
+            for child_name, child_node in node.get("children", {}).items():
+                traverse_tree(child_node, current_path + [child_name])
+
+        traverse_tree(engine.db, [])
+        return {"status": "success", "stores": stores}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 @app.get("/api/agora/feed")
 async def get_agora_feed(db: Session = Depends(get_db)):
     try:

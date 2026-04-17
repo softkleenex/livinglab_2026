@@ -141,6 +141,9 @@ function Onboarding({ onComplete, googleUser }) {
  const [mapCenter, setMapCenter] = useState([35.8714, 128.6014]); // Daegu center
  const [existingStores, setExistingStores] = useState([]);
  const [isNewStore, setIsNewStore] = useState(false);
+ const [showAllStores, setShowAllStores] = useState(false);
+ const [allStoresList, setAllStoresList] = useState([]);
+ const [loadingAllStores, setLoadingAllStores] = useState(false);
 
  useEffect(() => {
  const fetchStores = async () => {
@@ -173,6 +176,20 @@ function Onboarding({ onComplete, googleUser }) {
  else if (locDong.includes('범어')) setMapCenter([35.8593, 128.6250]);
  else if (locDong.includes('성서')) setMapCenter([35.8451, 128.5085]);
  }, [locDong, locStreet]);
+
+ const handleFetchAllStores = async () => {
+   if (showAllStores) { setShowAllStores(false); return; }
+   setShowAllStores(true);
+   setLoadingAllStores(true);
+   try {
+     const res = await axios.get(`${API_BASE_URL}/api/stores/all`);
+     setAllStoresList(res.data.stores || []);
+   } catch(e) {
+     alert("데이터를 불러오지 못했습니다: " + e.message);
+   } finally {
+     setLoadingAllStores(false);
+   }
+ };
 
  const handleLocateMe = () => {
  if (navigator.geolocation) {
@@ -212,7 +229,7 @@ function Onboarding({ onComplete, googleUser }) {
  });
  onComplete({ role: selectedLevel.role, industry, location, isGuest: googleUser?.isGuest || false });
  } catch (err) {
- alert('초기화 실패. 서버 연결을 확인하세요.');
+ alert('서버 연결 실패: ' + (err.response?.data?.detail || err.message));
  } finally {
  setLoading(false);
  }
