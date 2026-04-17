@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
-import { Map } from 'lucide-react';
+import { Map, Activity } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 const customMarkerIcon = new L.DivIcon({
@@ -46,7 +46,15 @@ export default function DigitalTwinMap({ childrenData, onMarkerClick }) {
                   if (onMarkerClick) onMarkerClick(child.name);
                 }
               }}
-            />
+            >
+              <Tooltip direction="top" offset={[0, -36]} opacity={1} permanent={false} className="custom-map-tooltip">
+                <div className="font-black text-slate-800 text-xs mb-1">{child.name}</div>
+                <div className="text-[10px] text-slate-600 flex items-center justify-between gap-3">
+                  <span>자산: <span className="text-emerald-600 font-bold">{child.value?.toLocaleString() || 0}원</span></span>
+                  <span className="flex items-center gap-1 text-rose-500 font-bold"><Activity size={10}/> {child.pulse || 0}</span>
+                </div>
+              </Tooltip>
+            </Marker>
           );
         })}
       </MapContainer>
