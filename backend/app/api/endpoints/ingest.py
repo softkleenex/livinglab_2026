@@ -65,6 +65,9 @@ async def ingest(
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
 
+        trust_hash = hashlib.sha256(content.encode()).hexdigest()
+        short_hash = trust_hash[:8]
+        
         # Google Drive Integration for Data Lake (Origin & Generated)
         try:
             drive_service = get_drive_service()
@@ -80,28 +83,26 @@ async def ingest(
 
                 # Upload File to origin
                 if file:
-                    file_metadata = {'name': f"Ingest_{now_str}_{file.filename}", 'parents': [origin_folder_id]}
+                    file_metadata = {'name': f"Ingest_{now_str}_{short_hash}_{file.filename}", 'parents': [origin_folder_id]}
                     media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file.content_type, resumable=True)
                     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
                     drive_link = uploaded_file.get('webViewLink')
                 
                 # Upload raw_text to origin if it exists
                 if raw_text:
-                    txt_metadata = {'name': f"RawText_{now_str}.txt", 'parents': [origin_folder_id]}
+                    txt_metadata = {'name': f"RawText_{now_str}_{short_hash}.txt", 'parents': [origin_folder_id]}
                     txt_media = MediaIoBaseUpload(io.BytesIO(raw_text.encode('utf-8')), mimetype='text/plain', resumable=True)
                     drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
 
                 # Upload insights to generated
                 if insights:
-                    insight_metadata = {'name': f"AI_Insight_{now_str}.txt", 'parents': [generated_folder_id]}
+                    insight_metadata = {'name': f"AI_Insight_{now_str}_{short_hash}.txt", 'parents': [generated_folder_id]}
                     insight_media = MediaIoBaseUpload(io.BytesIO(insights.encode('utf-8')), mimetype='text/plain', resumable=True)
                     drive_service.files().create(body=insight_metadata, media_body=insight_media, fields='id', supportsAllDrives=True).execute()
 
         except Exception as e:
             print("Drive Error:", e)
             if not drive_link: drive_link = "Storage Error"
-        
-        trust_hash = hashlib.sha256(content.encode()).hexdigest()
         
         # Scope definition (Store-specific vs Regional general)
         scope = "store_specific" if len(path_list) >= 4 else "regional_general"
@@ -176,19 +177,31 @@ async def delete_entry(path: str, hash_val: str, db: Session = Depends(get_db)):
         db.query(DataEntry).filter(DataEntry.hash_val == hash_val).delete()
         db.commit()
 
-        # Optional: Attempt to delete from Google Drive if a link exists
-        drive_link = target_entry.get("drive_link")
-        if drive_link and "drive.google.com/file/d/" in drive_link:
-            try:
-                import re
-                match = re.search(r'/file/d/([a-zA-Z0-9_-]+)/', drive_link)
-                if match:
-                    file_id = match.group(1)
-                    drive_service = get_drive_service()
-                    if drive_service:
-                        drive_service.files().delete(fileId=file_id).execute()
-            except Exception as drive_err:
-                print(f"Failed to delete file from Google Drive: {drive_err}")
+        # Attempt to delete all associated files from Google Drive (using short_hash)
+        short_hash = hash_val[:8]
+        try:
+            drive_service = get_drive_service()
+            if drive_service:
+                # Query Google Drive for files containing the short_hash
+                query = f"name contains '_{short_hash}' and trashed=false"
+                results = drive_service.files().list(q=query, fields="files(id, name)").execute()
+                items = results.get("files", [])
+                
+                # Fallback to delete by old drive_link if needed
+                drive_link = target_entry.get("drive_link")
+                if drive_link and "drive.google.com/file/d/" in drive_link:
+                    import re
+                    match = re.search(r'/file/d/([a-zA-Z0-9_-]+)/', drive_link)
+                    if match:
+                        legacy_id = match.group(1)
+                        if not any(i['id'] == legacy_id for i in items):
+                            items.append({'id': legacy_id, 'name': 'Legacy Upload'})
+
+                for item in items:
+                    drive_service.files().delete(fileId=item['id']).execute()
+                    print(f"Deleted from Drive: {item['name']}")
+        except Exception as drive_err:
+            print(f"Failed to delete files from Google Drive: {drive_err}")
 
         target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
         
