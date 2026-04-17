@@ -112,39 +112,22 @@ function MapController({ center }) {
  return null;
 }
 
-const reverseGeocode = async (lat, lng) => {
-  try {
-    const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-    const addr = res.data.address;
-    if(!addr) throw new Error();
-    return {
-      gu: addr.city || addr.county || addr.town || '알수없는 구',
-      dong: addr.suburb || addr.neighbourhood || addr.village || '알수없는 동',
-      street: addr.road || '알수없는 거리',
-      name: addr.building || addr.shop || addr.amenity || '새로운 사업장',
-      industry: 'IT/서비스'
-    };
-  } catch(e) {
-    return { gu: '미분류 구', dong: '미분류 동', street: '미분류 거리', name: '신규 사업장', industry: '기타' };
-  }
-};
-
-function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore, setIndustry }) {
-  const map = useMapEvents({
-    click: async (e) => {
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-      setMapCenter([lat, lng]);
-      
-      const addr = await reverseGeocode(lat, lng);
-      setLocGu(addr.gu);
-      setLocDong(addr.dong);
-      setLocStreet(addr.street);
-      setLocStore(addr.name);
-      setIndustry(addr.industry);
-    }
-  });
-  return null;
+function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore }) {
+ useMapEvents({
+ click(e) {
+ const lat = e.latlng.lat;
+ const lng = e.latlng.lng;
+ setMapCenter([lat, lng]);
+ 
+ const addr = getMockAddress(lat, lng);
+ setLocGu(addr.gu);
+ setLocDong(addr.dong);
+ setLocStreet(addr.street);
+ setLocStore(addr.name);
+ setIndustry(addr.industry);
+ }
+ });
+ return null;
 }
 
 function Onboarding({ onComplete, googleUser }) {
@@ -194,11 +177,11 @@ function Onboarding({ onComplete, googleUser }) {
  const handleLocateMe = () => {
  if (navigator.geolocation) {
  navigator.geolocation.getCurrentPosition(
- async (position) => {
+ (position) => {
  const lat = position.coords.latitude;
  const lng = position.coords.longitude;
- setMapCenter([lat, lng]); 
- const addr = await reverseGeocode(lat, lng);
+ const addr = getMockAddress(lat, lng);
+ setMapCenter([addr.lat, addr.lng]); // Snap exactly to the nearest store
  setLocGu(addr.gu);
  setLocDong(addr.dong);
  setLocStreet(addr.street);
@@ -346,9 +329,36 @@ function Onboarding({ onComplete, googleUser }) {
  
  {/* STORE Level */}
  {levelId === 'store' && (
- <div className="space-y-2 pt-2 border-t border-slate-800/60">
- <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 사업장 (Store)</label>
- <input required placeholder="새로운 사업장/농장 이름을 입력하세요" value={locStore} onChange={e=>setLocStore(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ <div className="col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
+ <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 사업장 선택 및 신규 등록</label>
+ 
+ {existingStores.length > 0 && (
+ <div className="flex flex-wrap gap-2">
+ {existingStores.map(store => (
+ <button 
+ key={store} 
+ type="button"
+ onClick={() => { setLocStore(store); setIsNewStore(false); }}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locStore === store && !isNewStore ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
+ >
+ {store}
+ </button>
+ ))}
+ <button 
+ type="button"
+ onClick={() => { setLocStore(''); setIsNewStore(true); }}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed transition-all ${isNewStore ? 'bg-blue-600/20 text-blue-400 border-blue-500' : 'border-slate-600 text-slate-500 hover:text-slate-300'}`}
+ >
+ <Plus size={12} className="inline mr-1"/> 신규 등록
+ </button>
+ </div>
+ )}
+ 
+ {(existingStores.length === 0 || isNewStore) && (
+ <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
+ <input required placeholder="새로운 사업장/농장 이름을 입력하세요" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ </motion.div>
+ )}
  </div>
  )}
  
