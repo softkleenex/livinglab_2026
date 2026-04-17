@@ -22,14 +22,22 @@ const customMarkerIcon = new L.DivIcon({
  iconAnchor: [18, 36],
 });
 
-const getMockAddress = (lat, lng) => ({
-  gu: '북구',
-  dong: '산격동',
-  street: '대학로',
-  name: '가상매장',
-  industry: '스마트팜',
-  lat, lng
-});
+const reverseGeocode = async (lat, lng) => {
+  try {
+    const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+    const addr = res.data.address;
+    if(!addr) throw new Error();
+    return {
+      gu: addr.city || addr.county || addr.town || '알수없는 구',
+      dong: addr.suburb || addr.neighbourhood || addr.village || '알수없는 동',
+      street: addr.road || '알수없는 거리',
+      name: addr.building || addr.shop || addr.amenity || '새로운 사업장',
+      industry: 'IT/서비스'
+    };
+  } catch(e) {
+    return { gu: '미분류 구', dong: '미분류 동', street: '미분류 거리', name: '신규 사업장', industry: '기타' };
+  }
+};
 
 function MapController({ center }) {
  const map = useMap();
@@ -40,21 +48,21 @@ function MapController({ center }) {
 }
 
 function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore, setIndustry }) {
- useMapEvents({
- click(e) {
- const lat = e.latlng.lat;
- const lng = e.latlng.lng;
- setMapCenter([lat, lng]);
- 
- const addr = getMockAddress(lat, lng);
- setLocGu(addr.gu);
- setLocDong(addr.dong);
- setLocStreet(addr.street);
- setLocStore(addr.name);
- setIndustry(addr.industry);
- }
- });
- return null;
+  const map = useMapEvents({
+    click: async (e) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      setMapCenter([lat, lng]);
+      
+      const addr = await reverseGeocode(lat, lng);
+      setLocGu(addr.gu);
+      setLocDong(addr.dong);
+      setLocStreet(addr.street);
+      setLocStore(addr.name);
+      setIndustry(addr.industry);
+    }
+  });
+  return null;
 }
 
 export default function Onboarding({ onComplete, googleUser }) {
@@ -133,11 +141,11 @@ export default function Onboarding({ onComplete, googleUser }) {
  const handleLocateMe = () => {
  if (navigator.geolocation) {
  navigator.geolocation.getCurrentPosition(
- (position) => {
+ async (position) => {
  const lat = position.coords.latitude;
  const lng = position.coords.longitude;
- const addr = getMockAddress(lat, lng);
- setMapCenter([addr.lat, addr.lng]); // Snap exactly to the nearest store
+ setMapCenter([lat, lng]); 
+ const addr = await reverseGeocode(lat, lng);
  setLocGu(addr.gu);
  setLocDong(addr.dong);
  setLocStreet(addr.street);
@@ -255,6 +263,9 @@ export default function Onboarding({ onComplete, googleUser }) {
  </label>
  <div className="flex flex-wrap gap-2 items-center">
  <input required list="gu-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 outline-none text-white" />
+ <datalist id="gu-list">
+  {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
+ </datalist>
   <datalist id="gu-list">
     {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
   </datalist>
@@ -270,6 +281,9 @@ export default function Onboarding({ onComplete, googleUser }) {
  </label>
  <div className="flex flex-wrap gap-2 items-center">
  <input required={(levelId === 'store' || levelId === 'street' || levelId === 'dong')} list="dong-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white" />
+ <datalist id="dong-list">
+  {[...new Set(allStoresList.filter(s => !locGu || s.gu === locGu).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
+ </datalist>
   <datalist id="dong-list">
     {[...new Set(allStoresList.filter(s => !locGu || s.gu === locGu).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
   </datalist>
@@ -285,6 +299,9 @@ export default function Onboarding({ onComplete, googleUser }) {
  </label>
  <div className="flex flex-wrap gap-2 items-center">
  <input required={levelId==='store' || levelId==='street'} list="street-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-rose-500 outline-none text-white" />
+ <datalist id="street-list">
+  {[...new Set(allStoresList.filter(s => (!locGu || s.gu === locGu) && (!locDong || s.dong === locDong)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
+ </datalist>
   <datalist id="street-list">
     {[...new Set(allStoresList.filter(s => (!locGu || s.gu === locGu) && (!locDong || s.dong === locDong)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
   </datalist>
@@ -322,6 +339,9 @@ export default function Onboarding({ onComplete, googleUser }) {
  {(existingStores.length === 0 || isNewStore) && (
  <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
  <input required list="store-list" placeholder="기존 사업장 검색 또는 새로운 이름 입력" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ <datalist id="store-list">
+  {allStoresList.filter(s => (!locStreet || s.street === locStreet)).map(s => <option key={s.name} value={s.name} />)}
+ </datalist>
   <datalist id="store-list">
     {allStoresList.filter(s => (!locStreet || s.street === locStreet)).map(s => <option key={s.name} value={s.name} />)}
   </datalist>
