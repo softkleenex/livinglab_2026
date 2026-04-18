@@ -2,8 +2,16 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.core.engine import engine
 from app.services.gemini_ai import model
+from app.services.google_drive import get_drive_service, get_or_create_drive_folder
+from googleapiclient.http import MediaIoBaseUpload
+import io
+import datetime
+import os
+import traceback
 
 router = APIRouter()
+
+FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
 class ChatPayload(BaseModel):
     path: str
@@ -26,7 +34,7 @@ async def chat_with_copilot(payload: ChatPayload):
     current_pulse = obj["metadata"].get("pulse_rate", 0)
     
     prompt = f"""
-    당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot);입니다.
+    당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot)입니다.
     
     [실시간 사업장 현황]
     - 누적 매출/생산 가치: {current_value}원 (상권 평균: {parent_avg}원)
@@ -43,7 +51,29 @@ async def chat_with_copilot(payload: ChatPayload):
     try:
         res = model.generate_content(prompt)
         reply = res.text
+        
+        # Save consultation log to Data Lake (Google Drive -> generated folder)
+        try:
+            drive_service = get_drive_service()
+            if drive_service:
+                current_folder_id = FOLDER_ID
+                for p in path_list:
+                    current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
+
+                generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
+                now_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                
+                log_content = f"--- MDGA AI COPILOT CONSULTATION LOG ---\nTime: {now_str}\nTarget: {'/'.join(path_list)}\nIndustry: {payload.industry}\n\n[User Query]\n{payload.message}\n\n[AI Response]\n{reply}\n"
+                
+                txt_metadata = {'name': f"Copilot_Log_{now_str}.txt", 'parents': [generated_folder_id]}
+                txt_media = MediaIoBaseUpload(io.BytesIO(log_content.encode('utf-8')), mimetype='text/plain', resumable=True)
+                drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
+        except Exception as drive_err:
+            print("Failed to save Copilot log to Drive:", drive_err)
+            
     except Exception:
+        traceback.print_exc()
         reply = "죄송합니다. 현재 네트워크 문제로 답변을 드릴 수 없습니다."
         
     return {"status": "success", "reply": reply}
+
