@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
 
@@ -19,6 +19,7 @@ Base = declarative_base()
 
 class Region(Base):
     __tablename__ = "regions"
+    __table_args__ = (UniqueConstraint('name', 'parent_id', name='uix_region_name_parent'),)
     id = Column(Integer, primary_key=True, index=True)
     parent_id = Column(Integer, ForeignKey("regions.id"), nullable=True)
     name = Column(String, index=True)
@@ -36,6 +37,7 @@ class Region(Base):
 
 class Store(Base):
     __tablename__ = "stores"
+    __table_args__ = (UniqueConstraint('name', 'region_id', name='uix_store_name_region'),)
     id = Column(Integer, primary_key=True, index=True)
     region_id = Column(Integer, ForeignKey("regions.id"))
     name = Column(String, index=True)

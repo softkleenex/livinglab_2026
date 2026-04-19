@@ -14,6 +14,7 @@ import hashlib
 import random
 import os
 import asyncio
+import time
 from googleapiclient.http import MediaIoBaseUpload
 
 router = APIRouter()
@@ -23,6 +24,21 @@ api_key = os.environ.get("GEMINI_API_KEY")
 
 from app.core.database import SessionLocal
 
+def with_retries(func):
+    def wrapper(*args, **kwargs):
+        last_exception = None
+        for attempt in range(3):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                last_exception = e
+                print(f"Drive Task failed on attempt {attempt+1}: {e}")
+                time.sleep(2)
+        print(f"Drive Task definitively failed after 3 attempts: {last_exception}")
+        return None
+    return wrapper
+
+@with_retries
 def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_filename, raw_text, insights, entry_id=None):
     drive_link = None
     try:
@@ -67,6 +83,7 @@ def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_
         print("Drive Error:", e)
     return drive_link
 
+@with_retries
 def sync_drive_delete(short_hash, drive_link=None):
     try:
         drive_service = get_drive_service()
@@ -93,6 +110,7 @@ def sync_drive_delete_batch(short_hashes):
     for h in short_hashes:
         sync_drive_delete(h)
 
+@with_retries
 def sync_drive_modify(short_hash, new_text):
     try:
         drive_service = get_drive_service()
