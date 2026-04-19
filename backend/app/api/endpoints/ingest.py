@@ -239,15 +239,16 @@ async def ingest(
         )
         db.add(new_entry)
         
-        # Reward User with $MDGA tokens
-        user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+        # Reward User with $MDGA tokens (scaled to prevent hyperinflation)
+        reward_amount = int(effective_value / 100)
+        user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
         if user_wallet:
-            user_wallet.balance += effective_value
+            user_wallet.balance += reward_amount
             db.add(user_wallet)
             
             tx = Transaction(
                 wallet_id=user_wallet.id,
-                amount=effective_value,
+                amount=reward_amount,
                 tx_type="EARN",
                 description=f"Data Assetization Reward (Hash: {short_hash})"
             )
@@ -271,9 +272,18 @@ async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
             raise HTTPException(status_code=404, detail="Store not found")
-            
-        entries = target_obj.get("data_entries", [])
-        
+
+        parent_id = None
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r: parent_id = r.id
+            else: break
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+
+        if store and store.owner_id != user["user_id"] and user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized to delete this store")
+
+        entries = target_obj.get("data_entries", [])        
         short_hashes = []
         for entry in entries:
             short_hash = entry.get("hash", "")[:8]
@@ -310,8 +320,14 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         if not target_entry:
             raise HTTPException(status_code=404, detail="Entry not found")
 
-        # Delete from DB
-        db.query(DataEntry).filter(DataEntry.hash_val == hash_val).delete()
+        entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == hash_val).first()
+        if not entry_to_del:
+            raise HTTPException(status_code=404, detail="Entry not found in DB")
+            
+        if entry_to_del.store and entry_to_del.store.owner_id != user["user_id"] and user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized to delete this entry")
+
+        db.delete(entry_to_del)
 
         # Delegate Drive deletion to BackgroundTask
         short_hash = hash_val[:8]

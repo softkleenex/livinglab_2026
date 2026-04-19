@@ -144,7 +144,7 @@ async def buy_market_data(payload: dict, db: Session = Depends(get_db), user: di
     industry = payload.get("industry")
     price = payload.get("price", 1000)
     
-    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
     if not user_wallet or user_wallet.balance < price:
         raise HTTPException(status_code=400, detail="Not enough $MDGA tokens.")
         
@@ -160,6 +160,31 @@ async def buy_market_data(payload: dict, db: Session = Depends(get_db), user: di
     db.commit()
     
     return {"status": "success", "message": f"{industry} 데이터를 구매했습니다. (차감: {price} $MDGA)", "new_balance": user_wallet.balance}
+
+@router.post("/wallet/withdraw")
+async def withdraw_funds(payload: dict, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    amount = payload.get("amount", 0)
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid withdrawal amount.")
+        
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
+    if not user_wallet or user_wallet.balance < amount:
+        raise HTTPException(status_code=400, detail="Insufficient funds.")
+        
+    user_wallet.balance -= amount
+    
+    tx = Transaction(
+        wallet_id=user_wallet.id,
+        amount=-amount,
+        tx_type="SPEND",
+        description="Withdrawal to external bank account"
+    )
+    db.add(tx)
+    db.commit()
+    
+    return {"status": "success", "message": "Withdrawal processed successfully", "new_balance": user_wallet.balance}
+
+@router.get("/export")
 async def export_csv(path: str, industry: str = "공공", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)

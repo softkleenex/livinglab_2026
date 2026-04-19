@@ -307,7 +307,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  ) : activeTab === 'governance' ? (
  <GovernanceSim explorerData={explorerData} />
  ) : activeTab === 'market' ? (
- <DataMarket addToast={addToast} userContext={userContext} />
+ <DataMarket addToast={addToast} userContext={userContext} setWalletBalance={setWalletBalance} />
  ) : activeTab === 'quest' ? (
  <QuestBoard addToast={addToast} userContext={userContext} />
  ) : activeTab === 'agora' ? (

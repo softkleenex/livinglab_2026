@@ -28,21 +28,28 @@ export default function WalletModal({ onClose, personalData, addToast }) {
     fetchWallet();
   }, []);
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (balance < 100000) {
       addToast("최소 100,000 $MDGA 부터 환전 가능합니다.", "error");
       return;
     }
     setWithdrawing(true);
-    setTimeout(() => {
-      setWithdrawing(false);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/dashboard/wallet/withdraw`, {
+        amount: balance
+      });
       setSuccess(true);
       addToast("연결된 계좌로 환전 신청이 완료되었습니다.", "success");
+      setBalance(res.data.new_balance);
       setTimeout(() => {
         setSuccess(false);
         onClose();
       }, 2000);
-    }, 2000);
+    } catch(err) {
+      addToast(err.response?.data?.detail || "환전 신청 중 오류가 발생했습니다.", "error");
+    } finally {
+      setWithdrawing(false);
+    }
   };
 
   return (

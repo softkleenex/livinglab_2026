@@ -10,7 +10,7 @@ const Badge = React.memo(({ label, icon, color }) => {
  );
 });
 
-export default function DataMarket({ addToast, userContext }) {
+export default function DataMarket({ addToast, userContext, setWalletBalance }) {
  const [buying, setBuying] = useState(false);
 
  const isFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
@@ -61,6 +61,7 @@ export default function DataMarket({ addToast, userContext }) {
  });
  
  addToast(res.data.message, "success");
+ if (setWalletBalance) setWalletBalance(res.data.new_balance);
  
  // Now fetch the real anonymized CSV export
  const pathStr = userContext.location ? userContext.location.join('/') : '전체 (Root)';
