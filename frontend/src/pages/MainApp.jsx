@@ -337,7 +337,8 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  if (activeTab === 'personal') fetchPersonal();
  else fetchExplorer();
  }}
- locationPath={userContext.location.join('/')}
+ locationPath={activeTab === 'explorer' && currentPath.length > 0 ? currentPath.join('/') : userContext.location.join('/')}
+ childOptions={activeTab === 'explorer' && explorerData ? explorerData.children : []}
  addToast={addToast}
  />
  )}

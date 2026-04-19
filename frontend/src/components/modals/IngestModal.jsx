@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Upload, X, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Upload, X, ShieldCheck, RefreshCw, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, addToast }) {
+export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, childOptions = [], addToast }) {
   const [rawText, setRawText] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
+  
+  const [selectedPath, setSelectedPath] = useState(locationPath);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -28,7 +30,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
     const formData = new FormData();
     if (rawText) formData.append('raw_text', rawText);
     if (file) formData.append('file', file);
-    formData.append('location', locationPath);
+    formData.append('location', selectedPath);
     if (isGuest) formData.append('is_guest', 'true');
     
     try {
@@ -54,6 +56,24 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
         <div className="p-5 space-y-4">
           {!res ? (
             <>
+              {childOptions && childOptions.length > 0 && (
+                <div className="space-y-1 mb-2">
+                  <label className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest"><MapPin size={10}/> 업로드 대상 계층 선택</label>
+                  <select 
+                    value={selectedPath} 
+                    onChange={(e) => setSelectedPath(e.target.value)} 
+                    className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-xs text-blue-400 focus:ring-1 focus:ring-blue-500 outline-none appearance-none"
+                  >
+                    <option value={locationPath}>🏢 현재 상위 계층 ({locationPath.split('/').pop() || 'Root'}) 전체 공유 데이터로 올리기</option>
+                    <optgroup label="👇 하위 특정 계층/상점으로 올리기">
+                      {childOptions.map((c, i) => (
+                        <option key={i} value={`${locationPath ? locationPath + '/' : ''}${c.name}`}>{c.name} ({c.type})</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+              )}
+              
               {isGuest ? (
                 <p className="text-xs text-orange-400 text-center font-bold">⚠️ 게스트 모드: 업로드되는 데이터는 신뢰도 가중치에서 패널티를 받습니다.</p>
               ) : (
