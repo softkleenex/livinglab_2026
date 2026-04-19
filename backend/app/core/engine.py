@@ -64,7 +64,8 @@ class HierarchyEngine:
                 "scope": "store_specific",
                 "trust_index": e.trust_index,
                 "effective_value": e.effective_value,
-                "raw_text": e.raw_text
+                "raw_text": e.raw_text,
+                "store_name": curr_obj.name
             } for e in entries]
             
             return {
@@ -97,6 +98,25 @@ class HierarchyEngine:
                     "metadata": {"total_value": s.total_value, "pulse_rate": s.pulse_rate, "history": s.history, "location": [s.lat, s.lng]}
                 }
                 
+            # Roll-up entries: Fetch all entries where location_path starts with the current region path
+            current_path_str = "/".join(path_list)
+            if not current_path_str or current_path_str == "전체 (Root)":
+                entries = db.query(DataEntry).order_by(DataEntry.created_at.desc()).limit(100).all()
+            else:
+                entries = db.query(DataEntry).filter(DataEntry.location_path.like(f"{current_path_str}%")).order_by(DataEntry.created_at.desc()).limit(100).all()
+                
+            entry_list = [{
+                "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
+                "insights": e.insights,
+                "hash": e.hash_val,
+                "drive_link": e.drive_link,
+                "scope": "regional_general",
+                "trust_index": e.trust_index,
+                "effective_value": e.effective_value,
+                "raw_text": e.raw_text,
+                "store_name": e.store.name if e.store else "Public"
+            } for e in entries]
+            
             return {
                 "name": curr_obj.name, "type": curr_obj.level_type,
                 "metadata": {
@@ -108,7 +128,7 @@ class HierarchyEngine:
                     "location": [curr_obj.lat, curr_obj.lng]
                 },
                 "children": children_dict,
-                "data_entries": []
+                "data_entries": entry_list
             }
 
     def create_or_get_path(self, db, path_list, types_list):
