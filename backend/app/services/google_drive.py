@@ -1,9 +1,13 @@
 import os
 import json
+import threading
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
+
+FOLDER_CACHE = {}
+CACHE_LOCK = threading.Lock()
 
 def get_drive_service():
     client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
@@ -36,31 +40,35 @@ def get_drive_service():
             print("SA Error:", e)
 
     return None
-FOLDER_CACHE = {}
 
 def get_or_create_drive_folder(service, parent_id, folder_name):
     cache_key = f"{parent_id}_{folder_name}"
-    if cache_key in FOLDER_CACHE:
-        return FOLDER_CACHE[cache_key]
+    
+    with CACHE_LOCK:
+        if cache_key in FOLDER_CACHE:
+            return FOLDER_CACHE[cache_key]
 
     query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
     response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
     files = response.get('files', [])
-    if files:
-        folder_id = files[0].get('id')
-        FOLDER_CACHE[cache_key] = folder_id
-        return folder_id
-        
-    file_metadata = {
-        'name': folder_name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [parent_id]
-    }
-    folder = service.files().create(body=file_metadata, fields='id').execute()
-    folder_id = folder.get('id')
-    FOLDER_CACHE[cache_key] = folder_id
     
-    if len(FOLDER_CACHE) > 5000:
-        FOLDER_CACHE.clear()
+    with CACHE_LOCK:
+        if files:
+            folder_id = files[0].get('id')
+            FOLDER_CACHE[cache_key] = folder_id
+            return folder_id
+            
+        file_metadata = {
+            'name': folder_name,
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': [parent_id]
+        }
+        folder = service.files().create(body=file_metadata, fields='id').execute()
+        folder_id = folder.get('id')
+        FOLDER_CACHE[cache_key] = folder_id
         
-    return folder_id
+        if len(FOLDER_CACHE) > 5000:
+            FOLDER_CACHE.clear()
+            FOLDER_CACHE[cache_key] = folder_id
+            
+        return folder_id

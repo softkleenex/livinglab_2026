@@ -40,13 +40,17 @@ async def get_all_stores(db: Session = Depends(get_db)):
     try:
         stores = []
         all_stores = db.query(Store).all()
+        all_regions = {r.id: r for r in db.query(Region).all()}
+        
         for s in all_stores:
-            # We need to reconstruct the path
             path_parts = []
-            curr_r = s.region
-            while curr_r:
+            curr_r_id = s.region_id
+            while curr_r_id:
+                curr_r = all_regions.get(curr_r_id)
+                if not curr_r: break
                 path_parts.insert(0, curr_r.name)
-                curr_r = curr_r.parent
+                curr_r_id = curr_r.parent_id
+                
             path = "/".join(path_parts + [s.name])
             
             gu = path_parts[0] if len(path_parts) > 0 else ""

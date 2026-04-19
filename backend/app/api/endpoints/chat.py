@@ -121,38 +121,48 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
             
         elif action_type == "DELETE":
             target_hash = reply_data.get("target_hash", "")
-            entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path.like(f"{payload.path}%")).first()
-            if entry_to_del:
-                penalty = -entry_to_del.effective_value
-                del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
-                short_hash_to_del = entry_to_del.hash_val[:8]
-                drive_link_to_del = entry_to_del.drive_link
-                db.delete(entry_to_del)
-                engine.add_value_bottom_up(db, del_path_list, penalty)
-                db.commit()
-                
-                # Fix Copilot Sync Leak
-                background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
-                
-                asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
-                reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
+            actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
+            
+            if actual_entry:
+                entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
+                if entry_to_del:
+                    penalty = -entry_to_del.effective_value
+                    del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
+                    short_hash_to_del = entry_to_del.hash_val[:8]
+                    drive_link_to_del = entry_to_del.drive_link
+                    db.delete(entry_to_del)
+                    engine.add_value_bottom_up(db, del_path_list, penalty)
+                    db.commit()
+                    
+                    # Fix Copilot Sync Leak
+                    background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
+                    
+                    asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
+                    reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
+                else:
+                    reply = f"⚠️ [시스템] 삭제할 데이터(해시: {target_hash[:8]})를 찾을 수 없습니다."
             else:
-                reply = f"⚠️ [시스템] 삭제할 데이터(해시: {target_hash[:8]})를 찾을 수 없습니다."
+                reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
 
         elif action_type == "MODIFY":
             target_hash = reply_data.get("target_hash", "")
             new_text = reply_data.get("new_text", "")
-            entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path.like(f"{payload.path}%")).first()
-            if entry_to_mod:
-                entry_to_mod.raw_text = new_text
-                db.commit()
-                
-                # Fix Data Drift
-                background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
-                
-                reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
+            actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
+            
+            if actual_entry:
+                entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
+                if entry_to_mod:
+                    entry_to_mod.raw_text = new_text
+                    db.commit()
+                    
+                    # Fix Data Drift
+                    background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
+                    
+                    reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
+                else:
+                    reply = f"⚠️ [시스템] 수정할 데이터를 찾을 수 없습니다."
             else:
-                reply = f"⚠️ [시스템] 수정할 데이터를 찾을 수 없습니다."
+                reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
                 
         elif action_type == "CREATE":
             new_text = reply_data.get("new_text", "")
