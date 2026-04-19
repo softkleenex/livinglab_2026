@@ -98,21 +98,22 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
             
         elif action_type == "DELETE":
             target_hash = reply_data.get("target_hash", "")
-            entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path == payload.path).first()
+            entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path.like(f"{payload.path}%")).first()
             if entry_to_del:
                 penalty = -entry_to_del.effective_value
+                del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
                 db.delete(entry_to_del)
                 db.commit()
-                engine.add_value_bottom_up(db, path_list, penalty)
-                asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty, "pulse_rate": current_pulse}))
+                engine.add_value_bottom_up(db, del_path_list, penalty)
+                asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
                 reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
             else:
                 reply = f"⚠️ [시스템] 삭제할 데이터(해시: {target_hash[:8]})를 찾을 수 없습니다."
-                
+
         elif action_type == "MODIFY":
             target_hash = reply_data.get("target_hash", "")
             new_text = reply_data.get("new_text", "")
-            entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path == payload.path).first()
+            entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val.startswith(target_hash), DataEntry.location_path.like(f"{payload.path}%")).first()
             if entry_to_mod:
                 entry_to_mod.raw_text = new_text
                 db.commit()
