@@ -131,6 +131,52 @@ export default function ExplorerDashboard({ explorerData, currentPath, goBack, s
  </div>
 
  </div>
+
+ {/* Roll-up Data Entries for Region */}
+ {explorerData.entries && explorerData.entries.length > 0 && (
+ <div className="space-y-4 mt-8 bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg">
+ <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
+ <Database size={14} className="text-emerald-400" /> 지역구 발생 데이터 집계 ({explorerData.entries.length})
+ </h3>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ {explorerData.entries.map((entry, idx) => (
+ <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="bg-[#0A0F1A] p-4 rounded-2xl border border-slate-800 shadow-md relative group hover:border-slate-600 transition-colors">
+ <div className="flex justify-between items-start mb-3">
+ <div className="flex flex-col gap-1">
+ <span className="text-[10px] font-bold text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded border border-blue-800/50 self-start truncate max-w-[150px]">
+ {entry.store_name || "알 수 없음"}
+ </span>
+ <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+ {entry.timestamp}
+ </span>
+ </div>
+ <div className="flex flex-col items-end gap-1">
+ <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+ Trust {entry.trust_index ? entry.trust_index.toFixed(1) : 50.0}%
+ </span>
+ <span className="text-[10px] font-bold text-yellow-400 flex items-center gap-1">
+ <TrendingUp size={10} /> +{entry.effective_value?.toLocaleString() || 0}
+ </span>
+ </div>
+ </div>
+ 
+ {entry.raw_text && (
+ <div className="mb-3 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80">
+ <p className="text-[9px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1"><FileText size={10}/> Uploaded Data</p>
+ <p className="text-[10px] text-slate-400 leading-relaxed break-keep truncate">{entry.raw_text}</p>
+ </div>
+ )}
+ 
+ <div>
+ <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1 flex items-center gap-1"><ShieldCheck size={10}/> AI Insight</p>
+ <p className="text-[10px] text-slate-300 leading-relaxed font-medium line-clamp-3">{entry.insights}</p>
+ </div>
+ </motion.div>
+ ))}
+ </div>
+ </div>
+ )}
+
  </motion.div>
  );
 }
