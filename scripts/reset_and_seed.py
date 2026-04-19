@@ -104,12 +104,13 @@ for idx, item in enumerate(realistic_data):
         f'false\r\n'
         f'--{boundary}--\r\n'
     )
-
-    req_ingest = urllib.request.Request('https://mdga-api.onrender.com/api/ingest', data=body.encode('utf-8'))
-    req_ingest.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
     try:
+        req_ingest = urllib.request.Request('https://mdga-api.onrender.com/api/ingest', data=body.encode('utf-8'), method='POST')
+        req_ingest.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
+        req_ingest.add_header('Authorization', 'Bearer mock-jwt-token')
+        
         urllib.request.urlopen(req_ingest, context=context)
-        print(f"  [{idx+1}/{len(realistic_data)}] ✅ Ingested: {item['name']}")
+        print(f"  [{idx+1}/13] ✅ Ingested: {item['name']}")
     except Exception as e:
         print(f"  [{idx+1}/{len(realistic_data)}] ❌ Failed: {item['name']} ({e})")
         
