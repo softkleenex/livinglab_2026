@@ -10,11 +10,13 @@ MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (
 1. **Dynamic Regional Hierarchy Engine (Twin Map)**
    - Automatically rolls up assets and activity levels (Pulse) from individual stores/nodes to upper geographical layers (City -> District -> Neighborhood -> Street).
    - Real-time rendering of a data-driven Twin Map reflecting local economic health.
+   - ![Twin Map](docs/screenshots/07_twinmap.png)
 
 2. **Data Assetization & RAG Pipeline**
    - **Multi-modal Ingestion:** Users can feed raw text or images (e.g., daily sales, smart farm metrics).
    - **Google Drive Data Lake:** Raw files are securely persisted in a dynamically created folder structure (e.g., `[대구광역시]/[북구]/[산격동]...`).
-   - **AI Copilot Insights:** Gemini 2.5 Pro analyzes the data and instantly returns actionable, industry-specific business insights (saved as `.txt` back to Drive).
+   - **AI Copilot Insights:** Gemini 2.5 Pro Vision analyzes the data (even rejecting invalid/blank images) and instantly returns actionable, industry-specific business insights.
+   - ![Dashboard](docs/screenshots/06_dashboard.png)
 
 3. **Enterprise-Grade AI Copilot (Function Calling)**
    - Context-aware chatbot that knows your store's total value, industry, and previous data entries.
