@@ -17,6 +17,38 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    name = Column(String)
+    picture = Column(String, nullable=True)
+    role = Column(String, default="store") # 'store', 'gov', 'leader', 'guest'
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    stores = relationship("Store", back_populates="owner")
+    wallet = relationship("Wallet", back_populates="user", uselist=False)
+
+class Wallet(Base):
+    __tablename__ = "wallets"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    balance = Column(Float, default=0.0)
+    
+    user = relationship("User", back_populates="wallet")
+    transactions = relationship("Transaction", back_populates="wallet")
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+    id = Column(Integer, primary_key=True, index=True)
+    wallet_id = Column(Integer, ForeignKey("wallets.id"))
+    amount = Column(Float)
+    tx_type = Column(String) # 'EARN', 'SPEND'
+    description = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    wallet = relationship("Wallet", back_populates="transactions")
+
 class Region(Base):
     __tablename__ = "regions"
     __table_args__ = (UniqueConstraint('name', 'parent_id', name='uix_region_name_parent'),)
@@ -40,6 +72,7 @@ class Store(Base):
     __table_args__ = (UniqueConstraint('name', 'region_id', name='uix_store_name_region'),)
     id = Column(Integer, primary_key=True, index=True)
     region_id = Column(Integer, ForeignKey("regions.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     name = Column(String, index=True)
     industry = Column(String)
     total_value = Column(Float, default=0.0)
@@ -51,6 +84,7 @@ class Store(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     region = relationship("Region", back_populates="stores")
+    owner = relationship("User", back_populates="stores")
     entries = relationship("DataEntry", back_populates="store", cascade="all, delete-orphan")
 
 class DataEntry(Base):

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry
+from app.core.database import get_db, DataEntry, Store, User, Wallet, Transaction
 from app.services.gemini_ai import model
+from app.api.deps import verify_token
 import httpx
 import io
 import csv
@@ -11,7 +12,7 @@ from fastapi.responses import StreamingResponse
 router = APIRouter()
 
 @router.get("/personal")
-async def get_personal_dashboard(path: str, db: Session = Depends(get_db)):
+async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
@@ -22,6 +23,9 @@ async def get_personal_dashboard(path: str, db: Session = Depends(get_db)):
     entries = obj.get("data_entries", [])
     avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
     
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+    balance = user_wallet.balance if user_wallet else 0.0
+    
     return {
         "store": {
             "name": obj["name"],
@@ -29,7 +33,8 @@ async def get_personal_dashboard(path: str, db: Session = Depends(get_db)):
             "pulse": obj["metadata"].get("pulse_rate", 0),
             "trust_index": round(avg_trust, 1),
             "history": obj["metadata"].get("history", []),
-            "entries": entries
+            "entries": entries,
+            "wallet_balance": balance
         },
         "parent": {
             "name": parent_obj["name"],
@@ -55,6 +60,24 @@ async def get_weather_forecast(lat: float, lng: float) -> str:
             return "기상 데이터 수집 지연."
     except Exception as e:
         return "기상 데이터 API 오류."
+
+@router.get("/wallet/transactions")
+async def get_wallet_transactions(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+    if not user_wallet:
+        return {"status": "success", "balance": 0.0, "transactions": []}
+
+    txs = db.query(Transaction).filter(Transaction.wallet_id == user_wallet.id).order_by(Transaction.created_at.desc()).limit(50).all()
+
+    tx_list = [{
+        "id": tx.id,
+        "amount": tx.amount,
+        "type": tx.tx_type,
+        "description": tx.description,
+        "timestamp": tx.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    } for tx in txs]
+
+    return {"status": "success", "balance": user_wallet.balance, "transactions": tx_list}
 
 @router.get("/report")
 async def generate_weekly_report(path: str, industry: str = "공공", db: Session = Depends(get_db)):
@@ -116,7 +139,27 @@ async def generate_weekly_report(path: str, industry: str = "공공", db: Sessio
         
     return {"status": "success", "report": report_text}
 
-@router.get("/export")
+@router.post("/market/buy")
+async def buy_market_data(payload: dict, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    industry = payload.get("industry")
+    price = payload.get("price", 1000)
+    
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+    if not user_wallet or user_wallet.balance < price:
+        raise HTTPException(status_code=400, detail="Not enough $MDGA tokens.")
+        
+    user_wallet.balance -= price
+    
+    tx = Transaction(
+        wallet_id=user_wallet.id,
+        amount=-price,
+        tx_type="SPEND",
+        description=f"Purchased {industry} Market Data"
+    )
+    db.add(tx)
+    db.commit()
+    
+    return {"status": "success", "message": f"{industry} 데이터를 구매했습니다. (차감: {price} $MDGA)", "new_balance": user_wallet.balance}
 async def export_csv(path: str, industry: str = "공공", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)

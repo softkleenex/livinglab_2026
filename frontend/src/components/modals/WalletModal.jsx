@@ -1,13 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Coins, X, ArrowRightLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+
 export default function WalletModal({ onClose, personalData, addToast }) {
-  const balance = personalData ? personalData.store.total_value : 0;
-  const history = personalData ? personalData.store.entries : [];
+  const [balance, setBalance] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const [withdrawing, setWithdrawing] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/dashboard/wallet/transactions`);
+        setBalance(res.data.balance);
+        setHistory(res.data.transactions);
+      } catch(err) {
+        console.error("Wallet fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWallet();
+  }, []);
 
   const handleWithdraw = () => {
     if (balance < 100000) {
@@ -44,7 +63,7 @@ export default function WalletModal({ onClose, personalData, addToast }) {
           <div className="flex flex-col items-center justify-center mb-6 relative">
             <div className="flex items-end gap-2">
               <span className="text-4xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                {balance.toLocaleString()}
+                {loading ? "..." : balance.toLocaleString()}
               </span>
               <span className="text-sm font-bold text-yellow-500/50 mb-1">$MDGA</span>
             </div>
@@ -57,7 +76,7 @@ export default function WalletModal({ onClose, personalData, addToast }) {
                 key="withdraw-btn"
                 exit={{ opacity: 0, scale: 0.9 }}
                 onClick={handleWithdraw} 
-                disabled={withdrawing || balance === 0} 
+                disabled={withdrawing || balance === 0 || loading} 
                 className="w-full py-3 mb-6 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white rounded-xl font-black text-sm shadow-[0_5px_15px_rgba(234,179,8,0.3)] hover:from-yellow-500 hover:to-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 uppercase tracking-widest transition-all"
               >
                 {withdrawing ? <RefreshCw className="animate-spin" size={16}/> : <ArrowRightLeft size={16}/>}
@@ -76,18 +95,20 @@ export default function WalletModal({ onClose, personalData, addToast }) {
 
           <div className="space-y-4">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Transaction History</h4>
-            {history.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-4"><RefreshCw className="animate-spin text-slate-500" size={20}/></div>
+            ) : history.length === 0 ? (
               <p className="text-xs text-slate-600 text-center py-4">아직 보상 내역이 없습니다.<br/>데이터를 피딩하고 보상을 받으세요!</p>
             ) : (
               <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                {[...history].reverse().map((e, idx) => (
+                {history.map((e, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-[#0E1420] p-3 rounded-xl border border-slate-800/50">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                       <span className="text-[10px] text-slate-500 font-bold">{e.timestamp.split(' ')[0]}</span>
-                      <span className="text-xs text-slate-300 font-medium">데이터 피딩 보상</span>
+                      <span className="text-xs text-slate-300 font-medium">{e.description}</span>
                     </div>
-                    <div className="text-sm font-black text-emerald-400">
-                      +{e.effective_value ? e.effective_value.toLocaleString() : '1,000'}
+                    <div className={`text-sm font-black ${e.type === 'EARN' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {e.type === 'EARN' ? '+' : ''}{e.amount.toLocaleString()}
                     </div>
                   </div>
                 ))}

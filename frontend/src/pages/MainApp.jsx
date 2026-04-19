@@ -104,9 +104,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  
  const defaultTab = userContext.role === 'store' ? 'personal' : 'explorer';
  const [activeTab, setActiveTab] = useState(defaultTab);
- 
- const [showIngest, setShowIngest] = useState(false);
- const [showReport, setShowReport] = useState(false);
+ const [walletBalance, setWalletBalance] = useState(0);
+
+ const [showIngest, setShowIngest] = useState(false); const [showReport, setShowReport] = useState(false);
  const [showWallet, setShowWallet] = useState(false);
  const [showVoice, setShowVoice] = useState(false);
  const [showUpgrade, setShowUpgrade] = useState(false);
@@ -176,13 +176,16 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  const pathStr = userContext.location.join('/');
  const res = await axios.get(`${API_BASE_URL}/api/dashboard/personal?path=${pathStr}`);
  setPersonalData(res.data);
+ if (res.data.store?.wallet_balance !== undefined) {
+ setWalletBalance(res.data.store.wallet_balance);
+ }
  } catch (err) {
  setPersonalData(null);
  addToast("내 사업장 데이터를 불러오는데 실패했습니다.", 'error');
  } finally {
  setLoading(false);
  }
- }, [userContext.location]);
+ }, [userContext.location, addToast]);
 
  const handleDeleteEntry = async (hash) => {
  if(!window.confirm("이 데이터를 삭제하시겠습니까? 신뢰 지수(Trust Index)가 하락할 수 있습니다.")) return;
@@ -258,7 +261,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  <div className="flex items-center gap-3">
  <button onClick={() => setShowWallet(true)} className="flex items-center gap-1.5 px-2 py-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded-lg border border-yellow-500/30 transition-colors">
  <Coins size={14}/>
- <span className="text-[10px] font-bold uppercase tracking-wider hidden ">$MDGA</span>
+ <span className="text-[10px] font-bold uppercase tracking-wider">{walletBalance.toLocaleString()} $MDGA</span>
  </button>
  {googleUser?.isGuest ? (
  <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full border border-orange-500/30 text-[10px] font-bold">

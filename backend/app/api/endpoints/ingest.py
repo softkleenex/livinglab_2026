@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, Region
+from app.core.database import get_db, DataEntry, Store, Region, Wallet, Transaction
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
@@ -221,6 +221,10 @@ async def ingest(
             else: break
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
         
+        if store and not store.owner_id:
+            store.owner_id = user["user_id"]
+            db.add(store)
+        
         new_entry = DataEntry(
             location_path=location,
             store_id=store.id if store else None,
@@ -234,6 +238,21 @@ async def ingest(
             hash_val=trust_hash
         )
         db.add(new_entry)
+        
+        # Reward User with $MDGA tokens
+        user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
+        if user_wallet:
+            user_wallet.balance += effective_value
+            db.add(user_wallet)
+            
+            tx = Transaction(
+                wallet_id=user_wallet.id,
+                amount=effective_value,
+                tx_type="EARN",
+                description=f"Data Assetization Reward (Hash: {short_hash})"
+            )
+            db.add(tx)
+            
         db.commit()
         
         target_obj = engine.get_object(db, path_list)

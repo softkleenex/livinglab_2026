@@ -50,28 +50,39 @@ export default function DataMarket({ addToast, userContext }) {
  }
  ];
 
- const handleBuy = (item) => {
+ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+
+ const handleBuy = async (item) => {
  setBuying(true);
- setTimeout(() => {
- setBuying(false);
- addToast(`결제가 완료되었습니다. ${item.title} 다운로드가 시작됩니다.`, "success");
+ try {
+ const res = await axios.post(`${API_BASE_URL}/api/dashboard/market/buy`, {
+ industry: item.tags[0] || '분석',
+ price: item.price
+ });
  
- let csvContent = "Date,Region,Value,Category\n";
- for(let i=0; i<50; i++) {
- const d = new Date();
- d.setDate(d.getDate() - i);
- csvContent += `${d.toISOString().split('T')[0]},${locGu},${Math.floor(Math.random() * 100000)},${item.tags[0] || '분석'}\n`;
- }
+ addToast(res.data.message, "success");
  
- const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
- const url = window.URL.createObjectURL(blob);
+ // Now fetch the real anonymized CSV export
+ const pathStr = userContext.location ? userContext.location.join('/') : '전체 (Root)';
+ const exportRes = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(item.tags[0] || '공공')}`, { responseType: 'blob' });
+ 
+ const url = window.URL.createObjectURL(new Blob([exportRes.data]));
  const link = document.createElement('a');
  link.href = url;
- link.setAttribute('download', `MDGA_Dataset_${item.title.replace(/\s+/g, '_')}.csv`);
+ link.setAttribute('download', `MDGA_Premium_${item.title.replace(/\s+/g, '_')}.csv`);
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
- }, 1500);
+ 
+ } catch(err) {
+ if (err.response?.status === 400) {
+ addToast(err.response.data.detail, "error");
+ } else {
+ addToast("결제 중 오류가 발생했습니다. 토큰 잔액을 확인하세요.", "error");
+ }
+ } finally {
+ setBuying(false);
+ }
  };
 
  return (
