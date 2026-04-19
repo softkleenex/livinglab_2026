@@ -1,12 +1,31 @@
 import os
 import json
 import threading
+from collections import OrderedDict
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 
-FOLDER_CACHE = {}
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key):
+        if key not in self.cache:
+            return -1
+        else:
+            self.cache.move_to_end(key)
+            return self.cache[key]
+
+    def put(self, key, value):
+        self.cache[key] = value
+        self.cache.move_to_end(key)
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+FOLDER_CACHE = LRUCache(5000)
 CACHE_LOCK = threading.Lock()
 
 def get_drive_service():
@@ -45,17 +64,19 @@ def get_or_create_drive_folder(service, parent_id, folder_name):
     cache_key = f"{parent_id}_{folder_name}"
     
     with CACHE_LOCK:
-        if cache_key in FOLDER_CACHE:
-            return FOLDER_CACHE[cache_key]
+        cached_id = FOLDER_CACHE.get(cache_key)
+        if cached_id != -1:
+            return cached_id
 
-    query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
+    escaped_folder_name = folder_name.replace("'", "\\'")
+    query = f"name='{escaped_folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
     response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
     files = response.get('files', [])
     
     with CACHE_LOCK:
         if files:
             folder_id = files[0].get('id')
-            FOLDER_CACHE[cache_key] = folder_id
+            FOLDER_CACHE.put(cache_key, folder_id)
             return folder_id
             
         file_metadata = {
@@ -65,10 +86,6 @@ def get_or_create_drive_folder(service, parent_id, folder_name):
         }
         folder = service.files().create(body=file_metadata, fields='id').execute()
         folder_id = folder.get('id')
-        FOLDER_CACHE[cache_key] = folder_id
+        FOLDER_CACHE.put(cache_key, folder_id)
         
-        if len(FOLDER_CACHE) > 5000:
-            FOLDER_CACHE.clear()
-            FOLDER_CACHE[cache_key] = folder_id
-            
         return folder_id

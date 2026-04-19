@@ -275,7 +275,6 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
 
         # Delete from DB
         db.query(DataEntry).filter(DataEntry.hash_val == hash_val).delete()
-        db.commit()
 
         # Delegate Drive deletion to BackgroundTask
         short_hash = hash_val[:8]
