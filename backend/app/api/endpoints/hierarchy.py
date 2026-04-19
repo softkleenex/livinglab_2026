@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry
+from app.core.database import get_db, DataEntry, Store, Region
 import random
 from pydantic import BaseModel
 
@@ -10,19 +10,18 @@ router = APIRouter()
 class ContextPayload(BaseModel):
     role: str
     industry: str
-    location: list[str] # e.g. ["북구", "산격동", "경북대 북문", "테스트상점"]
+    location: list[str]
 
 @router.post("/user/context")
-async def set_user_context(payload: ContextPayload):
-    # Ensure the path exists in the engine
+async def set_user_context(payload: ContextPayload, db: Session = Depends(get_db)):
     types = ["Gu", "Dong", "Street", "Store"]
-    engine.create_or_get_path(payload.location, types)
+    engine.create_or_get_path(db, payload.location, types)
     return {"status": "success", "message": "Context initialized", "path": payload.location}
 
 @router.get("/explore")
-async def explore(path: str = ""):
+async def explore(path: str = "", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p] if path else []
-    obj = engine.get_object(path_list)
+    obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Path not found")
 
     entries = obj.get("data_entries", [])
@@ -39,38 +38,30 @@ async def explore(path: str = ""):
 @router.get("/stores/all")
 async def get_all_stores(db: Session = Depends(get_db)):
     try:
-        # Get unique locations from data_entries
-        entries = db.query(DataEntry).distinct(DataEntry.location_path).all()
         stores = []
-        for e in entries:
-            parts = e.location_path.split("/")
-            if len(parts) >= 4:
-                stores.append({
-                    "path": e.location_path,
-                    "gu": parts[0],
-                    "dong": parts[1] if len(parts) > 1 else "",
-                    "street": parts[2] if len(parts) > 2 else "",
-                    "name": parts[-1],
-                    "industry": e.industry
-                })
+        all_stores = db.query(Store).all()
+        for s in all_stores:
+            # We need to reconstruct the path
+            path_parts = []
+            curr_r = s.region
+            while curr_r:
+                path_parts.insert(0, curr_r.name)
+                curr_r = curr_r.parent
+            path = "/".join(path_parts + [s.name])
+            
+            gu = path_parts[0] if len(path_parts) > 0 else ""
+            dong = path_parts[1] if len(path_parts) > 1 else ""
+            street = path_parts[2] if len(path_parts) > 2 else ""
+            
+            stores.append({
+                "path": path,
+                "gu": gu,
+                "dong": dong,
+                "street": street,
+                "name": s.name,
+                "industry": s.industry
+            })
 
-        # Also grab any stores currently in the engine tree that might not have entries yet
-        def traverse_tree(node, current_path):
-            if node.get("type") == "Store" and node.get("name") != "전체 (Root)":
-                parts = current_path
-                if not any(s["path"] == "/".join(parts) for s in stores):
-                    stores.append({
-                        "path": "/".join(parts),
-                        "gu": parts[0] if len(parts) > 0 else "",
-                        "dong": parts[1] if len(parts) > 1 else "",
-                        "street": parts[2] if len(parts) > 2 else "",
-                        "name": parts[-1],
-                        "industry": "기타"
-                    })
-            for child_name, child_node in node.get("children", {}).items():
-                traverse_tree(child_node, current_path + [child_name])
-
-        traverse_tree(engine.db, [])
         return {"status": "success", "stores": stores}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

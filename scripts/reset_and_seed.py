@@ -16,14 +16,14 @@ print("==================================================")
 print("🚀 INIT: FULL SYSTEM RESET & SEEDING PROCESS 🚀")
 print("==================================================")
 
-# 1. Clear DB
-print("\n[1/3] Clearing Production Database...")
+# 1. Reset Schema
+print("\n[1/3] Resetting Production Database Schema...")
 try:
-    req = urllib.request.Request('https://mdga-api.onrender.com/api/clear_db', method='DELETE')
+    req = urllib.request.Request('https://mdga-api.onrender.com/api/reset_schema', method='POST')
     res = urllib.request.urlopen(req, context=context)
-    print("  -> DB Cleared Successfully:", res.read().decode('utf-8'))
+    print("  -> Schema Reset Successfully:", res.read().decode('utf-8'))
 except Exception as e:
-    print("  -> Failed to clear DB:", e)
+    print("  -> Failed to reset schema:", e)
 
 # 2. Clear Google Drive
 print("\n[2/3] Wiping Google Drive Data Lake...")

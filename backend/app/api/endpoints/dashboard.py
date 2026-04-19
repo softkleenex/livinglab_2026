@@ -11,13 +11,13 @@ from fastapi.responses import StreamingResponse
 router = APIRouter()
 
 @router.get("/personal")
-async def get_personal_dashboard(path: str):
+async def get_personal_dashboard(path: str, db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]
-    obj = engine.get_object(path_list)
+    obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
     
     # Get parent object to compare
-    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    parent_obj = engine.get_object(db, path_list[:-1]) if len(path_list) > 1 else engine.get_object(db, ["전체 (Root)"])
     
     entries = obj.get("data_entries", [])
     avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
@@ -57,13 +57,13 @@ async def get_weather_forecast(lat: float, lng: float) -> str:
         return "기상 데이터 API 오류."
 
 @router.get("/report")
-async def generate_weekly_report(path: str, industry: str = "공공"):
+async def generate_weekly_report(path: str, industry: str = "공공", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]
-    obj = engine.get_object(path_list)
+    obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found")
     
     # Get Parent context for competitiveness
-    parent_obj = engine.get_object(path_list[:-1]) if len(path_list) > 1 else engine.db
+    parent_obj = engine.get_object(db, path_list[:-1]) if len(path_list) > 1 else engine.get_object(db, ["전체 (Root)"])
     parent_avg = parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1))
     
     entries = obj.get("data_entries", [])
@@ -118,9 +118,9 @@ async def generate_weekly_report(path: str, industry: str = "공공"):
     return {"status": "success", "report": report_text}
 
 @router.get("/export")
-async def export_csv(path: str, industry: str = "공공"):
+async def export_csv(path: str, industry: str = "공공", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]
-    obj = engine.get_object(path_list)
+    obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found.")
     
     entries = obj.get("data_entries", [])

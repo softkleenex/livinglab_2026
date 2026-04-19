@@ -1,23 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Bot, X, Send, Sparkles, Volume2, VolumeX, CheckSquare, Square, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-export default function MDGACopilot({ locationPath, industry }) {
+export default function MDGACopilot({ locationPath, industry, entries = [], onActionComplete }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "안녕하세요! MDGA AI Copilot입니다. 사업장 데이터나 운영에 대해 무엇이든 물어보세요.", sender: 'ai' }
+    { id: 1, text: "안녕하세요! MDGA AI Copilot입니다. 데이터를 선택하고 삭제, 생성, 수정 등 무엇이든 요청해 보세요.", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [playingId, setPlayingId] = useState(null);
   const messagesEndRef = useRef(null);
+  
+  const [selectedHashes, setSelectedHashes] = useState([]);
+  const [showFiles, setShowFiles] = useState(false);
+
+  useEffect(() => {
+    if (entries) {
+      setSelectedHashes(entries.map(e => e.hash));
+    }
+  }, [entries]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isOpen]);
+  }, [messages, isOpen, showFiles]);
 
   useEffect(() => {
     // Cleanup audio on close
@@ -42,6 +51,10 @@ export default function MDGACopilot({ locationPath, industry }) {
     utterance.onend = () => setPlayingId(null);
     window.speechSynthesis.speak(utterance);
   };
+  
+  const toggleHash = (hash) => {
+    setSelectedHashes(prev => prev.includes(hash) ? prev.filter(h => h !== hash) : [...prev, hash]);
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -56,9 +69,14 @@ export default function MDGACopilot({ locationPath, industry }) {
       const res = await axios.post(`${API_BASE_URL}/api/chat`, {
         path: locationPath,
         industry: industry,
-        message: userMsg
+        message: userMsg,
+        selected_hashes: selectedHashes
       });
       setMessages(prev => [...prev, { id: Date.now(), text: res.data.reply, sender: 'ai' }]);
+      
+      if (res.data.reply.includes('[시스템]') && onActionComplete) {
+        onActionComplete();
+      }
     } catch (err) {
       setMessages(prev => [...prev, { id: Date.now(), text: "오류가 발생했습니다. 다시 시도해주세요.", sender: 'ai', error: true }]);
     } finally {
@@ -101,12 +119,36 @@ export default function MDGACopilot({ locationPath, industry }) {
               </div>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white p-1"><X size={18}/></button>
             </div>
+            
+            {/* File Selection Context Bar */}
+            <div className="bg-[#0A0F1A] border-b border-slate-800 px-4 py-2 flex flex-col gap-2">
+              <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowFiles(!showFiles)}>
+                <span className="text-xs font-bold text-blue-400 flex items-center gap-1">
+                  <FileText size={12}/> 첨부된 데이터 ({selectedHashes.length}/{entries.length})
+                </span>
+                <span className="text-[10px] text-slate-500">{showFiles ? '숨기기' : '펼치기'}</span>
+              </div>
+              
+              <AnimatePresence>
+                {showFiles && (
+                  <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="flex flex-col gap-1 max-h-32 overflow-y-auto custom-scrollbar">
+                    {entries.map(e => (
+                      <div key={e.hash} onClick={() => toggleHash(e.hash)} className="flex items-center gap-2 p-2 rounded hover:bg-slate-800/50 cursor-pointer transition-colors border border-transparent hover:border-slate-700">
+                        {selectedHashes.includes(e.hash) ? <CheckSquare size={14} className="text-blue-400 shrink-0"/> : <Square size={14} className="text-slate-600 shrink-0"/>}
+                        <span className="text-[10px] text-slate-300 truncate font-mono">[{e.hash.substring(0,8)}] {e.raw_text || e.insights.substring(0, 20)}...</span>
+                      </div>
+                    ))}
+                    {entries.length === 0 && <p className="text-[10px] text-slate-500 py-1">현재 사업장에 데이터가 없습니다.</p>}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gradient-to-b from-[#0E1420] to-[#101725]">
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className="relative group">
-                    <div className={`max-w-[240px] p-3 rounded-2xl text-xs leading-relaxed ${
+                    <div className={`max-w-[240px] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                       m.sender === 'user' 
                         ? 'bg-blue-600 text-white rounded-br-sm' 
                         : m.error 
@@ -144,7 +186,7 @@ export default function MDGACopilot({ locationPath, industry }) {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything..."
+                placeholder="Ask or command (e.g. Delete first data)..."
                 className="flex-1 bg-[#101725] border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:border-blue-500 outline-none"
               />
               <button type="submit" disabled={!input.trim() || loading} className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl disabled:opacity-50 transition-colors">

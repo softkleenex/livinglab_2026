@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry
+from app.core.database import get_db, DataEntry, Store, Region
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
@@ -41,9 +41,9 @@ async def ingest(
             file_data = await file.read()
 
         # Find target object
-        target_obj = engine.get_object(path_list)
+        target_obj = engine.get_object(db, path_list)
         if not target_obj:
-            target_obj = engine.create_or_get_path(path_list, ["Gu", "Dong", "Street", "Store"])
+            target_obj = engine.create_or_get_path(db, path_list, ["Gu", "Dong", "Street", "Store"])
 
         # Deep Analysis via LLM
         prompt_parts = [f"다음은 {location} 지역 사업장이 올린 데이터입니다. 데이터를 분석하고 사업장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"]
@@ -125,19 +125,28 @@ async def ingest(
             "trust_index": trust_index,
             "raw_text": content
         }
-        target_obj["data_entries"].append(entry)
-        if len(target_obj["data_entries"]) > 50: target_obj["data_entries"].pop(0)
         
         # Add value weighted by trust index
         base_value = random.randint(50000, 200000)
         effective_value = int(base_value * (trust_index / 100.0))
         entry["effective_value"] = effective_value
         
-        engine.add_value_bottom_up(path_list, effective_value)
+        engine.add_value_bottom_up(db, path_list, effective_value)
+        
+        # Determine store_id
+        parent_id = None
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r:
+                parent_id = r.id
+            else:
+                break
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
         
         # Save to DB
         new_entry = DataEntry(
             location_path=location,
+            store_id=store.id if store else None,
             industry=industry,
             is_guest=1 if is_guest_bool else 0,
             raw_text=content,
@@ -150,6 +159,8 @@ async def ingest(
         db.add(new_entry)
         db.commit()
         
+        target_obj = engine.get_object(db, path_list)
+        
         # Broadcast to websockets
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
@@ -158,11 +169,47 @@ async def ingest(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/store")
+async def delete_store(path: str, db: Session = Depends(get_db)):
+    try:
+        path_list = [p for p in path.split("/") if p]
+        
+        target_obj = engine.get_object(db, path_list)
+        if not target_obj:
+            raise HTTPException(status_code=404, detail="Store not found")
+            
+        entries = target_obj.get("data_entries", [])
+        
+        # Attempt to delete from Google Drive
+        drive_service = get_drive_service()
+        if drive_service:
+            for entry in entries:
+                short_hash = entry.get("hash", "")[:8]
+                if short_hash:
+                    try:
+                        query = f"name contains '_{short_hash}' and trashed=false"
+                        results = drive_service.files().list(q=query, fields="files(id, name)").execute()
+                        for item in results.get("files", []):
+                            drive_service.files().delete(fileId=item['id']).execute()
+                    except Exception as e:
+                        print(f"Drive delete error: {e}")
+                        
+        success = engine.delete_path(db, path_list)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to remove from tree")
+            
+        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list[:-1], "value_added": 0, "pulse_rate": 0}))
+        
+        return {"status": "success", "message": "Store and all associated data deleted."}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/delete")
 async def delete_entry(path: str, hash_val: str, db: Session = Depends(get_db)):
     try:
         path_list = [p for p in path.split("/") if p]
-        target_obj = engine.get_object(path_list)
+        target_obj = engine.get_object(db, path_list)
 
         if not target_obj:
             raise HTTPException(status_code=404, detail="Path not found")
@@ -203,12 +250,11 @@ async def delete_entry(path: str, hash_val: str, db: Session = Depends(get_db)):
         except Exception as drive_err:
             print(f"Failed to delete files from Google Drive: {drive_err}")
 
-        target_obj["data_entries"] = [e for e in entries if e.get("hash") != hash_val]
-        
         # Roll-down value based on the entry's effective value
         penalty_value = -target_entry.get("effective_value", 50000)
-        engine.add_value_bottom_up(path_list, penalty_value)
+        engine.add_value_bottom_up(db, path_list, penalty_value)
         
+        target_obj = engine.get_object(db, path_list)
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success", "message": "Data deleted and values rolled back."}

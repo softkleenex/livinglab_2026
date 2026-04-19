@@ -1,101 +1,225 @@
 import datetime
 import random
-import urllib.request
-import json
+from app.core.database import Region, Store, DataEntry
+
+GEO_LOOKUP = {
+    "서울특별시": (37.5665, 126.9780),
+    "부산광역시": (35.1796, 129.0756),
+    "대구광역시": (35.8714, 128.6014),
+    "인천광역시": (37.4563, 126.7052),
+    "광주광역시": (35.1595, 126.8526),
+    "대전광역시": (36.3504, 127.3845),
+    "울산광역시": (35.5384, 129.3114),
+    "세종특별자치시": (36.4800, 127.2890),
+    "경기도": (37.2749, 127.0093),
+    "강원특별자치도": (37.8854, 127.7298),
+    "충청북도": (36.6356, 127.4913),
+    "충청남도": (36.6588, 126.6728),
+    "전북특별자치도": (35.8202, 127.1088),
+    "전라남도": (36.8151, 126.8906),
+    "경상북도": (36.5760, 128.5056),
+    "경상남도": (35.2383, 128.6922),
+    "제주특별자치도": (33.4890, 126.4983)
+}
 
 class HierarchyEngine:
-    def __init__(self):
-        self.db = {
-            "name": "전체 (Root)", "type": "City",
-            "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": 0, "nodes": 0, "history": []},
-            "children": {},
-            "data_entries": []
-        }
-
-    def get_object(self, path_list):
-        curr = self.db
-        if path_list and path_list[0] == self.db["name"]:
-            path_list = path_list[1:]
-        for p in path_list:
-            if p not in curr["children"]: return None
-            curr = curr["children"][p]
-        return curr
-
-    def create_or_get_path(self, path_list, types_list):
-        curr = self.db
-        if path_list and path_list[0] == self.db["name"]:
-            path_list = path_list[1:]
-        # Update root metadata dynamically
-        curr["metadata"]["nodes"] += 1
-        
-        # Simple lookup table for major Korean provinces/cities
-        GEO_LOOKUP = {
-            "서울특별시": (37.5665, 126.9780),
-            "부산광역시": (35.1796, 129.0756),
-            "대구광역시": (35.8714, 128.6014),
-            "인천광역시": (37.4563, 126.7052),
-            "광주광역시": (35.1595, 126.8526),
-            "대전광역시": (35.1595, 126.8526), # Note: corrected below
-            "울산광역시": (35.5384, 129.3114),
-            "세종특별자치시": (36.4800, 127.2890),
-            "경기도": (37.2749, 127.0093),
-            "강원특별자치도": (37.8854, 127.7298),
-            "충청북도": (36.6356, 127.4913),
-            "충청남도": (36.6588, 126.6728),
-            "전북특별자치도": (35.8202, 127.1088),
-            "전라남도": (36.8151, 126.8906),
-            "경상북도": (36.5760, 128.5056),
-            "경상남도": (35.2383, 128.6922),
-            "제주특별자치도": (33.4890, 126.4983)
-        }
-        GEO_LOOKUP["대전광역시"] = (36.3504, 127.3845) # Correct Dajeon
-
-        # Determine base lat/lng from the first path element if possible
-        base_lat, base_lng = (37.5665, 126.9780) # Default to Seoul
-        if path_list and path_list[0] in GEO_LOOKUP:
-            base_lat, base_lng = GEO_LOOKUP[path_list[0]]
+    def get_object(self, db, path_list):
+        if not path_list or path_list[0] == "전체 (Root)":
+            cities = db.query(Region).filter(Region.parent_id == None).all()
+            total_val = sum(c.total_value for c in cities)
+            nodes = sum(c.nodes for c in cities)
+            return {
+                "name": "전체 (Root)", "type": "Root",
+                "metadata": {"trust_index": 99.0, "pulse_rate": 80, "total_value": total_val, "nodes": nodes, "history": []},
+                "children": {c.name: {"type": c.level_type, "metadata": {"total_value": c.total_value, "pulse_rate": c.pulse_rate, "history": c.history, "location": [c.lat, c.lng]}} for c in cities},
+                "data_entries": []
+            }
             
-        for i, p in enumerate(path_list):
-            if p not in curr["children"]:
-                # Add slight random offset based on depth to spread nodes out geographically
-                offset = 0.05 / (i + 1)
-                lat = base_lat + random.uniform(-offset, offset)
-                lng = base_lng + random.uniform(-offset, offset)
-                curr["children"][p] = {
-                    "name": p, "type": types_list[i] if i < len(types_list) else "Node",
-                    "metadata": {
-                        "created_at": str(datetime.date.today()), 
-                        "nodes": 1, 
-                        "pulse_rate": random.randint(65, 90), 
-                        "total_value": 0,
-                        "history": [random.randint(60, 80) for _ in range(5)],
-                        "location": [lat, lng]
-                    },
-                    "children": {}, "data_entries": []
-                }
-            else:
-                curr["children"][p]["metadata"]["nodes"] += 1
-            curr = curr["children"][p]
-        return curr
+        parent_id = None
+        curr_obj = None
+        is_store = False
         
-    def add_value_bottom_up(self, path_list, value_added):
-        curr = self.db
-        if path_list and path_list[0] == self.db["name"]:
-            path_list = path_list[1:]
-        curr["metadata"]["total_value"] += value_added
-        curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 1)
-        # Update history
-        curr["metadata"]["history"].append(curr["metadata"]["pulse_rate"])
-        if len(curr["metadata"]["history"]) > 10: curr["metadata"]["history"].pop(0)
+        for i, p in enumerate(path_list):
+            if i == len(path_list) - 1:
+                store = db.query(Store).filter(Store.name == p, Store.region_id == parent_id).first()
+                if store:
+                    is_store = True
+                    curr_obj = store
+                    break
+            
+            region = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if not region: return None
+            parent_id = region.id
+            curr_obj = region
+            
+        if not curr_obj: return None
+        
+        if is_store:
+            entries = db.query(DataEntry).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
+            entry_list = [{
+                "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
+                "insights": e.insights,
+                "hash": e.hash_val,
+                "drive_link": e.drive_link,
+                "scope": "store_specific",
+                "trust_index": e.trust_index,
+                "effective_value": e.effective_value,
+                "raw_text": e.raw_text
+            } for e in entries]
+            
+            return {
+                "name": curr_obj.name, "type": "Store",
+                "metadata": {
+                    "created_at": curr_obj.created_at.strftime("%Y-%m-%d"),
+                    "nodes": 1,
+                    "pulse_rate": curr_obj.pulse_rate,
+                    "total_value": curr_obj.total_value,
+                    "history": curr_obj.history,
+                    "location": [curr_obj.lat, curr_obj.lng]
+                },
+                "children": {},
+                "data_entries": entry_list,
+                "industry": curr_obj.industry
+            }
+        else:
+            children_regions = db.query(Region).filter(Region.parent_id == curr_obj.id).all()
+            children_stores = db.query(Store).filter(Store.region_id == curr_obj.id).all()
+            
+            children_dict = {}
+            for c in children_regions:
+                children_dict[c.name] = {
+                    "type": c.level_type,
+                    "metadata": {"total_value": c.total_value, "pulse_rate": c.pulse_rate, "history": c.history, "location": [c.lat, c.lng]}
+                }
+            for s in children_stores:
+                children_dict[s.name] = {
+                    "type": "Store",
+                    "metadata": {"total_value": s.total_value, "pulse_rate": s.pulse_rate, "history": s.history, "location": [s.lat, s.lng]}
+                }
+                
+            return {
+                "name": curr_obj.name, "type": curr_obj.level_type,
+                "metadata": {
+                    "created_at": curr_obj.created_at.strftime("%Y-%m-%d"),
+                    "nodes": curr_obj.nodes,
+                    "pulse_rate": curr_obj.pulse_rate,
+                    "total_value": curr_obj.total_value,
+                    "history": curr_obj.history,
+                    "location": [curr_obj.lat, curr_obj.lng]
+                },
+                "children": children_dict,
+                "data_entries": []
+            }
 
-        for p in path_list:
-            if p in curr["children"]:
-                curr = curr["children"][p]
-                curr["metadata"]["total_value"] += value_added
-                curr["metadata"]["pulse_rate"] = min(100, curr["metadata"].get("pulse_rate", 70) + 2)
-                curr["metadata"]["history"].append(curr["metadata"]["pulse_rate"])
-                if len(curr["metadata"]["history"]) > 10: curr["metadata"]["history"].pop(0)
+    def create_or_get_path(self, db, path_list, types_list):
+        if not path_list: return None
+        if path_list[0] == "전체 (Root)":
+            path_list = path_list[1:]
+            
+        parent_id = None
+        base_lat, base_lng = GEO_LOOKUP.get(path_list[0], (37.5665, 126.9780))
+        
+        for i, p in enumerate(path_list):
+            is_last = (i == len(path_list) - 1)
+            offset = 0.05 / (i + 1)
+            lat = base_lat + random.uniform(-offset, offset)
+            lng = base_lng + random.uniform(-offset, offset)
+            
+            if is_last and (len(types_list) <= i or types_list[i] == "Store"):
+                store = db.query(Store).filter(Store.name == p, Store.region_id == parent_id).first()
+                if not store:
+                    store = Store(name=p, region_id=parent_id, industry="기타", lat=lat, lng=lng, history=[random.randint(60, 80) for _ in range(5)])
+                    db.add(store)
+                    db.flush()
+                    self._increment_nodes(db, parent_id)
+            else:
+                region = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+                if not region:
+                    level_type = types_list[i] if i < len(types_list) else "Node"
+                    region = Region(name=p, parent_id=parent_id, level_type=level_type, lat=lat, lng=lng, history=[random.randint(60, 80) for _ in range(5)])
+                    db.add(region)
+                    db.flush()
+                    if parent_id is not None:
+                        self._increment_nodes(db, parent_id)
+                parent_id = region.id
+                
+        db.commit()
+        return self.get_object(db, path_list)
+        
+    def _increment_nodes(self, db, region_id):
+        curr_id = region_id
+        while curr_id is not None:
+            r = db.query(Region).filter(Region.id == curr_id).first()
+            if r:
+                r.nodes += 1
+                db.add(r)
+                curr_id = r.parent_id
+            else:
+                break
+
+    def add_value_bottom_up(self, db, path_list, value_added):
+        parent_id = None
+        regions = []
+        if path_list[0] == "전체 (Root)":
+            path_list = path_list[1:]
+            
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r:
+                regions.append(r)
+                parent_id = r.id
+            else:
+                break
+                
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        
+        if store:
+            store.total_value += value_added
+            store.pulse_rate = min(100, store.pulse_rate + 2)
+            hist = list(store.history)
+            hist.append(store.pulse_rate)
+            if len(hist) > 10: hist.pop(0)
+            store.history = hist
+            db.add(store)
+            
+        for r in regions:
+            r.total_value += value_added
+            r.pulse_rate = min(100, r.pulse_rate + 1)
+            hist = list(r.history)
+            hist.append(r.pulse_rate)
+            if len(hist) > 10: hist.pop(0)
+            r.history = hist
+            db.add(r)
+            
+        db.commit()
+
+    def delete_path(self, db, path_list):
+        if not path_list: return False
+        if path_list[0] == "전체 (Root)":
+            path_list = path_list[1:]
+            
+        parent_id = None
+        regions = []
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r:
+                regions.append(r)
+                parent_id = r.id
+            else:
+                return False
+                
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        if not store: return False
+        
+        value_to_remove = store.total_value
+        
+        for r in regions:
+            r.total_value = max(0, r.total_value - value_to_remove)
+            r.nodes = max(0, r.nodes - 1)
+            db.add(r)
+            
+        db.delete(store)
+        db.commit()
+        return True
 
 engine = HierarchyEngine()
-
-

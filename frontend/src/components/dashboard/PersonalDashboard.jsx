@@ -13,7 +13,7 @@ const Badge = React.memo(({ label, icon, color }) => {
  );
 });
 
-export default function PersonalDashboard({ personalData, userContext, handleExportCSV, setShowReport, handleDeleteEntry, handleDemoInject }) {
+export default function PersonalDashboard({ personalData, userContext, handleExportCSV, setShowReport, handleDeleteEntry, handleDeleteStore, handleDemoInject }) {
  if (!personalData) return null;
 
  const isB2B = userContext.industry && userContext.industry !== '공공';
@@ -230,7 +230,21 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  </span>
  </div>
  </div>
- <p className="text-xs text-slate-300 leading-relaxed font-medium mb-3">{entry.insights}</p>
+ {entry.raw_text && (
+   <div className="mb-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800/80">
+     <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1"><FileText size={10}/> Uploaded Data</p>
+     <p className="text-xs text-slate-400 leading-relaxed break-keep">{entry.raw_text}</p>
+     {entry.drive_link && (
+       <a href={entry.drive_link} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-1 rounded">
+         <Layers size={10} /> 첨부 파일 열기
+       </a>
+     )}
+   </div>
+ )}
+ <div className="mb-3">
+   <p className="text-[10px] font-bold text-emerald-500 uppercase mb-1 flex items-center gap-1"><ShieldCheck size={10}/> AI Insight</p>
+   <p className="text-xs text-slate-300 leading-relaxed font-medium">{entry.insights}</p>
+ </div>
  
  <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
  <span className="text-[10px] font-bold text-yellow-400 flex items-center gap-1">
@@ -245,6 +259,12 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  ))}
  </div>
  )}
+ </div>
+
+ <div className="mt-8 pt-6 border-t border-slate-800/80 flex justify-center">
+ <button onClick={handleDeleteStore} className="flex items-center gap-2 text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-4 py-2 rounded-xl transition-all shadow-sm shadow-rose-900/20">
+ <Trash2 size={16} /> 사업장(객체) 영구 삭제
+ </button>
  </div>
  </div>
  </motion.div>

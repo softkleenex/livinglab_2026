@@ -189,6 +189,18 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  }
  };
 
+ const handleDeleteStore = async () => {
+ if(!window.confirm("이 사업장(객체)을 완전히 삭제하시겠습니까? 모든 데이터와 구글 드라이브 증빙 자료가 영구 삭제되며 복구할 수 없습니다.")) return;
+ try {
+ const pathStr = userContext.location.join('/');
+ await axios.delete(`${API_BASE_URL}/api/ingest/store?path=${pathStr}`);
+ addToast("사업장이 성공적으로 삭제되었습니다.", "info");
+ setTimeout(() => onLogout(), 1500);
+ } catch(err) {
+ addToast("사업장 삭제 중 오류가 발생했습니다.", "error");
+ }
+ };
+
  const handleExportCSV = async () => {
  addToast("CSV 데이터 다운로드를 시작합니다...", "info");
  try {
@@ -212,6 +224,8 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  };
  const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
  const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
+
+ const currentEntries = activeTab === 'personal' ? personalData?.store?.entries : explorerData?.entries;
 
  return (
  <div className="flex h-[100dvh] w-full bg-[#05080F] text-slate-200 overflow-hidden font-sans antialiased justify-center selection:bg-blue-500/30">
@@ -269,6 +283,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  handleExportCSV={handleExportCSV} 
  setShowReport={setShowReport} 
  handleDeleteEntry={handleDeleteEntry} 
+ handleDeleteStore={handleDeleteStore}
  handleDemoInject={handleDemoInject} 
  />
  ) : activeTab === 'explorer' && explorerData ? (
@@ -363,7 +378,15 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  </AnimatePresence>
 
  {/* Floating AI Copilot */}
- <MDGACopilot locationPath={userContext.location.join('/')} industry={userContext.industry} />
+ <MDGACopilot 
+   locationPath={userContext.location.join('/')} 
+   industry={userContext.industry} 
+   entries={currentEntries || []}
+   onActionComplete={() => {
+     if (activeTab === 'personal') fetchPersonal();
+     else fetchExplorer();
+   }}
+ />
 
  {/* Global Notifications (Toasts) */}
  <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none flex flex-col gap-2">
