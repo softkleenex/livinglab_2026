@@ -136,14 +136,17 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  const data = JSON.parse(event.data);
  if (data.type === 'update') {
  const storeName = data.path[data.path.length - 1];
- addToast(`${storeName}에서 새로운 데이터 피딩! (자산 +₩${data.value_added.toLocaleString()})`, 'success');
+ addToast(`${storeName}에서 데이터 갱신 (${data.value_added > 0 ? '+' : ''}₩${data.value_added.toLocaleString()})`, 'info');
 
- // Refetch to get the latest values when anyone updates
+ // Thundering herd prevention (Debounce with jitter)
+ clearTimeout(window.wsTimeout);
+ window.wsTimeout = setTimeout(() => {
  if (activeTab === 'personal' && userContext.role === 'store') {
  fetchPersonal();
  } else if (activeTab === 'explorer') {
  fetchExplorer();
  }
+ }, 1500 + Math.random() * 1000);
  }
  };
 

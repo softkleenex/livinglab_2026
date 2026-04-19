@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.database import get_db, DataEntry, Store, Region
@@ -6,6 +6,8 @@ from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
 from app.services.google_drive import get_drive_service, get_or_create_drive_folder
+from app.api.deps import verify_token
+from app.api.endpoints.ingest import sync_drive_delete, sync_drive_modify, sync_drive_upload
 from googleapiclient.http import MediaIoBaseUpload
 import io
 import datetime
@@ -32,8 +34,27 @@ class ChatActionResponse(typing.TypedDict):
     target_hash: str
     new_text: str
 
+def sync_chat_log_drive_upload(path_list, payload_industry, message, reply):
+    try:
+        drive_service = get_drive_service()
+        if drive_service:
+            current_folder_id = FOLDER_ID
+            for p in path_list:
+                current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
+
+            generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
+            now_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            
+            log_content = f"--- MDGA AI COPILOT LOG ---\nTime: {now_str}\nTarget: {'/'.join(path_list)}\nIndustry: {payload_industry}\n\n[Query]\n{message}\n\n[Response]\n{reply}\n"
+            
+            txt_metadata = {'name': f"Copilot_Log_{now_str}.txt", 'parents': [generated_folder_id]}
+            txt_media = MediaIoBaseUpload(io.BytesIO(log_content.encode('utf-8')), mimetype='text/plain', resumable=True)
+            drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
+    except Exception as drive_err:
+        print("Failed to save Copilot log to Drive:", drive_err)
+
 @router.post("")
-async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db)):
+async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     path_list = [p for p in payload.path.split("/") if p]
     obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found")
@@ -68,7 +89,8 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
     """
 
     try:
-        res = chat_model.generate_content(
+        res = await asyncio.to_thread(
+            chat_model.generate_content,
             intent_prompt,
             generation_config=genai.GenerationConfig(
                 response_mime_type="application/json",
@@ -94,7 +116,8 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
             사용자의 질문: "{payload.message}"
             위 데이터를 바탕으로 전문적으로 2~3문장으로 조언해주세요.
             """
-            reply = chat_model.generate_content(chat_prompt).text
+            chat_res = await asyncio.to_thread(chat_model.generate_content, chat_prompt)
+            reply = chat_res.text
             
         elif action_type == "DELETE":
             target_hash = reply_data.get("target_hash", "")
@@ -102,9 +125,15 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
             if entry_to_del:
                 penalty = -entry_to_del.effective_value
                 del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
+                short_hash_to_del = entry_to_del.hash_val[:8]
+                drive_link_to_del = entry_to_del.drive_link
                 db.delete(entry_to_del)
                 db.commit()
                 engine.add_value_bottom_up(db, del_path_list, penalty)
+                
+                # Fix Copilot Sync Leak
+                background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
+                
                 asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
                 reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
             else:
@@ -117,6 +146,10 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
             if entry_to_mod:
                 entry_to_mod.raw_text = new_text
                 db.commit()
+                
+                # Fix Data Drift
+                background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
+                
                 reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
             else:
                 reply = f"⚠️ [시스템] 수정할 데이터를 찾을 수 없습니다."
@@ -146,28 +179,16 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
             )
             db.add(new_entry)
             db.commit()
+            
+            # Sync to Drive
+            background_tasks.add_task(sync_drive_upload, path_list, new_hash[:8], None, None, None, new_text, "AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.")
+            
             engine.add_value_bottom_up(db, path_list, val_added)
             asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": val_added, "pulse_rate": current_pulse}))
             reply = f"✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
             
-        # Save consultation log to Data Lake (Google Drive -> generated folder)
-        try:
-            drive_service = get_drive_service()
-            if drive_service:
-                current_folder_id = FOLDER_ID
-                for p in path_list:
-                    current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
-
-                generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
-                now_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                
-                log_content = f"--- MDGA AI COPILOT LOG ---\nTime: {now_str}\nTarget: {'/'.join(path_list)}\n\n[Query]\n{payload.message}\n\n[Response]\n{reply}\n"
-                
-                txt_metadata = {'name': f"Copilot_Log_{now_str}.txt", 'parents': [generated_folder_id]}
-                txt_media = MediaIoBaseUpload(io.BytesIO(log_content.encode('utf-8')), mimetype='text/plain', resumable=True)
-                drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
-        except Exception as drive_err:
-            print("Failed to save Copilot log to Drive:", drive_err)
+        # Delegate Drive API to Background Task
+        background_tasks.add_task(sync_chat_log_drive_upload, path_list, payload.industry, payload.message, reply)
             
     except Exception:
         traceback.print_exc()

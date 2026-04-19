@@ -20,6 +20,7 @@ print("==================================================")
 print("\n[1/3] Resetting Production Database Schema...")
 try:
     req = urllib.request.Request('https://mdga-api.onrender.com/api/reset_schema', method='POST')
+    req.add_header('Authorization', 'Bearer mock-jwt-token')
     res = urllib.request.urlopen(req, context=context)
     print("  -> Schema Reset Successfully:", res.read().decode('utf-8'))
 except Exception as e:

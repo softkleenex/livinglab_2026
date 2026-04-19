@@ -4,6 +4,7 @@ from app.core.database import get_db, DataEntry, Store, Region
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
+from app.api.deps import verify_token
 import traceback
 import json
 import random
@@ -13,7 +14,7 @@ import asyncio
 router = APIRouter()
 
 @router.delete("/clear_db")
-def clear_db(db: Session = Depends(get_db)):
+def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     db.query(DataEntry).delete()
     db.query(Store).delete()
     db.query(Region).delete()
@@ -21,14 +22,14 @@ def clear_db(db: Session = Depends(get_db)):
     return "DB Cleared"
 
 @router.post("/reset_schema")
-def reset_schema():
+def reset_schema(user: dict = Depends(verify_token)):
     from app.core.database import Base, engine as db_engine
     Base.metadata.drop_all(bind=db_engine)
     Base.metadata.create_all(bind=db_engine)
     return {"status": "success", "message": "Schema reset completely."}
 
 @router.post("/demo/inject")
-async def demo_inject(path: str, db: Session = Depends(get_db)):
+async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     try:
         path_list = [p for p in path.split("/") if p]
         types = ["Gu", "Dong", "Street", "Store"]
