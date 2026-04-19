@@ -163,15 +163,14 @@ class HierarchyEngine:
                         self._increment_nodes(db, parent_id)
                 parent_id = region.id
                 
-        db.commit()
         return self.get_object(db, path_list)
         
     def _increment_nodes(self, db, region_id):
         curr_id = region_id
         while curr_id is not None:
-            r = db.query(Region).filter(Region.id == curr_id).first()
+            r = db.query(Region).filter(Region.id == curr_id).with_for_update().first()
             if r:
-                r.nodes += 1
+                r.nodes = Region.nodes + 1
                 db.add(r)
                 curr_id = r.parent_id
             else:
@@ -184,17 +183,17 @@ class HierarchyEngine:
             path_list = path_list[1:]
             
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).with_for_update().first()
             if r:
                 regions.append(r)
                 parent_id = r.id
             else:
                 break
                 
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
         
         if store:
-            store.total_value += value_added
+            store.total_value = Store.total_value + value_added
             store.pulse_rate = min(100, store.pulse_rate + 2)
             hist = list(store.history)
             hist.append(store.pulse_rate)
@@ -203,7 +202,7 @@ class HierarchyEngine:
             db.add(store)
             
         for r in regions:
-            r.total_value += value_added
+            r.total_value = Region.total_value + value_added
             r.pulse_rate = min(100, r.pulse_rate + 1)
             hist = list(r.history)
             hist.append(r.pulse_rate)
@@ -211,7 +210,6 @@ class HierarchyEngine:
             r.history = hist
             db.add(r)
             
-        db.commit()
 
     def delete_path(self, db, path_list):
         if not path_list: return False
@@ -221,25 +219,24 @@ class HierarchyEngine:
         parent_id = None
         regions = []
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).with_for_update().first()
             if r:
                 regions.append(r)
                 parent_id = r.id
             else:
                 return False
                 
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
         if not store: return False
         
         value_to_remove = store.total_value
         
         for r in regions:
-            r.total_value = max(0, r.total_value - value_to_remove)
-            r.nodes = max(0, r.nodes - 1)
+            r.total_value = Region.total_value - value_to_remove
+            r.nodes = Region.nodes - 1
             db.add(r)
             
         db.delete(store)
-        db.commit()
         return True
 
 engine = HierarchyEngine()

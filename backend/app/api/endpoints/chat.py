@@ -128,8 +128,8 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 short_hash_to_del = entry_to_del.hash_val[:8]
                 drive_link_to_del = entry_to_del.drive_link
                 db.delete(entry_to_del)
-                db.commit()
                 engine.add_value_bottom_up(db, del_path_list, penalty)
+                db.commit()
                 
                 # Fix Copilot Sync Leak
                 background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
@@ -178,12 +178,11 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 hash_val=new_hash
             )
             db.add(new_entry)
+            engine.add_value_bottom_up(db, path_list, val_added)
             db.commit()
             
             # Sync to Drive
             background_tasks.add_task(sync_drive_upload, path_list, new_hash[:8], None, None, None, new_text, "AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.")
-            
-            engine.add_value_bottom_up(db, path_list, val_added)
             asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": val_added, "pulse_rate": current_pulse}))
             reply = f"✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
             

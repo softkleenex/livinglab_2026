@@ -76,9 +76,8 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
             )
             db.add(new_entry)
             
-        db.commit()
-        
         engine.add_value_bottom_up(db, path_list, total_effective_value)
+        db.commit()
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": total_effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success"}

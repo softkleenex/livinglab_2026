@@ -21,7 +21,9 @@ router = APIRouter()
 FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 api_key = os.environ.get("GEMINI_API_KEY")
 
-def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_filename, raw_text, insights):
+from app.core.database import SessionLocal
+
+def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_filename, raw_text, insights, entry_id=None):
     drive_link = None
     try:
         drive_service = get_drive_service()
@@ -50,6 +52,17 @@ def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_
                 insight_metadata = {'name': f"AI_Insight_{now_str}_{short_hash}.txt", 'parents': [generated_folder_id]}
                 insight_media = MediaIoBaseUpload(io.BytesIO(insights.encode('utf-8')), mimetype='text/plain', resumable=True)
                 drive_service.files().create(body=insight_metadata, media_body=insight_media, fields='id', supportsAllDrives=True).execute()
+                
+            if entry_id and drive_link:
+                db = SessionLocal()
+                try:
+                    entry = db.query(DataEntry).filter(DataEntry.id == entry_id).first()
+                    if entry:
+                        entry.drive_link = drive_link
+                        db.commit()
+                finally:
+                    db.close()
+                    
     except Exception as e:
         print("Drive Error:", e)
     return drive_link
@@ -237,6 +250,7 @@ async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session
         if not success:
             raise HTTPException(status_code=500, detail="Failed to remove from tree")
             
+        db.commit()
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list[:-1], "value_added": 0, "pulse_rate": 0}))
         
         return {"status": "success", "message": "Store and all associated data deleted."}
@@ -270,6 +284,7 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         # Roll-down value based on the entry's effective value
         penalty_value = -target_entry.get("effective_value", 50000)
         engine.add_value_bottom_up(db, path_list, penalty_value)
+        db.commit()
         
         target_obj = engine.get_object(db, path_list)
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
