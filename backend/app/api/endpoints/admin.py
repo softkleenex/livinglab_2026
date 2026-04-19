@@ -88,7 +88,20 @@ async def demo_inject(path: str, db: Session = Depends(get_db)):
 @router.post("/simulate/governance")
 async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
     try:
-        prompt = f"우리는 현재 '{region}' 지역에 대해 {budget} 원의 예산을 투입하는 정책 시뮬레이션을 수행하고 있습니다. 다음 결과를 JSON 형식으로 반환하 세요. 키값: 'roi_multiplier' (예: '2.5x'), 'job_creation' (예: '+12,000 Jobs'), 'ai_recommendation' (3~4문장의 정책 제안), 'sector_boost' (수혜 예상 핵심 산업), 'vulnerability_warning' (잠재적 리스크/취약점)."
+        prompt = f"""
+    우리는 현재 '{region}' 구역(상권)의 경제/산업 생태계 활성화를 위해 '{budget:,} 원'의 인프라 및 기술 예산을 투입하는 B2B 거버넌스 정책 시뮬레이션을 수행하고 있습니다.
+    
+    당신은 최고 수준의 스마트시티 정책 분석가이자 데이터 사이언티스트입니다.
+    다음의 키를 가진 유효한 JSON 포맷으로 예측 결과를 렌더링하세요. 다른 포맷팅 텍스트나 마크다운(```)은 모두 제외하세요.
+    
+    {{
+        "roi_multiplier": "예: '3.5x', '4.2x' (투자 대비 예상 가치 창출 배수)",
+        "job_creation": "예: '+450 Jobs', '+1,200 Jobs' (예상 고용/기회 창출 수)",
+        "ai_recommendation": "해당 지역({region})과 예산 규모({budget:,}원)에 맞는 고도화된 정책 제안 및 인프라 설계 전략 (3~4문장, 전문가 톤, 이모지 사용)",
+        "sector_boost": "예: 'IT/스마트물류', '고부가가치 식음료' (수혜가 예상되는 구체적인 핵심 산업)",
+        "vulnerability_warning": "이 정책 시뮬레이션에서 예상되는 맹점, 리스크 또는 데이터 모니터링 취약점 (2문장 내외)"
+    }}
+    """
         try:
             res = model.generate_content(prompt)
             raw_eval = res.text.replace("```json", "").replace("```", "").strip()

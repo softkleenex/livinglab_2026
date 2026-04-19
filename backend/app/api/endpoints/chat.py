@@ -51,7 +51,8 @@ async def chat_with_copilot(payload: ChatPayload, db: Session = Depends(get_db))
     current_value = obj["metadata"].get("total_value", 0)
     current_pulse = obj["metadata"].get("pulse_rate", 0)
     
-    chat_model = genai.GenerativeModel('gemini-2.5-flash')
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
+    chat_model = genai.GenerativeModel(model_name)
 
     # --- Step 1: Intent Parsing (No Persona) ---
     intent_prompt = f"""

@@ -46,7 +46,12 @@ async def ingest(
             target_obj = engine.create_or_get_path(db, path_list, ["Gu", "Dong", "Street", "Store"])
 
         # Deep Analysis via LLM
-        prompt_parts = [f"다음은 {location} 지역 사업장이 올린 데이터입니다. 데이터를 분석하고 사업장에 적용할 수 있는 액션 가능한 2~3문장 피드백을 주세요. 데이터: {content}"]
+        prompt_parts = [
+            f"당신은 '{industry}' 산업군 전문가이자 최고 수준의 경영/운영 컨설턴트입니다.",
+            f"다음은 '{location}'에 위치한 사업장에서 방금 업로드한 현장/운영 데이터입니다.",
+            f"데이터 내용: {content}",
+            "위 데이터를 심도 있게 분석하여, 해당 사업장의 효율성을 높이거나 매출을 증대시킬 수 있는 날카롭고 즉시 실행 가능한(Actionable) 인사이트를 2~3문장으로 짧고 명확하게 제시해 주세요. 이모지를 적절히 사용하여 가독성을 높이세요."
+        ]
         if file and file.content_type.startswith('image/'):
             try:
                 img = Image.open(io.BytesIO(file_data))
