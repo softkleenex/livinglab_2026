@@ -1,7 +1,7 @@
 # MDGA (Universal Data Engine) 🚀
 **A Next-Generation B2B Data Assetization & Governance SaaS Platform**
 
-![MDGA App](docs/screenshots/deployed_home.png)
+![MDGA App](docs/screenshots/01_login.png)
 
 MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (text, images, logs) into verified, valuable digital assets. It features a real-time dynamic hierarchy map, AI-driven business insights, and a seamless integration with Google Drive as a Data Lake. 
 
