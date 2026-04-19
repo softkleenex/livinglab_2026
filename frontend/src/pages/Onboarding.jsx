@@ -183,9 +183,8 @@ export default function Onboarding({ onComplete, googleUser }) {
  };
 
  return (
- <div className="h-[100dvh] bg-[#0A0F1A] text-slate-200 flex flex-col items-center justify-start p-4 pb-24 selection:bg-blue-500/30 overflow-y-auto mx-auto w-full max-w-md relative border-x border-slate-800">
- <div className="w-full bg-[#0E1420] border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden mt-4 shrink-0">
- <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
+ <main className="h-[100dvh] bg-[#0A0F1A] text-slate-200 flex flex-col items-center justify-start p-4 pb-24 selection:bg-blue-500/30 overflow-y-auto mx-auto w-full max-w-md relative border-x border-slate-800">
+ <div className="w-full bg-[#0E1420] border border-slate-700 rounded-3xl p-6 shadow-2xl relative overflow-hidden mt-4 shrink-0"> <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
  <h1 className="text-3xl font-black text-white mb-2 relative z-10">MDGA Context Setup</h1>
  <p className="text-slate-400 mb-8 relative z-10 text-[11px] leading-relaxed break-keep">
  {levelId === 'store' ? (
@@ -394,6 +393,6 @@ export default function Onboarding({ onComplete, googleUser }) {
     </AnimatePresence>
   </div>
   </form> </div>
- </div>
+ </main>
  );
 }
