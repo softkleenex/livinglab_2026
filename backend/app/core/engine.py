@@ -55,7 +55,8 @@ class HierarchyEngine:
         if not curr_obj: return None
         
         if is_store:
-            entries = db.query(DataEntry).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
+            from sqlalchemy.orm import joinedload
+            entries = db.query(DataEntry).options(joinedload(DataEntry.store)).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
             entry_list = [{
                 "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
                 "insights": e.insights,
@@ -227,6 +228,20 @@ class HierarchyEngine:
                 return False
                 
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
+        if not store: return False
+        
+        value_to_remove = store.total_value
+        
+        for r in regions:
+            r.total_value = Region.total_value - value_to_remove
+            r.nodes = Region.nodes - 1
+            db.add(r)
+            
+        db.delete(store)
+        return True
+
+engine = HierarchyEngine()
+gion_id == parent_id).with_for_update().first()
         if not store: return False
         
         value_to_remove = store.total_value

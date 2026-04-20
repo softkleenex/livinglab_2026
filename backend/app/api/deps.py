@@ -9,20 +9,17 @@ DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 def verify_token(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Unauthorized: Missing or invalid token")
+        return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
     
     token = authorization.split(" ")[1]
     
-    if token == "guest-token":
-        return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
-    else:
-        try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-            email = idinfo['email']
-            name = idinfo.get('name', email.split('@')[0])
-            picture = idinfo.get('picture')
-        except ValueError:
-            raise HTTPException(status_code=403, detail="Forbidden: Invalid Google token")
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        picture = idinfo.get('picture')
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Google token")
         
     db = SessionLocal()
     try:

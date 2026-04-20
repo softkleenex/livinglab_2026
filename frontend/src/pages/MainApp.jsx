@@ -174,15 +174,12 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
    axios.interceptors.request.use((config) => {
      if (googleUser?.rawToken) {
        config.headers.Authorization = `Bearer ${googleUser.rawToken}`;
-     } else if (googleUser?.isGuest) {
-       config.headers.Authorization = `Bearer guest-token`;
      } else {
-       config.headers.Authorization = `Bearer mock-jwt-token`;
+       delete config.headers.Authorization;
      }
      return config;
    });
- }, [googleUser]);
- const fetchPersonal = React.useCallback(async () => { setLoading(true);
+ }, [googleUser]); const fetchPersonal = React.useCallback(async () => { setLoading(true);
  try {
  const pathStr = userContext.location.join('/');
  const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/personal?path=${pathStr}`);

@@ -36,7 +36,7 @@ async def explore(path: str = "", db: Session = Depends(get_db)):
     }
 
 @router.get("/stores/all")
-async def get_all_stores(db: Session = Depends(get_db)):
+def get_all_stores(db: Session = Depends(get_db)):
     try:
         stores = []
         all_stores = db.query(Store).all()
