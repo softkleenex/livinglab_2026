@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, User, Wallet, Transaction
+from app.core.database import get_db, DataEntry, Store, User, Wallet, Transaction, Region
 from app.services.gemini_ai import model
 from app.api.deps import verify_token
 import httpx
@@ -16,6 +16,16 @@ async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user:
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")
+    
+    if obj.get("type") == "Store":
+        parent_id = None
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r: parent_id = r.id
+            else: break
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        if store and store.owner_id != user["user_id"] and user["role"] not in ["admin", "guest"]:
+            raise HTTPException(status_code=403, detail="Not authorized to view this personal dashboard.")
     
     # Get parent object to compare
     parent_obj = engine.get_object(db, path_list[:-1]) if len(path_list) > 1 else engine.get_object(db, ["전체 (Root)"])
@@ -132,11 +142,12 @@ async def generate_weekly_report(path: str, industry: str = "공공", db: Sessio
     (구체적이고 당장 실행 가능한 지시사항 3가지를 명확히 제시)
     """
     try:
-        res = model.generate_content(prompt)
+        import asyncio
+        res = await asyncio.to_thread(model.generate_content, prompt)
         report_text = res.text
     except Exception as e:
         report_text = "현재 AI 서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요."
-        
+
     return {"status": "success", "report": report_text}
 
 @router.post("/market/buy")
@@ -185,13 +196,22 @@ async def withdraw_funds(payload: dict, db: Session = Depends(get_db), user: dic
     return {"status": "success", "message": "Withdrawal processed successfully", "new_balance": user_wallet.balance}
 
 @router.get("/export")
-async def export_csv(path: str, industry: str = "공공", db: Session = Depends(get_db)):
+async def export_csv(path: str, industry: str = "공공", db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found.")
-    
-    entries = obj.get("data_entries", [])
-    
+
+    if obj.get("type") == "Store":
+        parent_id = None
+        for i, p in enumerate(path_list[:-1]):
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+            if r: parent_id = r.id
+            else: break
+        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        if store and store.owner_id != user["user_id"] and user["role"] not in ["admin", "guest"]:
+            raise HTTPException(status_code=403, detail="Not authorized to export this store's raw data.")
+
+    entries = obj.get("data_entries", [])    
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Timestamp", "Store Name", "Industry", "Hash", "Scope", "Trust Index", "Effective Value", "Raw Text", "Insights"])

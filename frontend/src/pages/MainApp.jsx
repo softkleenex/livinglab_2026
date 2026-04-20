@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
  Radar, Map, Zap, X, ShieldCheck, Store, Coins, ShoppingCart, Target, MessageSquare, BarChart3, RefreshCw, Info
