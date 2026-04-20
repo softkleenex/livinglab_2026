@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
 
-export default function WalletModal({ onClose, personalData, addToast }) {
+export default function WalletModal({ onClose, personalData, addToast, setWalletBalance }) {
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +41,7 @@ export default function WalletModal({ onClose, personalData, addToast }) {
       setSuccess(true);
       addToast("연결된 계좌로 환전 신청이 완료되었습니다.", "success");
       setBalance(res.data.new_balance);
+      if (setWalletBalance) setWalletBalance(res.data.new_balance);
       setTimeout(() => {
         setSuccess(false);
         onClose();

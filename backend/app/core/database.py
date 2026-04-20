@@ -33,7 +33,7 @@ class Wallet(Base):
     __tablename__ = "wallets"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    balance = Column(Float, default=0.0)
+    balance = Column(Integer, default=0)
     
     user = relationship("User", back_populates="wallet")
     transactions = relationship("Transaction", back_populates="wallet")
@@ -42,7 +42,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
     id = Column(Integer, primary_key=True, index=True)
     wallet_id = Column(Integer, ForeignKey("wallets.id"))
-    amount = Column(Float)
+    amount = Column(Integer)
     tx_type = Column(String) # 'EARN', 'SPEND'
     description = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -58,7 +58,7 @@ class Region(Base):
     level_type = Column(String) # City, Gu, Dong, Street
     lat = Column(Float, nullable=True)
     lng = Column(Float, nullable=True)
-    total_value = Column(Float, default=0.0)
+    total_value = Column(Integer, default=0)
     pulse_rate = Column(Integer, default=70)
     nodes = Column(Integer, default=0)
     history = Column(JSON, default=list)
@@ -75,7 +75,7 @@ class Store(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     name = Column(String, index=True)
     industry = Column(String)
-    total_value = Column(Float, default=0.0)
+    total_value = Column(Integer, default=0)
     pulse_rate = Column(Integer, default=70)
     trust_index = Column(Float, default=50.0)
     history = Column(JSON, default=list)
@@ -99,7 +99,7 @@ class DataEntry(Base):
     drive_link = Column(String, nullable=True)
     insights = Column(Text)
     trust_index = Column(Float)
-    effective_value = Column(Float)
+    effective_value = Column(Integer)
     hash_val = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     

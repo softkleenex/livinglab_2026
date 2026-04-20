@@ -355,8 +355,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  <IngestModal
  isGuest={googleUser?.isGuest}
  onClose={() => setShowIngest(false)}
- onSuccess={() => {
+ onSuccess={(addedValue) => {
  setShowIngest(false);
+ if (addedValue && !googleUser?.isGuest) setWalletBalance(prev => prev + Math.floor(addedValue / 100));
  if (activeTab === 'personal') fetchPersonal();
  else fetchExplorer();
  }}
@@ -390,6 +391,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  <WalletModal
  onClose={() => setShowWallet(false)}
  personalData={personalData}
+ setWalletBalance={setWalletBalance}
  addToast={addToast}
  />
  )}

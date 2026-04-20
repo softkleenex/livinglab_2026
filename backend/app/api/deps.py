@@ -5,6 +5,7 @@ from google.auth.transport import requests
 import os
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 def verify_token(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -12,7 +13,7 @@ def verify_token(authorization: str = Header(None)):
     
     token = authorization.split(" ")[1]
     
-    if token == "mock-jwt-token":
+    if token == "mock-jwt-token" and DEBUG:
         email = "test@mdga.io"
         name = "Test User"
         picture = None
@@ -34,7 +35,7 @@ def verify_token(authorization: str = Header(None)):
             db.commit()
             db.refresh(user)
             
-            wallet = Wallet(user_id=user.id, balance=0.0)
+            wallet = Wallet(user_id=user.id, balance=0)
             db.add(wallet)
             db.commit()
             
