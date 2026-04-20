@@ -15,7 +15,7 @@ def verify_token(authorization: str = Header(None)):
     
     if token == "guest-token":
         return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
-    elif token == "mock-jwt-token":
+    elif token == "mock-jwt-token" and DEBUG:
         email = "test@mdga.io"
         name = "Test User"
         picture = None
