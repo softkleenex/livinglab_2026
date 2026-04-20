@@ -13,7 +13,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
 import traceback
+import logging
 from dotenv import load_dotenv
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# Configure Enterprise Structured Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger("mdga_enterprise")
 
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"), override=True)
@@ -32,6 +44,11 @@ from app.api.endpoints.admin import router as admin_router
 
 app = FastAPI(title="MDGA Enterprise B2B SaaS", version="1.0.0")
 
+# Setup Rate Limiter to prevent API abuse
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Security: Restrict CORS to trusted origins in production
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev").split(",")
 
@@ -47,6 +64,7 @@ app.add_middleware(
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handles standard HTTP exceptions and formats them into a consistent JSON response."""
+    logger.error(f"HTTP Exception: {exc.status_code} - {exc.detail} on {request.url.path}")
     return JSONResponse(
         status_code=exc.status_code,
         content={"status": "error", "code": exc.status_code, "message": exc.detail, "path": request.url.path},
@@ -55,7 +73,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Catches all unhandled exceptions to prevent server crashes and hides stack traces from clients."""
-    traceback.print_exc()
+    logger.critical(f"Unhandled Exception on {request.url.path}: {str(exc)}", exc_info=True)
     # Security: Do not expose internal details (str(exc)) in production.
     detail_msg = "Internal Server Error" if os.getenv("ENV") == "production" else str(exc)
     return JSONResponse(
@@ -66,6 +84,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handles Pydantic validation errors for incoming requests."""
+    logger.warning(f"Validation Error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=422,
         content={"status": "error", "code": 422, "message": "Validation Error", "details": exc.errors(), "path": request.url.path},
