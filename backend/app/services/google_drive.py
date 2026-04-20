@@ -70,7 +70,7 @@ def get_or_create_drive_folder(service, parent_id, folder_name):
 
     escaped_folder_name = folder_name.replace("'", "\\'")
     query = f"name='{escaped_folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
-    response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    response = service.files().list(q=query, spaces='drive', fields='files(id, name)', supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
     files = response.get('files', [])
     
     with CACHE_LOCK:
@@ -84,7 +84,7 @@ def get_or_create_drive_folder(service, parent_id, folder_name):
             'mimeType': 'application/vnd.google-apps.folder',
             'parents': [parent_id]
         }
-        folder = service.files().create(body=file_metadata, fields='id').execute()
+        folder = service.files().create(body=file_metadata, fields='id', supportsAllDrives=True).execute()
         folder_id = folder.get('id')
         FOLDER_CACHE.put(cache_key, folder_id)
         

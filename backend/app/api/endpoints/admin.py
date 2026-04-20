@@ -21,11 +21,18 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     db.commit()
     return "DB Cleared"
 
+@router.get("/debug_env")
+def debug_env():
+    import os
+    return {"folder_id": os.environ.get("GOOGLE_DRIVE_FOLDER_ID")}
+
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
     from app.core.database import Base, engine as db_engine
+    from app.services.google_drive import FOLDER_CACHE
     Base.metadata.drop_all(bind=db_engine)
     Base.metadata.create_all(bind=db_engine)
+    FOLDER_CACHE.cache.clear()
     return {"status": "success", "message": "Schema reset completely."}
 
 @router.post("/demo/inject")

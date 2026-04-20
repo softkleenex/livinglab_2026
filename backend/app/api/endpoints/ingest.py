@@ -89,7 +89,7 @@ def sync_drive_delete(short_hash, drive_link=None):
         drive_service = get_drive_service()
         if drive_service:
             query = f"name contains '_{short_hash}' and trashed=false"
-            results = drive_service.files().list(q=query, fields="files(id, name)").execute()
+            results = drive_service.files().list(q=query, fields="files(id, name)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
             items = results.get("files", [])
             
             if drive_link and "drive.google.com/file/d/" in drive_link:
@@ -116,11 +116,11 @@ def sync_drive_modify(short_hash, new_text):
         drive_service = get_drive_service()
         if drive_service:
             query = f"name contains 'RawText_' and name contains '_{short_hash}.txt' and trashed=false"
-            results = drive_service.files().list(q=query, fields="files(id, name)").execute()
+            results = drive_service.files().list(q=query, fields="files(id, name)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
             items = results.get("files", [])
             for item in items:
                 txt_media = MediaIoBaseUpload(io.BytesIO(new_text.encode('utf-8')), mimetype='text/plain', resumable=True)
-                drive_service.files().update(fileId=item['id'], media_body=txt_media).execute()
+                drive_service.files().update(fileId=item['id'], media_body=txt_media, supportsAllDrives=True).execute()
                 print(f"Updated Drive File: {item['name']}")
     except Exception as e:
         print("Failed to update drive:", e)
