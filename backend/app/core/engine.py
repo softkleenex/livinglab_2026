@@ -184,12 +184,22 @@ class HierarchyEngine:
             path_list = path_list[1:]
             
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).with_for_update().first()
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
             if r:
                 regions.append(r)
                 parent_id = r.id
             else:
                 break
+                
+        # To prevent deadlocks, gather all IDs, sort them, and lock in consistent order
+        region_ids = [r.id for r in regions]
+        region_ids.sort()
+        
+        locked_regions = []
+        for rid in region_ids:
+            locked_r = db.query(Region).filter(Region.id == rid).with_for_update().first()
+            if locked_r:
+                locked_regions.append(locked_r)
                 
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
         
@@ -202,7 +212,7 @@ class HierarchyEngine:
             store.history = hist
             db.add(store)
             
-        for r in regions:
+        for r in locked_regions:
             r.total_value = Region.total_value + value_added
             r.pulse_rate = min(100, r.pulse_rate + 1)
             hist = list(r.history)
@@ -228,20 +238,6 @@ class HierarchyEngine:
                 return False
                 
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
-        if not store: return False
-        
-        value_to_remove = store.total_value
-        
-        for r in regions:
-            r.total_value = Region.total_value - value_to_remove
-            r.nodes = Region.nodes - 1
-            db.add(r)
-            
-        db.delete(store)
-        return True
-
-engine = HierarchyEngine()
-gion_id == parent_id).with_for_update().first()
         if not store: return False
         
         value_to_remove = store.total_value

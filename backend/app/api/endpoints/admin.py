@@ -23,7 +23,6 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
 
 @router.get("/debug_upload")
 def debug_upload():
-    import traceback
     from app.services.google_drive import get_drive_service, get_or_create_drive_folder
     import os
     try:
@@ -34,7 +33,7 @@ def debug_upload():
         res = get_or_create_drive_folder(drive_service, folder_id, "Render_Test_Folder")
         return {"status": "success", "folder_id": res}
     except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        return {"error": "Upload failed", "details": str(e)}
 
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
@@ -135,6 +134,10 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
             }
         
         return {"status": "success", "simulation": sim_data}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+"success", "simulation": sim_data}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

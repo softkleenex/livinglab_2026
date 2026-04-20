@@ -4,7 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "485345719373-keeosnetrubiacu3ii89hh2esq3tvbeo.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is not set. Google Login will fail in production.");
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
