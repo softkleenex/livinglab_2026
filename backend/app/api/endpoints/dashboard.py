@@ -34,7 +34,7 @@ async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user:
     avg_trust = sum(e.get("trust_index", 50.0) for e in entries) / len(entries) if entries else 50.0
     
     user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
-    balance = user_wallet.balance if user_wallet else 0.0
+    balance = int(user_wallet.balance) if user_wallet else 0
     
     return {
         "store": {
@@ -75,20 +75,19 @@ async def get_weather_forecast(lat: float, lng: float) -> str:
 async def get_wallet_transactions(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
     if not user_wallet:
-        return {"status": "success", "balance": 0.0, "transactions": []}
+        return {"status": "success", "balance": 0, "transactions": []}
 
     txs = db.query(Transaction).filter(Transaction.wallet_id == user_wallet.id).order_by(Transaction.created_at.desc()).limit(50).all()
 
     tx_list = [{
         "id": tx.id,
-        "amount": tx.amount,
+        "amount": int(tx.amount),
         "type": tx.tx_type,
         "description": tx.description,
         "timestamp": tx.created_at.strftime("%Y-%m-%d %H:%M:%S")
     } for tx in txs]
 
-    return {"status": "success", "balance": user_wallet.balance, "transactions": tx_list}
-
+    return {"status": "success", "balance": int(user_wallet.balance), "transactions": tx_list}
 @router.get("/report")
 async def generate_weekly_report(path: str, industry: str = "공공", db: Session = Depends(get_db)):
     path_list = [p for p in path.split("/") if p]

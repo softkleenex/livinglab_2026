@@ -15,6 +15,8 @@ router = APIRouter()
 
 @router.delete("/clear_db")
 def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     db.query(DataEntry).delete()
     db.query(Store).delete()
     db.query(Region).delete()
@@ -22,7 +24,9 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     return "DB Cleared"
 
 @router.get("/debug_upload")
-def debug_upload():
+def debug_upload(user: dict = Depends(verify_token)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     from app.services.google_drive import get_drive_service, get_or_create_drive_folder
     import os
     try:
@@ -134,10 +138,6 @@ async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
             }
         
         return {"status": "success", "simulation": sim_data}
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-"success", "simulation": sim_data}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

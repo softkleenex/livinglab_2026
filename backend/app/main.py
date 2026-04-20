@@ -85,7 +85,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Routers - API Versioning (v1)
 app.include_router(hierarchy_router, prefix="/api/v1/hierarchy", tags=["Hierarchy v1"])
-app.include_router(hierarchy_router, prefix="/api/v1", tags=["API Root hierarchy v1"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Dashboard v1"])
 app.include_router(ingest_router, prefix="/api/v1/ingest", tags=["Ingest v1"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])

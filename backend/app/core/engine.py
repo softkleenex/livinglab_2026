@@ -101,11 +101,12 @@ class HierarchyEngine:
                 }
                 
             # Roll-up entries: Fetch all entries where location_path starts with the current region path
+            from sqlalchemy.orm import joinedload
             current_path_str = "/".join(path_list)
             if not current_path_str or current_path_str == "전체 (Root)":
-                entries = db.query(DataEntry).order_by(DataEntry.created_at.desc()).limit(100).all()
+                entries = db.query(DataEntry).options(joinedload(DataEntry.store)).order_by(DataEntry.created_at.desc()).limit(100).all()
             else:
-                entries = db.query(DataEntry).filter(DataEntry.location_path.like(f"{current_path_str}%")).order_by(DataEntry.created_at.desc()).limit(100).all()
+                entries = db.query(DataEntry).options(joinedload(DataEntry.store)).filter(DataEntry.location_path.like(f"{current_path_str}%")).order_by(DataEntry.created_at.desc()).limit(100).all()
                 
             entry_list = [{
                 "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),

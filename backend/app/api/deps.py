@@ -18,8 +18,8 @@ def verify_token(authorization: str = Header(None)):
         email = idinfo['email']
         name = idinfo.get('name', email.split('@')[0])
         picture = idinfo.get('picture')
-    except ValueError:
-        raise HTTPException(status_code=403, detail="Forbidden: Invalid Google token")
+    except Exception as e:
+        raise HTTPException(status_code=403, detail=f"Forbidden: Invalid Google token ({str(e)})")
         
     db = SessionLocal()
     try:
