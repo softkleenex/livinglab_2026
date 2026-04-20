@@ -29,6 +29,18 @@ FOLDER_CACHE = LRUCache(5000)
 CACHE_LOCK = threading.Lock()
 
 def get_drive_service():
+    service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if service_account_info:
+        try:
+            cleaned_info = service_account_info.strip()
+            if cleaned_info.startswith("'") and cleaned_info.endswith("'"):
+                cleaned_info = cleaned_info[1:-1]
+            info = json.loads(cleaned_info)
+            creds = service_account.Credentials.from_service_account_info(info)
+            return build('drive', 'v3', credentials=creds)
+        except Exception as e:
+            print("SA Error:", e)
+
     client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
     client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
     refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
@@ -45,18 +57,6 @@ def get_drive_service():
             return build('drive', 'v3', credentials=creds)
         except Exception as e:
             print("OAuth Error:", e)
-
-    service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if service_account_info:
-        try:
-            cleaned_info = service_account_info.strip()
-            if cleaned_info.startswith("'") and cleaned_info.endswith("'"):
-                cleaned_info = cleaned_info[1:-1]
-            info = json.loads(cleaned_info)
-            creds = service_account.Credentials.from_service_account_info(info)
-            return build('drive', 'v3', credentials=creds)
-        except Exception as e:
-            print("SA Error:", e)
 
     return None
 
