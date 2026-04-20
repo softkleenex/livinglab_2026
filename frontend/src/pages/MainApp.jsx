@@ -161,7 +161,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  setLoading(true);
  try {
  const pathStr = currentPath.join('/');
- const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
+ const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${pathStr}`);
  setExplorerData(res.data);
  } catch (err) { 
  setExplorerData(null);
@@ -185,7 +185,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  const fetchPersonal = React.useCallback(async () => { setLoading(true);
  try {
  const pathStr = userContext.location.join('/');
- const res = await axios.get(`${API_BASE_URL}/api/dashboard/personal?path=${pathStr}`);
+ const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/personal?path=${pathStr}`);
  setPersonalData(res.data);
  if (res.data.store?.wallet_balance !== undefined) {
  setWalletBalance(res.data.store.wallet_balance);
@@ -202,7 +202,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  if(!window.confirm("이 데이터를 삭제하시겠습니까? 신뢰 지수(Trust Index)가 하락할 수 있습니다.")) return;
  try {
  const pathStr = userContext.location.join('/');
- await axios.delete(`${API_BASE_URL}/api/ingest/delete?path=${pathStr}&hash_val=${hash}`);
+ await axios.delete(`${API_BASE_URL}/api/v1/ingest/delete?path=${pathStr}&hash_val=${hash}`);
  addToast("성공적으로 데이터를 삭제했습니다.", "info");
  fetchPersonal(); // 리스트 즉시 새로고침
  } catch(err) {
@@ -214,7 +214,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  if(!window.confirm("이 사업장(객체)을 완전히 삭제하시겠습니까? 모든 데이터와 구글 드라이브 증빙 자료가 영구 삭제되며 복구할 수 없습니다.")) return;
  try {
  const pathStr = userContext.location.join('/');
- await axios.delete(`${API_BASE_URL}/api/ingest/store?path=${pathStr}`);
+ await axios.delete(`${API_BASE_URL}/api/v1/ingest/store?path=${pathStr}`);
  addToast("사업장이 성공적으로 삭제되었습니다.", "info");
  setTimeout(() => onLogout(), 1500);
  } catch(err) {
@@ -226,7 +226,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  addToast("CSV 데이터 다운로드를 시작합니다...", "info");
  try {
  const pathStr = userContext.location.join('/');
- const res = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(userContext.industry || '공공')}`, { responseType: 'blob' });
+ const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(userContext.industry || '공공')}`, { responseType: 'blob' });
  const url = window.URL.createObjectURL(new Blob([res.data]));
  const link = document.createElement('a');
  link.href = url;

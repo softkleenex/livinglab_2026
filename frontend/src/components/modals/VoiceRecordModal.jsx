@@ -45,7 +45,7 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
     if (isGuest) formData.append('is_guest', 'true');
     
     try {
-      await axios.post(`${API_BASE_URL}/api/ingest`, formData);
+      await axios.post(`${API_BASE_URL}/api/v1/ingest`, formData);
       onSuccess();
     } catch (err) { 
       if (addToast) addToast("업로드에 실패했습니다. 음성 인식 결과를 다시 확인해주세요.", "error");

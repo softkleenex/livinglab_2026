@@ -26,7 +26,7 @@ export default function AgoraFeed({ addToast, userContext }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/agora/feed`);
+      const res = await axios.get(`${API_BASE_URL}/api/v1/agora/feed`);
       setFeed(res.data.feed);
     } catch (err) {
       setError("피드 데이터를 불러오는데 실패했습니다.");

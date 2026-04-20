@@ -66,7 +66,7 @@ export default function MDGACopilot({ locationPath, industry, entries = [], onAc
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/chat`, {
+      const res = await axios.post(`${API_BASE_URL}/api/v1/chat`, {
         path: locationPath,
         industry: industry,
         message: userMsg,

@@ -55,7 +55,7 @@ export default function DataMarket({ addToast, userContext, setWalletBalance }) 
  const handleBuy = async (item) => {
  setBuying(true);
  try {
- const res = await axios.post(`${API_BASE_URL}/api/dashboard/market/buy`, {
+ const res = await axios.post(`${API_BASE_URL}/api/v1/dashboard/market/buy`, {
  industry: item.tags[0] || '분석',
  price: item.price
  });
@@ -65,7 +65,7 @@ export default function DataMarket({ addToast, userContext, setWalletBalance }) 
  
  // Now fetch the real anonymized CSV export
  const pathStr = userContext.location ? userContext.location.join('/') : '전체 (Root)';
- const exportRes = await axios.get(`${API_BASE_URL}/api/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(item.tags[0] || '공공')}`, { responseType: 'blob' });
+ const exportRes = await axios.get(`${API_BASE_URL}/api/v1/dashboard/export?path=${pathStr}&industry=${encodeURIComponent(item.tags[0] || '공공')}`, { responseType: 'blob' });
  
  const url = window.URL.createObjectURL(new Blob([exportRes.data]));
  const link = document.createElement('a');

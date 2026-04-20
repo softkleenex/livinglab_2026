@@ -34,7 +34,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
     if (isGuest) formData.append('is_guest', 'true');
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/ingest`, formData);
+      const response = await axios.post(`${API_BASE_URL}/api/v1/ingest`, formData);
       setRes(response.data);
       setTimeout(() => onSuccess(response.data.value_added), 2500);
     } catch (err) { 

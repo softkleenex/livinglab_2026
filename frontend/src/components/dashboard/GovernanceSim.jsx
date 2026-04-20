@@ -27,7 +27,7 @@ export default function GovernanceSim({ explorerData }) {
  const fd = new FormData();
  fd.append('budget', budget);
  fd.append('region', explorerData.current);
- const res = await axios.post(`${API_BASE_URL}/api/simulate/governance`, fd);
+ const res = await axios.post(`${API_BASE_URL}/api/v1/simulate/governance`, fd);
  setSimRes(res.data.simulation);
  } catch(err) { 
  setErrorMsg("시뮬레이션 서버 연결에 실패했습니다.");

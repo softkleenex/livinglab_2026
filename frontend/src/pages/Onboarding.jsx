@@ -83,7 +83,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  useEffect(() => {
    const loadAllStores = async () => {
      try {
-       const res = await axios.get(`${API_BASE_URL}/api/stores/all`);
+       const res = await axios.get(`${API_BASE_URL}/api/v1/stores/all`);
        setAllStoresList(res.data.stores || []);
      } catch (e) {
        console.error("Failed to fetch all stores for combobox", e);
@@ -97,7 +97,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  if (levelId === 'store' && locGu && locDong && locStreet) {
  try {
  const pathStr = `${locGu}/${locDong}/${locStreet}`;
- const res = await axios.get(`${API_BASE_URL}/api/hierarchy/explore?path=${pathStr}`);
+ const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${pathStr}`);
  if (res.data && res.data.children) {
  setExistingStores(res.data.children.map(c => c.name));
  if (!res.data.children.find(c => c.name === locStore)) {
@@ -129,7 +129,7 @@ export default function Onboarding({ onComplete, googleUser }) {
    setShowAllStores(true);
    setLoadingAllStores(true);
    try {
-     const res = await axios.get(`${API_BASE_URL}/api/stores/all`);
+     const res = await axios.get(`${API_BASE_URL}/api/v1/stores/all`);
      setAllStoresList(res.data.stores || []);
    } catch(e) {
      alert("데이터를 불러오지 못했습니다: " + e.message);
@@ -171,7 +171,7 @@ export default function Onboarding({ onComplete, googleUser }) {
 
  setLoading(true);
  try {
- await axios.post(`${API_BASE_URL}/api/user/context`, {
+ await axios.post(`${API_BASE_URL}/api/v1/user/context`, {
  role: selectedLevel.role, industry: industry || '공공', location
  });
  onComplete({ role: selectedLevel.role, industry, location, isGuest: googleUser?.isGuest || false });

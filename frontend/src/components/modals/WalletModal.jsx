@@ -16,7 +16,7 @@ export default function WalletModal({ onClose, personalData, addToast, setWallet
   useEffect(() => {
     const fetchWallet = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/dashboard/wallet/transactions`);
+        const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/wallet/transactions`);
         setBalance(res.data.balance);
         setHistory(res.data.transactions);
       } catch(err) {
@@ -35,7 +35,7 @@ export default function WalletModal({ onClose, personalData, addToast, setWallet
     }
     setWithdrawing(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/dashboard/wallet/withdraw`, {
+      const res = await axios.post(`${API_BASE_URL}/api/v1/dashboard/wallet/withdraw`, {
         amount: balance
       });
       setSuccess(true);
