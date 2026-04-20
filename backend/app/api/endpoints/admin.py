@@ -21,14 +21,20 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     db.commit()
     return "DB Cleared"
 
-@router.get("/debug_env")
-def debug_env():
+@router.get("/debug_upload")
+def debug_upload():
+    import traceback
+    from app.services.google_drive import get_drive_service, get_or_create_drive_folder
     import os
-    return {
-        "folder_id": os.environ.get("GOOGLE_DRIVE_FOLDER_ID"),
-        "has_oauth": bool(os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")),
-        "has_sa": bool(os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON"))
-    }
+    try:
+        drive_service = get_drive_service()
+        if not drive_service:
+            return {"error": "No drive service"}
+        folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
+        res = get_or_create_drive_folder(drive_service, folder_id, "Render_Test_Folder")
+        return {"status": "success", "folder_id": res}
+    except Exception as e:
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
