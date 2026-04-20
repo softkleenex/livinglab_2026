@@ -120,81 +120,91 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
             reply = chat_res.text
             
         elif action_type == "DELETE":
-            target_hash = reply_data.get("target_hash", "")
-            actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
-            
-            if actual_entry:
-                entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
-                if entry_to_del:
-                    penalty = -entry_to_del.effective_value
-                    del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
-                    short_hash_to_del = entry_to_del.hash_val[:8]
-                    drive_link_to_del = entry_to_del.drive_link
-                    db.delete(entry_to_del)
-                    engine.add_value_bottom_up(db, del_path_list, penalty)
-                    db.commit()
-                    
-                    # Fix Copilot Sync Leak
-                    background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
-                    
-                    asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
-                    reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
-                else:
-                    reply = f"⚠️ [시스템] 삭제할 데이터(해시: {target_hash[:8]})를 찾을 수 없습니다."
+            if user["role"] == "guest":
+                reply = "⚠️ [시스템] 게스트 계정은 데이터를 삭제할 권한이 없습니다."
             else:
-                reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
+                target_hash = reply_data.get("target_hash", "")
+                actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
+                
+                if actual_entry:
+                    entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
+                    if entry_to_del and (entry_to_del.store.owner_id == user["user_id"] or user["role"] == "admin"):
+                        penalty = -entry_to_del.effective_value
+                        del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
+                        short_hash_to_del = entry_to_del.hash_val[:8]
+                        drive_link_to_del = entry_to_del.drive_link
+                        db.delete(entry_to_del)
+                        engine.add_value_bottom_up(db, del_path_list, penalty)
+                        db.commit()
+                        
+                        # Fix Copilot Sync Leak
+                        background_tasks.add_task(sync_drive_delete, short_hash_to_del, drive_link_to_del)
+                        
+                        asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
+                        reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
+                    else:
+                        reply = f"⚠️ [시스템] 삭제 권한이 없거나 데이터를 찾을 수 없습니다."
+                else:
+                    reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
 
         elif action_type == "MODIFY":
-            target_hash = reply_data.get("target_hash", "")
-            new_text = reply_data.get("new_text", "")
-            actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
-            
-            if actual_entry:
-                entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
-                if entry_to_mod:
-                    entry_to_mod.raw_text = new_text
-                    db.commit()
-                    
-                    # Fix Data Drift
-                    background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
-                    
-                    reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
-                else:
-                    reply = f"⚠️ [시스템] 수정할 데이터를 찾을 수 없습니다."
+            if user["role"] == "guest":
+                reply = "⚠️ [시스템] 게스트 계정은 데이터를 수정할 권한이 없습니다."
             else:
-                reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
+                target_hash = reply_data.get("target_hash", "")
+                new_text = reply_data.get("new_text", "")
+                actual_entry = next((e for e in entries if e["hash"].startswith(target_hash)), None)
+                
+                if actual_entry:
+                    entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
+                    if entry_to_mod and (entry_to_mod.store.owner_id == user["user_id"] or user["role"] == "admin"):
+                        entry_to_mod.raw_text = new_text
+                        db.commit()
+                        
+                        # Fix Data Drift
+                        background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
+                        
+                        reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
+                    else:
+                        reply = f"⚠️ [시스템] 수정 권한이 없거나 데이터를 찾을 수 없습니다."
+                else:
+                    reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
                 
         elif action_type == "CREATE":
-            new_text = reply_data.get("new_text", "")
-            new_hash = hashlib.sha256(new_text.encode()).hexdigest()
-            
-            parent_id = None
-            for i, p in enumerate(path_list[:-1]):
-                r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
-                if r: parent_id = r.id
-                else: break
-            store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+            if user["role"] == "guest":
+                reply = "⚠️ [시스템] 게스트 계정은 데이터를 생성할 권한이 없습니다."
+            else:
+                new_text = reply_data.get("new_text", "")
+                new_hash = hashlib.sha256(new_text.encode()).hexdigest()
 
-            val_added = 100000
-            new_entry = DataEntry(
-                location_path=payload.path,
-                store_id=store.id if store else None,
-                industry=payload.industry,
-                is_guest=0,
-                raw_text=new_text,
-                insights="AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.",
-                trust_index=95.0,
-                effective_value=val_added,
-                hash_val=new_hash
-            )
-            db.add(new_entry)
-            engine.add_value_bottom_up(db, path_list, val_added)
-            db.commit()
-            
-            # Sync to Drive
-            background_tasks.add_task(sync_drive_upload, path_list, new_hash[:8], None, None, None, new_text, "AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.")
-            asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": val_added, "pulse_rate": current_pulse}))
-            reply = f"✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
+                parent_id = None
+                for i, p in enumerate(path_list[:-1]):
+                    r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
+                    if r: parent_id = r.id
+                    else: break
+                store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+
+                val_added = 100000
+                new_entry = DataEntry(
+                    location_path=payload.path,
+                    store_id=store.id if store else None,
+                    industry=payload.industry,
+                    is_guest=0,
+                    raw_text=new_text,
+                    insights="AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.",
+                    trust_index=95.0,
+                    effective_value=val_added,
+                    hash_val=new_hash
+                )
+                db.add(new_entry)
+                engine.add_value_bottom_up(db, path_list, val_added)
+                db.commit()
+
+                # Sync to Drive
+                background_tasks.add_task(sync_drive_upload, path_list, new_hash[:8], None, None, None, new_text, "AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.")
+
+                asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": val_added, "pulse_rate": current_pulse}))
+                reply = f"✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
             
         # Delegate Drive API to Background Task
         background_tasks.add_task(sync_chat_log_drive_upload, path_list, payload.industry, payload.message, reply)

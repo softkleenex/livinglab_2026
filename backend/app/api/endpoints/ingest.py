@@ -221,7 +221,7 @@ async def ingest(
             else: break
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
         
-        if store and not store.owner_id:
+        if store and not store.owner_id and not is_guest_bool:
             store.owner_id = user["user_id"]
             db.add(store)
         
@@ -281,7 +281,7 @@ async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session
             else: break
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
 
-        if store and store.owner_id != user["user_id"] and user["role"] != "admin":
+        if store and (store.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized to delete this store")
 
         entries = target_obj.get("data_entries", [])        
@@ -325,7 +325,7 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         if not entry_to_del:
             raise HTTPException(status_code=404, detail="Entry not found in DB")
             
-        if entry_to_del.store and entry_to_del.store.owner_id != user["user_id"] and user["role"] != "admin":
+        if entry_to_del.store and (entry_to_del.store.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized to delete this entry")
 
         db.delete(entry_to_del)
