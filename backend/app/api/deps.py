@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, Header
-from app.core.database import SessionLocal, User, Wallet
+from sqlalchemy.orm import Session
+from app.core.database import get_db, SessionLocal, User, Wallet
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
@@ -7,7 +8,7 @@ import os
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
-def verify_token(authorization: str = Header(None)):
+def verify_token(authorization: str = Header(None), db: Session = Depends(get_db)):
     if not authorization or not authorization.startswith("Bearer "):
         return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
     
@@ -21,20 +22,16 @@ def verify_token(authorization: str = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=403, detail=f"Forbidden: Invalid Google token ({str(e)})")
         
-    db = SessionLocal()
-    try:
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            user = User(email=email, name=name, picture=picture, role="store")
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            
-            wallet = Wallet(user_id=user.id, balance=0)
-            db.add(wallet)
-            db.commit()
-            
-        return {"user_id": user.id, "email": user.email, "role": user.role}
-    finally:
-        db.close()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(email=email, name=name, picture=picture, role="store")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        wallet = Wallet(user_id=user.id, balance=0)
+        db.add(wallet)
+        db.commit()
+        
+    return {"user_id": user.id, "email": user.email, "role": user.role}
 
