@@ -13,7 +13,7 @@ def verify_token(authorization: str = Header(None)):
     
     token = authorization.split(" ")[1]
     
-    if token == "mock-jwt-token":
+    if token == "mock-jwt-token" and DEBUG:
         email = "test@mdga.io"
         name = "Test User"
         picture = None
