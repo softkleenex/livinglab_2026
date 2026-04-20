@@ -29,12 +29,37 @@ except Exception as e:
 # 2. Clear Google Drive
 print("\n[2/3] Wiping Google Drive Data Lake...")
 FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID')
-service_account_info = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
-cleaned_info = service_account_info.strip()
-if cleaned_info.startswith("'") and cleaned_info.endswith("'"):
-    cleaned_info = cleaned_info[1:-1]
-creds = service_account.Credentials.from_service_account_info(json.loads(cleaned_info))
+
+client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
+
+from google.oauth2.credentials import Credentials
+creds = Credentials(
+    token=None,
+    refresh_token=refresh_token,
+    token_uri="https://oauth2.googleapis.com/token",
+    client_id=client_id,
+    client_secret=client_secret
+)
 service = build('drive', 'v3', credentials=creds)
+
+def wipe_folder_recursive(folder_id, folder_name):
+    query = f"'{folder_id}' in parents and trashed=false"
+    results = service.files().list(q=query, fields='files(id, name, mimeType)').execute()
+    for item in results.get('files', []):
+        if item['mimeType'] == 'application/vnd.google-apps.folder':
+            wipe_folder_recursive(item['id'], item['name'])
+        else:
+            try:
+                service.files().delete(fileId=item['id']).execute()
+            except Exception as e:
+                pass
+    try:
+        service.files().delete(fileId=folder_id).execute()
+        print(f"  -> Deleted {folder_name}")
+    except Exception as e:
+        print(f"     (Could not delete {folder_name}: {e})")
 
 try:
     query = f"'{FOLDER_ID}' in parents and trashed=false"
@@ -43,11 +68,7 @@ try:
     if not items:
         print("  -> Drive is already empty.")
     for item in items:
-        print(f"  -> Deleting {item['name']}...")
-        try:
-            service.files().delete(fileId=item['id']).execute()
-        except Exception as err:
-            print(f"     (Could not delete {item['name']}, might be owned by user: {err})")
+        wipe_folder_recursive(item['id'], item['name'])
 except Exception as e:
     print("  -> Drive wipe failed:", e)
 
