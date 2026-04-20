@@ -18,7 +18,7 @@ print("==================================================")
 # 1. Reset Schema
 print("\n[1/3] Resetting Production Database Schema...")
 try:
-    res = requests.post('https://mdga-api.onrender.com/api/reset_schema', headers={'Authorization': 'Bearer mock-jwt-token'})
+    res = requests.post('https://mdga-api.onrender.com/api/reset_schema', headers={'Authorization': 'Bearer mdga-admin-seed-2026'})
     print("  -> Schema Reset Successfully:", res.text)
 except Exception as e:
     print("  -> Failed to reset schema:", e)
@@ -96,7 +96,7 @@ realistic_data = [
 from PIL import Image
 
 API_URL = "https://mdga-api.onrender.com"
-HEADERS = {"Authorization": "Bearer mock-jwt-token"}
+HEADERS = {"Authorization": "Bearer mdga-admin-seed-2026"}
 
 dummy_img_path = "seed_dummy.png"
 img = Image.new('RGB', (100, 100), color = (73, 109, 137))
