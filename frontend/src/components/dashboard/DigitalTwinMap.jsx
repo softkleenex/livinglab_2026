@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { Map, Activity } from 'lucide-react';
@@ -11,7 +11,7 @@ const customMarkerIcon = new L.DivIcon({
   iconAnchor: [18, 36],
 });
 
-function DynamicMapBounds({ childrenData }) {
+const DynamicMapBounds = React.memo(({ childrenData }) => {
   const map = useMap();
   useEffect(() => {
     if (!childrenData || childrenData.length === 0) return;
@@ -19,12 +19,12 @@ function DynamicMapBounds({ childrenData }) {
     map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14, duration: 1.5 });
   }, [childrenData, map]);
   return null;
-}
+});
 
-export default function DigitalTwinMap({ childrenData, onMarkerClick }) {
+const DigitalTwinMap = React.memo(({ childrenData, onMarkerClick }) => {
   if (!childrenData || childrenData.length === 0) return null;
   
-  const initialCenter = childrenData[0]?.location || [35.8714, 128.6014];
+  const initialCenter = useMemo(() => childrenData[0]?.location || [35.8714, 128.6014], [childrenData]);
 
   return (
     <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-800 relative z-0 shadow-inner mb-6">
@@ -66,4 +66,6 @@ export default function DigitalTwinMap({ childrenData, onMarkerClick }) {
       </div>
     </div>
   );
-}
+});
+
+export default DigitalTwinMap;
