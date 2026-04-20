@@ -1,4 +1,4 @@
-# 15. MDGA System Encapsulation & Final Architecture Report
+# MDGA System Encapsulation & Final Architecture Report
 
 ![MDGA App](screenshots/01_login.png)
 
