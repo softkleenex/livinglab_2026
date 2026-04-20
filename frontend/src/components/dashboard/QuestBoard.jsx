@@ -113,7 +113,7 @@ export default function QuestBoard({ addToast, userContext }) {
                 <div className="flex flex-col sm:items-end">
                   <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Reward</span>
                   <span className="text-2xl font-black text-yellow-400 flex items-center gap-1 drop-shadow-md">
-                    <img src="/favicon.svg" className="w-5 h-5 opacity-80 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt=""/>
+                    <img src="/favicon.svg" className="w-5 h-5 opacity-80 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt="MDGA reward token icon"/>
                     {quest.reward.toLocaleString()} 
                   </span>
                 </div>

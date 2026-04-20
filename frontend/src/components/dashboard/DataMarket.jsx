@@ -169,7 +169,7 @@ export default function DataMarket({ addToast, userContext, setWalletBalance }) 
  <div className="flex flex-row items-center justify-between w-full gap-4 shrink-0 border-t border-slate-800 pt-4 mt-2 ">
  <div className="flex flex-col ">
  <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Price</span>
- <span className="text-xl font-black text-yellow-400 flex items-center gap-1"><img src="/favicon.svg" className="w-4 h-4 opacity-70 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt=""/> {dataset.price.toLocaleString()} <span className="text-[10px] text-yellow-500/50">$MDGA</span></span>
+ <span className="text-xl font-black text-yellow-400 flex items-center gap-1"><img src="/favicon.svg" className="w-4 h-4 opacity-70 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt="MDGA token icon"/> {dataset.price.toLocaleString()} <span className="text-[10px] text-yellow-500/50">$MDGA</span></span>
  </div>
  <button onClick={() => handleBuy(dataset)} disabled={buying} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-900/20 flex items-center gap-2 transition-all disabled:opacity-50">
  {buying ? <RefreshCw size={14} className="animate-spin"/> : <ShoppingCart size={14}/>} Buy Data

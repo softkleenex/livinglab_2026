@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 router = APIRouter()
 
 @router.get("/personal")
-async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)) -> dict:
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)
     if not obj: raise HTTPException(status_code=404, detail="Store not found. Please setup context.")

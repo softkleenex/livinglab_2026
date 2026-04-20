@@ -248,10 +248,9 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  
  <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
  <span className="text-[10px] font-bold text-yellow-400 flex items-center gap-1">
- <img src="/favicon.svg" className="w-3 h-3 opacity-80 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt=""/>
+ <img src="/favicon.svg" className="w-3 h-3 opacity-80 grayscale contrast-200 brightness-200 sepia hue-rotate-15" alt="MDGA token icon"/>
  +{entry.effective_value?.toLocaleString() || 0}
- </span>
- <button onClick={() => handleDeleteEntry(entry.hash)} className="text-slate-600 hover:text-red-400 transition-colors p-1" title="데이터 삭제 (신뢰도 하락 경고)">
+ </span> <button onClick={() => handleDeleteEntry(entry.hash)} className="text-slate-600 hover:text-red-400 transition-colors p-1" title="데이터 삭제 (신뢰도 하락 경고)">
  <Trash2 size={14} />
  </button>
  </div>
