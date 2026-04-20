@@ -56,9 +56,11 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def global_exception_handler(request: Request, exc: Exception):
     """Catches all unhandled exceptions to prevent server crashes and hides stack traces from clients."""
     traceback.print_exc()
+    # Security: Do not expose internal details (str(exc)) in production.
+    detail_msg = "Internal Server Error" if os.getenv("ENV") == "production" else str(exc)
     return JSONResponse(
         status_code=500,
-        content={"status": "error", "code": 500, "message": "Internal Server Error", "details": str(exc), "path": request.url.path},
+        content={"status": "error", "code": 500, "message": "Internal Server Error", "details": detail_msg, "path": request.url.path},
     )
 
 @app.exception_handler(RequestValidationError)

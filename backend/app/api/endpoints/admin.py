@@ -38,6 +38,8 @@ def debug_upload():
 
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     from app.core.database import Base, engine as db_engine
     from app.services.google_drive import FOLDER_CACHE
     Base.metadata.drop_all(bind=db_engine)

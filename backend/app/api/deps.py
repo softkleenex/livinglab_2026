@@ -15,10 +15,6 @@ def verify_token(authorization: str = Header(None)):
     
     if token == "guest-token":
         return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
-    elif (token == "mock-jwt-token" and DEBUG) or token == "mdga-admin-seed-2026":
-        email = "test@mdga.io"
-        name = "Test User"
-        picture = None
     else:
         try:
             idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)

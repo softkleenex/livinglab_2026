@@ -3,9 +3,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, Text, Date
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
 
-# Use Supabase Pooler by default if no other DATABASE_URL is explicitly set
-SUPABASE_URL = "postgresql://postgres.nwtnczpvczppajomtbiy:Xhdtls12!%40%23@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", SUPABASE_URL)
+# Security: Never hardcode database credentials. Use environment variables.
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mdga_local.db")
 
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
