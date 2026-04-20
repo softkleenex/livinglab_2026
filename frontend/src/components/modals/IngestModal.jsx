@@ -44,8 +44,8 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-lg rounded-3xl border border-slate-700/80 shadow-2xl overflow-hidden relative">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-md rounded-3xl border border-slate-800 shadow-2xl flex flex-col max-h-[90vh] relative overflow-hidden">
         <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-[#0E1420]">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-600 rounded-lg text-white"><Upload size={18}/></div>

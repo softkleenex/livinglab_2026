@@ -54,7 +54,7 @@ export default function WalletModal({ onClose, personalData, addToast, setWallet
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#0A0F1A]/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#101725] w-full max-w-sm rounded-3xl border border-slate-700/80 shadow-2xl flex flex-col relative overflow-hidden">
         <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none"><Coins size={200} /></div>
         

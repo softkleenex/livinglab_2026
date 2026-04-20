@@ -1,5 +1,6 @@
 import datetime
 import random
+from sqlalchemy.orm import Session
 from app.core.database import Region, Store, DataEntry
 
 GEO_LOOKUP = {
@@ -166,16 +167,35 @@ class HierarchyEngine:
                 
         return self.get_object(db, path_list)
         
-    def _increment_nodes(self, db, region_id):
+    def _increment_nodes(self, db: Session, region_id: int) -> None:
+        """
+        Recursively increments the node count for a region and all its ancestors.
+        Locks are acquired in ascending order of region ID to prevent distributed deadlocks
+        during concurrent hierarchy expansion.
+        
+        Args:
+            db (Session): The active database session.
+            region_id (int): The ID of the leaf region to start incrementing from.
+        """
+        # Prevent deadlock: lock top-down
+        # First gather all ancestors
         curr_id = region_id
+        ancestors = []
         while curr_id is not None:
-            r = db.query(Region).filter(Region.id == curr_id).with_for_update().first()
+            r = db.query(Region).filter(Region.id == curr_id).first()
             if r:
-                r.nodes = Region.nodes + 1
-                db.add(r)
+                ancestors.append(r.id)
                 curr_id = r.parent_id
             else:
                 break
+        
+        # Sort by ID to ensure consistent lock order globally
+        ancestors.sort()
+        for aid in ancestors:
+            r = db.query(Region).filter(Region.id == aid).with_for_update().first()
+            if r:
+                r.nodes = Region.nodes + 1
+                db.add(r)
 
     def add_value_bottom_up(self, db, path_list, value_added):
         parent_id = None

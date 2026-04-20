@@ -12,6 +12,8 @@ if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {},
+    pool_size=20 if "sqlite" not in SQLALCHEMY_DATABASE_URL else 5,
+    max_overflow=50 if "sqlite" not in SQLALCHEMY_DATABASE_URL else 10,
     pool_pre_ping=True if "sqlite" not in SQLALCHEMY_DATABASE_URL else False
 )
 
