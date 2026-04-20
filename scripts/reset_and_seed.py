@@ -1,9 +1,8 @@
 import os
 import json
-import urllib.request
-import urllib.parse
 import ssl
 import time
+import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
@@ -19,10 +18,8 @@ print("==================================================")
 # 1. Reset Schema
 print("\n[1/3] Resetting Production Database Schema...")
 try:
-    req = urllib.request.Request('https://mdga-api.onrender.com/api/reset_schema', method='POST')
-    req.add_header('Authorization', 'Bearer mock-jwt-token')
-    res = urllib.request.urlopen(req, context=context)
-    print("  -> Schema Reset Successfully:", res.read().decode('utf-8'))
+    res = requests.post('https://mdga-api.onrender.com/api/reset_schema', headers={'Authorization': 'Bearer mock-jwt-token'})
+    print("  -> Schema Reset Successfully:", res.text)
 except Exception as e:
     print("  -> Failed to reset schema:", e)
 
@@ -96,46 +93,47 @@ realistic_data = [
     {"region": ["달성군", "현풍읍", "테크노폴리스"], "name": "미래차 밧데리(주)", "industry": "제조업", "insight": "해외 수출 물량 200% 증가. 생산직 50명 대규모 공채 및 공장 2동 증축 착공."}
 ]
 
+from PIL import Image
+
+API_URL = "https://mdga-api.onrender.com"
+HEADERS = {"Authorization": "Bearer mock-jwt-token"}
+
+dummy_img_path = "seed_dummy.png"
+img = Image.new('RGB', (100, 100), color = (73, 109, 137))
+img.save(dummy_img_path)
+
 for idx, item in enumerate(realistic_data):
     path_str = "대구광역시/" + "/".join(item["region"]) + "/" + item["name"]
     industry = item["industry"]
     
-    # Onboard
-    data = json.dumps({'role': 'store', 'industry': industry, 'location': path_str.split('/')}).encode('utf-8')
-    req = urllib.request.Request('https://mdga-api.onrender.com/api/user/context', data=data, headers={'Content-Type': 'application/json'})
     try:
-        urllib.request.urlopen(req, context=context)
+        requests.post(f"{API_URL}/api/user/context", json={
+            'role': 'store', 'industry': industry, 'location': path_str.split('/')
+        }, headers=HEADERS)
     except Exception:
         pass
 
-    # Ingest
-    boundary = '----WebKitFormBoundary7MA4YWxkTrZu0gW'
-    body = (
-        f'--{boundary}\r\n'
-        f'Content-Disposition: form-data; name=\"raw_text\"\r\n\r\n'
-        f'[초기 데이터] {item["insight"]}\r\n'
-        f'--{boundary}\r\n'
-        f'Content-Disposition: form-data; name=\"location\"\r\n\r\n'
-        f'{path_str}\r\n'
-        f'--{boundary}\r\n'
-        f'Content-Disposition: form-data; name=\"industry\"\r\n\r\n'
-        f'{industry}\r\n'
-        f'--{boundary}\r\n'
-        f'Content-Disposition: form-data; name=\"is_guest\"\r\n\r\n'
-        f'false\r\n'
-        f'--{boundary}--\r\n'
-    )
-    try:
-        req_ingest = urllib.request.Request('https://mdga-api.onrender.com/api/ingest', data=body.encode('utf-8'), method='POST')
-        req_ingest.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
-        req_ingest.add_header('Authorization', 'Bearer mock-jwt-token')
-        
-        urllib.request.urlopen(req_ingest, context=context)
-        print(f"  [{idx+1}/13] ✅ Ingested: {item['name']}")
-    except Exception as e:
-        print(f"  [{idx+1}/{len(realistic_data)}] ❌ Failed: {item['name']} ({e})")
-        
+    with open(dummy_img_path, 'rb') as f:
+        files = {'file': (f"proof_{idx}.png", f, 'image/png')}
+        data = {
+            "raw_text": f"[초기 데이터] {item['insight']}",
+            "location": path_str,
+            "industry": industry,
+            "is_guest": "false"
+        }
+        try:
+            res = requests.post(f"{API_URL}/api/ingest", data=data, files=files, headers=HEADERS)
+            if res.status_code == 200:
+                print(f"  [{idx+1}/13] ✅ Ingested: {item['name']}")
+            else:
+                print(f"  [{idx+1}/13] ❌ Failed API: {item['name']} ({res.text})")
+        except Exception as e:
+            print(f"  [{idx+1}/{len(realistic_data)}] ❌ Failed Exception: {item['name']} ({e})")
+            
     time.sleep(1)
+
+if os.path.exists(dummy_img_path):
+    os.remove(dummy_img_path)
 
 print("\n==================================================")
 print("🎉 ALL DONE! PRODUCTION ENVIRONMENT IS READY! 🎉")
