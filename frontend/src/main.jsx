@@ -27,12 +27,6 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import axios from 'axios'
-
-axios.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer mock-jwt-token`;
-  return config;
-});
 
 const GOOGLE_CLIENT_ID = "485345719373-keeosnetrubiacu3ii89hh2esq3tvbeo.apps.googleusercontent.com";
 

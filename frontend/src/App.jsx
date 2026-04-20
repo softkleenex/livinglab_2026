@@ -38,7 +38,7 @@ function GoogleLoginScreen({ onLogin }) {
  <GoogleLogin
  onSuccess={credentialResponse => {
  const decoded = jwtDecode(credentialResponse.credential);
- onLogin({ ...decoded, isGuest: false });
+ onLogin({ ...decoded, isGuest: false, rawToken: credentialResponse.credential });
  }}
  onError={() => {
  console.log('Login Failed');

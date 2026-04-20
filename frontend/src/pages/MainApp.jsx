@@ -170,8 +170,21 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  finally { setLoading(false); }
  }, [currentPath]);
 
- const fetchPersonal = React.useCallback(async () => {
- setLoading(true);
+ useEffect(() => {
+   if (googleUser?.rawToken) {
+     axios.interceptors.request.use((config) => {
+       config.headers.Authorization = `Bearer ${googleUser.rawToken}`;
+       return config;
+     });
+   } else {
+     axios.interceptors.request.use((config) => {
+       config.headers.Authorization = `Bearer mock-jwt-token`;
+       return config;
+     });
+   }
+ }, [googleUser]);
+
+ const fetchPersonal = React.useCallback(async () => { setLoading(true);
  try {
  const pathStr = userContext.location.join('/');
  const res = await axios.get(`${API_BASE_URL}/api/dashboard/personal?path=${pathStr}`);

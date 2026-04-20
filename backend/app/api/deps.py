@@ -1,5 +1,10 @@
 from fastapi import Depends, HTTPException, Header
 from app.core.database import SessionLocal, User, Wallet
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import os
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
 
 def verify_token(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -9,14 +14,22 @@ def verify_token(authorization: str = Header(None)):
     
     if token == "mock-jwt-token":
         email = "test@mdga.io"
+        name = "Test User"
+        picture = None
     else:
-        email = token
+        try:
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+            email = idinfo['email']
+            name = idinfo.get('name', email.split('@')[0])
+            picture = idinfo.get('picture')
+        except ValueError:
+            raise HTTPException(status_code=403, detail="Forbidden: Invalid Google token")
         
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            user = User(email=email, name=email.split('@')[0], role="store")
+            user = User(email=email, name=name, picture=picture, role="store")
             db.add(user)
             db.commit()
             db.refresh(user)

@@ -239,20 +239,21 @@ async def ingest(
         )
         db.add(new_entry)
         
-        # Reward User with $MDGA tokens (scaled to prevent hyperinflation)
-        reward_amount = int(effective_value / 100)
-        user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
-        if user_wallet:
-            user_wallet.balance += reward_amount
-            db.add(user_wallet)
-            
-            tx = Transaction(
-                wallet_id=user_wallet.id,
-                amount=reward_amount,
-                tx_type="EARN",
-                description=f"Data Assetization Reward (Hash: {short_hash})"
-            )
-            db.add(tx)
+        # Reward User with $MDGA tokens (scaled to prevent hyperinflation) only if not guest
+        if not is_guest_bool:
+            reward_amount = int(effective_value / 100)
+            user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
+            if user_wallet:
+                user_wallet.balance += reward_amount
+                db.add(user_wallet)
+                
+                tx = Transaction(
+                    wallet_id=user_wallet.id,
+                    amount=reward_amount,
+                    tx_type="EARN",
+                    description=f"Data Assetization Reward (Hash: {short_hash})"
+                )
+                db.add(tx)
             
         db.commit()
         
