@@ -41,7 +41,7 @@ function GoogleLoginScreen({ onLogin }) {
  onLogin({ ...decoded, isGuest: false, rawToken: credentialResponse.credential });
  }}
  onError={() => {
- console.log('Login Failed');
+ // Silent error handling for production
  }}
  theme="filled_black"
  shape="pill"

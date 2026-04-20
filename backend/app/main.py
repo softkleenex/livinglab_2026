@@ -1,3 +1,11 @@
+"""
+MDGA (Universal Data Engine) Main Application Module.
+
+This module initializes the FastAPI application, sets up middleware (including CORS),
+defines global exception handlers for standardized error responses, and includes
+the versioned API routers for the B2B SaaS platform.
+"""
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -24,17 +32,21 @@ from app.api.endpoints.admin import router as admin_router
 
 app = FastAPI(title="MDGA Enterprise B2B SaaS", version="1.0.0")
 
+# Security: Restrict CORS to trusted origins in production
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 # --- Global Error Handlers (B2B Standard) ---
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Handles standard HTTP exceptions and formats them into a consistent JSON response."""
     return JSONResponse(
         status_code=exc.status_code,
         content={"status": "error", "code": exc.status_code, "message": exc.detail, "path": request.url.path},
@@ -42,6 +54,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    """Catches all unhandled exceptions to prevent server crashes and hides stack traces from clients."""
     traceback.print_exc()
     return JSONResponse(
         status_code=500,
@@ -50,6 +63,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handles Pydantic validation errors for incoming requests."""
     return JSONResponse(
         status_code=422,
         content={"status": "error", "code": 422, "message": "Validation Error", "details": exc.errors(), "path": request.url.path},
@@ -59,17 +73,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # WebSocket Route
 @app.websocket("/ws/v1/updates")
 async def websocket_endpoint(websocket: WebSocket):
+    """Manages real-time WebSocket connections for live data dashboard updates."""
     await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-
-# Backward Compatibility (Optional) but we migrate fully to v1
-@app.websocket("/ws/updates")
-async def websocket_endpoint_legacy(websocket: WebSocket):
-    await websocket_endpoint(websocket)
 
 # Routers - API Versioning (v1)
 app.include_router(hierarchy_router, prefix="/api/v1/hierarchy", tags=["Hierarchy v1"])
@@ -79,11 +89,3 @@ app.include_router(ingest_router, prefix="/api/v1/ingest", tags=["Ingest v1"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["Agora v1"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin v1"])
-
-# Legacy routers mapped to v1 to avoid breaking existing clients during migration
-app.include_router(hierarchy_router, prefix="/api/hierarchy", tags=["Legacy"], include_in_schema=False)
-app.include_router(hierarchy_router, prefix="/api", tags=["Legacy"], include_in_schema=False)
-app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Legacy"], include_in_schema=False)
-app.include_router(ingest_router, prefix="/api/ingest", tags=["Legacy"], include_in_schema=False)
-app.include_router(chat_router, prefix="/api/chat", tags=["Legacy"], include_in_schema=False)
-app.include_router(agora_router, prefix="/api/agora", tags=["Legacy"], include_in_schema=False)
