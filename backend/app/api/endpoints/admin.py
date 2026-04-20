@@ -24,7 +24,11 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
 @router.get("/debug_env")
 def debug_env():
     import os
-    return {"folder_id": os.environ.get("GOOGLE_DRIVE_FOLDER_ID")}
+    return {
+        "folder_id": os.environ.get("GOOGLE_DRIVE_FOLDER_ID"),
+        "has_oauth": bool(os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")),
+        "has_sa": bool(os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON"))
+    }
 
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
