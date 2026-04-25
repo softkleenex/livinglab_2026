@@ -129,7 +129,7 @@ for idx, item in enumerate(realistic_data):
             "is_guest": "false"
         }
         try:
-            res = requests.post(f"{API_URL}/api/ingest", data=data, files=files, headers=HEADERS)
+            res = requests.post(f"{API_URL}/api/v1/ingest", data=data, files=files, headers=HEADERS)
             if res.status_code == 200:
                 print(f"  [{idx+1}/13] ✅ Ingested: {item['name']}")
             else:
