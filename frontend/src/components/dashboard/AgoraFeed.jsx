@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Heart, Share2, MapPin, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const Badge = React.memo(({ label, icon, color }) => {
   return (

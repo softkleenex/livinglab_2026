@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RefreshCw, PieChart, MapPin, TrendingUp, Users, BarChart3, BrainCircuit, X, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const Badge = React.memo(({ label, icon, color }) => {
  return (

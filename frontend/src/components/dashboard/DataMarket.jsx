@@ -51,7 +51,7 @@ export default function DataMarket({ addToast, userContext, setWalletBalance }) 
  }
  ];
 
- const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
  const handleBuy = async (item) => {
  setBuying(true);

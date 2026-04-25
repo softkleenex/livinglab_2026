@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Upload, X, ShieldCheck, RefreshCw, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, childOptions = [], addToast }) {
   const [rawText, setRawText] = useState('');

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Sparkles, Activity } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 export default function LiveTicker() {
   const [feed, setFeed] = useState([]);

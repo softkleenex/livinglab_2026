@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-lea
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const LEVELS = [
  { id: 'store', role: 'store', name: '사업장 (Store)', icon: <Store size={24}/>, desc: '매출, 현황, 리뷰 등 내 사업장 데이터' },

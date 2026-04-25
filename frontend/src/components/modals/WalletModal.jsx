@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Coins, X, ArrowRightLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 export default function WalletModal({ onClose, personalData, addToast, setWalletBalance }) {
   const [balance, setBalance] = useState(0);

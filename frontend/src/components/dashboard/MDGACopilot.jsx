@@ -3,7 +3,7 @@ import { Bot, X, Send, Sparkles, Volume2, VolumeX, CheckSquare, Square, FileText
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 export default function MDGACopilot({ locationPath, industry, entries = [], onActionComplete }) {
   const [isOpen, setIsOpen] = useState(false);

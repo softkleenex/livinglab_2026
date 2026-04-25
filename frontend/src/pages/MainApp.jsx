@@ -18,7 +18,7 @@ import LiveTicker from '../components/dashboard/LiveTicker.jsx';
 import PersonalDashboard from '../components/dashboard/PersonalDashboard.jsx';
 import ExplorerDashboard from '../components/dashboard/ExplorerDashboard.jsx';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const SidebarLink = React.memo(({ icon, label, active, onClick }) => {
  return (
