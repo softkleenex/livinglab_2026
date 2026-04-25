@@ -20,7 +20,7 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     db.query(Store).delete()
     db.query(Region).delete()
     db.commit()
-    return "DB Cleared"
+    return {"status": "success", "message": "DB Cleared"}
 
 @router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
