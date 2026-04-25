@@ -19,8 +19,9 @@ from googleapiclient.http import MediaIoBaseUpload
 
 router = APIRouter()
 
-FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
-api_key = os.environ.get("GEMINI_API_KEY")
+from app.core.config import settings
+FOLDER_ID = settings.GOOGLE_DRIVE_FOLDER_ID
+api_key = settings.GEMINI_API_KEY
 
 from app.core.database import SessionLocal
 

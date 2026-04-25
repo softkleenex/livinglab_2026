@@ -34,6 +34,7 @@ from app.core.engine import engine
 from sqlalchemy.orm import Session
 from app.core.database import get_db, DataEntry, SessionLocal
 from app.core.websocket import manager
+from app.core.config import settings
 
 from app.api.endpoints.hierarchy import router as hierarchy_router
 from app.api.endpoints.dashboard import router as dashboard_router
@@ -42,19 +43,16 @@ from app.api.endpoints.chat import router as chat_router
 from app.api.endpoints.agora import router as agora_router
 from app.api.endpoints.admin import router as admin_router
 
-app = FastAPI(title="MDGA Enterprise B2B SaaS", version="1.0.0")
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
 # Setup Rate Limiter to prevent API abuse
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Security: Restrict CORS to trusted origins in production
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

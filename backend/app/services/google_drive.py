@@ -1,4 +1,3 @@
-import os
 import json
 import threading
 from collections import OrderedDict
@@ -6,20 +5,21 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
+from app.core.config import settings
 
 class LRUCache:
     def __init__(self, capacity: int):
         self.cache = OrderedDict()
         self.capacity = capacity
 
-    def get(self, key):
+    def get(self, key: str):
         if key not in self.cache:
             return -1
         else:
             self.cache.move_to_end(key)
             return self.cache[key]
 
-    def put(self, key, value):
+    def put(self, key: str, value: str):
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.capacity:
@@ -29,7 +29,7 @@ FOLDER_CACHE = LRUCache(5000)
 CACHE_LOCK = threading.Lock()
 
 def get_drive_service():
-    service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    service_account_info = settings.GOOGLE_SERVICE_ACCOUNT_JSON
     if service_account_info:
         try:
             cleaned_info = service_account_info.strip()
@@ -41,9 +41,9 @@ def get_drive_service():
         except Exception as e:
             print("SA Error:", e)
 
-    client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-    client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
-    refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
+    client_id = settings.GOOGLE_OAUTH_CLIENT_ID
+    client_secret = settings.GOOGLE_OAUTH_CLIENT_SECRET
+    refresh_token = settings.GOOGLE_OAUTH_REFRESH_TOKEN
 
     if client_id and client_secret and refresh_token:
         try:

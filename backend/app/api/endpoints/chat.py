@@ -72,7 +72,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
     current_value = obj["metadata"].get("total_value", 0)
     current_pulse = obj["metadata"].get("pulse_rate", 0)
     
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
+    model_name = settings.GEMINI_MODEL
     chat_model = genai.GenerativeModel(model_name)
 
     # --- Step 1: Intent Parsing (No Persona) ---
@@ -217,4 +217,5 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
         traceback.print_exc()
         reply = "죄송합니다. 현재 네트워크 문제로 답변을 드릴 수 없습니다."
         
+    return {"status": "success", "reply": reply}      
     return {"status": "success", "reply": reply}

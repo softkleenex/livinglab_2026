@@ -2,10 +2,9 @@ import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
+from app.core.config import settings
 
-# Security: Hardcoded for Render demo to prevent ephemeral DB wipes.
-SUPABASE_URL = "postgresql://postgres.nwtnczpvczppajomtbiy:Xhdtls12!%40%23@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", SUPABASE_URL)
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)

@@ -3,6 +3,7 @@ uvicorn[standard]
 google-generativeai
 python-dotenv
 pydantic
+pydantic-settings
 pandas
 gspread
 google-auth

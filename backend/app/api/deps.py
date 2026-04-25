@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db, SessionLocal, User, Wallet
 from google.oauth2 import id_token
 from google.auth.transport import requests
-import os
+from app.core.config import settings
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
+GOOGLE_CLIENT_ID = settings.GOOGLE_OAUTH_CLIENT_ID
+DEBUG = settings.DEBUG
 
 def verify_token(authorization: str = Header(None), db: Session = Depends(get_db)):
     if not authorization or not authorization.startswith("Bearer "):
