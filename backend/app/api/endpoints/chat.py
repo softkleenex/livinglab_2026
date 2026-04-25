@@ -14,6 +14,7 @@ import datetime
 import os
 import traceback
 import json
+from app.core.config import settings
 import hashlib
 import asyncio
 import google.generativeai as genai
