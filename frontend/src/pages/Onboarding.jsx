@@ -83,8 +83,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  useEffect(() => {
    const loadAllStores = async () => {
      try {
-       const res = await axios.get(`${API_BASE_URL}/api/v1/stores/all`);
-       setAllStoresList(res.data.stores || []);
+       const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/stores/all`);       setAllStoresList(res.data.stores || []);
      } catch (e) {
        console.error("Failed to fetch all stores for combobox", e);
      }
@@ -129,8 +128,7 @@ export default function Onboarding({ onComplete, googleUser }) {
    setShowAllStores(true);
    setLoadingAllStores(true);
    try {
-     const res = await axios.get(`${API_BASE_URL}/api/v1/stores/all`);
-     setAllStoresList(res.data.stores || []);
+     const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/stores/all`);     setAllStoresList(res.data.stores || []);
    } catch(e) {
      alert("데이터를 불러오지 못했습니다: " + e.message);
    } finally {
