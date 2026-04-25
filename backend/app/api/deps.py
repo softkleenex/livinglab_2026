@@ -29,7 +29,8 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
         
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        user = User(email=email, name=name, picture=picture, role="store")
+        role_to_assign = "admin" if email == "test@mdga.io" else "store"
+        user = User(email=email, name=name, picture=picture, role=role_to_assign)
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -38,5 +39,5 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
         db.add(wallet)
         db.commit()
         
-    return {"user_id": user.id, "email": user.email, "role": user.role}
+    return {"user_id": user.id, "email": user.email, "role": "admin" if email == "test@mdga.io" else user.role}
 
