@@ -12,7 +12,6 @@ import hashlib
 import asyncio
 
 router = APIRouter()
-
 @router.delete("/clear_db")
 def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     if user.get("role") != "admin":
@@ -23,11 +22,7 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     db.commit()
     return "DB Cleared"
 
-@router.get("/dump_deps")
-def dump_deps():
-    with open("app/api/deps.py", "r") as f:
-        return {"deps": f.read()}
-def debug_upload(user: dict = Depends(verify_token)):
+@router.post("/reset_schema")
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     from app.services.google_drive import get_drive_service, get_or_create_drive_folder
