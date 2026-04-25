@@ -24,7 +24,7 @@ async def get_personal_dashboard(path: str, db: Session = Depends(get_db), user:
             if r: parent_id = r.id
             else: break
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
-        if store and store.owner_id != user["user_id"] and user["role"] not in ["admin", "guest"]:
+        if store and store.owner_id != user["user_id"] and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized to view this personal dashboard.")
     
     # Get parent object to compare
@@ -207,7 +207,7 @@ async def export_csv(path: str, industry: str = "공공", db: Session = Depends(
             if r: parent_id = r.id
             else: break
         store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
-        if store and store.owner_id != user["user_id"] and user["role"] not in ["admin", "guest"]:
+        if store and store.owner_id != user["user_id"] and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized to export this store's raw data.")
 
     entries = obj.get("data_entries", [])    

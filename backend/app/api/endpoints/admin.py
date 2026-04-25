@@ -23,21 +23,6 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     return "DB Cleared"
 
 @router.post("/reset_schema")
-    if user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
-    from app.services.google_drive import get_drive_service, get_or_create_drive_folder
-    import os
-    try:
-        drive_service = get_drive_service()
-        if not drive_service:
-            return {"error": "No drive service"}
-        folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
-        res = get_or_create_drive_folder(drive_service, folder_id, "Render_Test_Folder")
-        return {"status": "success", "folder_id": res}
-    except Exception as e:
-        return {"error": "Upload failed", "details": str(e)}
-
-@router.post("/reset_schema")
 def reset_schema(user: dict = Depends(verify_token)):
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")

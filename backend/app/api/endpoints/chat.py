@@ -217,5 +217,4 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
         traceback.print_exc()
         reply = "죄송합니다. 현재 네트워크 문제로 답변을 드릴 수 없습니다."
         
-    return {"status": "success", "reply": reply}      
     return {"status": "success", "reply": reply}

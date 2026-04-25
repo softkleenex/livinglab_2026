@@ -171,7 +171,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  }, [currentPath]);
 
  useEffect(() => {
-   axios.interceptors.request.use((config) => {
+   const reqInterceptor = axios.interceptors.request.use((config) => {
      if (googleUser?.rawToken) {
        config.headers.Authorization = `Bearer ${googleUser.rawToken}`;
      } else {
@@ -179,6 +179,10 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
      }
      return config;
    });
+
+   return () => {
+     axios.interceptors.request.eject(reqInterceptor);
+   };
  }, [googleUser]); const fetchPersonal = React.useCallback(async () => { setLoading(true);
  try {
  const pathStr = userContext.location.join('/');

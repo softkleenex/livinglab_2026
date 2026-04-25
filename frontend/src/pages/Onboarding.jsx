@@ -265,11 +265,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <datalist id="gu-list">
   {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
  </datalist>
-  <datalist id="gu-list">
-    {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
-  </datalist>
- </div>
- </div>
+ </div> </div>
  )}
 
  {/* DONG Level */}
@@ -341,11 +337,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <datalist id="store-list">
   {allStoresList.filter(s => (!locStreet || s.street === locStreet)).map(s => <option key={s.name} value={s.name} />)}
  </datalist>
-  <datalist id="store-list">
-    {allStoresList.filter(s => (!locStreet || s.street === locStreet)).map(s => <option key={s.name} value={s.name} />)}
-  </datalist>
- </motion.div>
- )}
+ </motion.div> )}
  </div>
  )}
  
