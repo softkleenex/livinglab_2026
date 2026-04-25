@@ -14,18 +14,13 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
     
     token = authorization.split(" ")[1]
     
-    if token == "mdga-admin-seed-2026":
-        email = "test@mdga.io"
-        name = "Test User"
-        picture = None
-    else:
-        try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-            email = idinfo['email']
-            name = idinfo.get('name', email.split('@')[0])
-            picture = idinfo.get('picture')
-        except Exception as e:
-            raise HTTPException(status_code=403, detail=f"Forbidden: Invalid Google token ({str(e)})")
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        picture = idinfo.get('picture')
+    except Exception as e:
+        raise HTTPException(status_code=403, detail=f"Forbidden: Invalid Google token ({str(e)})")
         
     user = db.query(User).filter(User.email == email).first()
     if not user:
