@@ -162,11 +162,15 @@ export default function Onboarding({ onComplete, googleUser }) {
  if (!levelId) return alert('객체 단위를 선택해주세요.');
  
  const selectedLevel = LEVELS.find(l => l.id === levelId);
- let location = []; if (locGu) location.push(locGu);
- if ((levelId === 'dong' || levelId === 'street' || levelId === 'store') && locDong) location.push(locDong);
- if ((levelId === 'street' || levelId === 'store') && locStreet) location.push(locStreet);
- if (levelId === 'store' && locStore) location.push(locStore);
-
+ let location = [];
+ if (window.selectedStoreFullPath && levelId === 'store' && locStore === window.selectedStoreFullPath[window.selectedStoreFullPath.length - 1]) {
+     location = window.selectedStoreFullPath;
+ } else {
+     if (locGu) location.push(locGu);
+     if ((levelId === 'dong' || levelId === 'street' || levelId === 'store') && locDong) location.push(locDong);
+     if ((levelId === 'street' || levelId === 'store') && locStreet) location.push(locStreet);
+     if (levelId === 'store' && locStore) location.push(locStore);
+ }
  setLoading(true);
  try {
  await axios.post(`${API_BASE_URL}/api/v1/hierarchy/user/context`, { role: selectedLevel.role, industry: industry || '공공', location
@@ -366,6 +370,7 @@ export default function Onboarding({ onComplete, googleUser }) {
               allStoresList.map((s, idx) => (
                  <div key={idx} onClick={() => {
                     setLevelId('store');
+                    window.selectedStoreFullPath = s.path.split("/");
                     setLocGu(s.gu); setLocDong(s.dong); setLocStreet(s.street); setLocStore(s.name); setIndustry(s.industry);
                     setShowAllStores(false);
                  }} className="p-3 bg-[#101725] border border-slate-800 hover:border-blue-500/50 rounded-xl cursor-pointer transition-colors group">
