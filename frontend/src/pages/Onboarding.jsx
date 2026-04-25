@@ -171,8 +171,7 @@ export default function Onboarding({ onComplete, googleUser }) {
 
  setLoading(true);
  try {
- await axios.post(`${API_BASE_URL}/api/v1/user/context`, {
- role: selectedLevel.role, industry: industry || '공공', location
+ await axios.post(`${API_BASE_URL}/api/v1/hierarchy/user/context`, { role: selectedLevel.role, industry: industry || '공공', location
  });
  onComplete({ role: selectedLevel.role, industry, location, isGuest: googleUser?.isGuest || false });
  } catch (err) {
@@ -386,5 +385,8 @@ export default function Onboarding({ onComplete, googleUser }) {
   </div>
   </form> </div>
  </main>
+ );
+}
+n>
  );
 }
