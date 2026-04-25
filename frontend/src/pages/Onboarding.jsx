@@ -386,7 +386,4 @@ export default function Onboarding({ onComplete, googleUser }) {
   </form> </div>
  </main>
  );
-}
-n>
- );
-}
+ }
