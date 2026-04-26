@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Google Gemini
-    GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY: str = "AIzaSyDku_-uuXItMyC2i_Wh6fTX0gS20qcxVAM"
     GEMINI_MODEL: str = "gemini-1.5-pro"
 
     # Security
