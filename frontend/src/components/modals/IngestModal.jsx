@@ -89,9 +89,14 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
                   </div>
                 </div>
               )}
+              {(!preview && file) && (
+                <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-blue-900/20 p-4 text-center mt-2">
+                  <span className="text-blue-400 text-xs font-bold">📦 묶음 데이터 파일({file.name}) 업로드 대기 중</span>
+                </div>
+              )}
               
               <textarea value={rawText} onChange={e=>setRawText(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none text-slate-200" rows={preview ? 2 : 4} placeholder="여기에 텍스트 상황을 입력하세요..." />
-              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-500/10 file:text-blue-400 bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
+              <input type="file" accept="image/*,.zip,application/zip" onChange={handleFileChange} className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-500/10 file:text-blue-400 bg-[#0A0F1A] p-2 rounded-xl border border-slate-800" />
               
               <label className="flex items-start gap-2 opacity-50 cursor-not-allowed">
                 <input type="checkbox" disabled checked={false} className="mt-1" />
