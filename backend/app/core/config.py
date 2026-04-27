@@ -39,7 +39,3 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-="ignore"
-    )
-
-settings = Settings()
