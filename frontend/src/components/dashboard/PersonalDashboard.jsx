@@ -172,17 +172,17 @@ export default function PersonalDashboard({ personalData, userContext, handleExp
  <Badge label="BETA" color="bg-orange-500/10 text-orange-400 border-orange-500/20" />
  </div>
  <div className="grid grid-cols-1 gap-3">
- <button onClick={handleDemoInject} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
+ <button onClick={() => { if(typeof window.openIngest === 'function') window.openIngest(); else handleDemoInject(); }} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
  <FileText size={24} className="text-slate-400 group-hover:text-blue-400 transition-colors" />
  <span className="text-xs font-bold text-slate-300">현장/수기 일지 연동</span>
  <span className="text-[9px] text-slate-500">사진/텍스트 찰영 및 추출</span>
  </button>
- <button onClick={handleDemoInject} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
+ <button onClick={() => { if(typeof window.openIngest === 'function') window.openIngest(); else handleDemoInject(); }} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
  <Users size={24} className="text-slate-400 group-hover:text-blue-400 transition-colors" />
  <span className="text-xs font-bold text-slate-300">주문/플랫폼 연동</span>
  <span className="text-[9px] text-slate-500">일별 주문/예약 자동 동기화</span>
  </button>
- <button onClick={handleDemoInject} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
+ <button onClick={() => { if(typeof window.openIngest === 'function') window.openIngest(); else handleDemoInject(); }} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 rounded-xl transition-all cursor-pointer group">
  <Upload size={24} className="text-slate-400 group-hover:text-blue-400 transition-colors" />
  <span className="text-xs font-bold text-slate-300">외부 API 연동</span>
  <span className="text-[9px] text-slate-500">물류/택배 배송 상태 수집</span>

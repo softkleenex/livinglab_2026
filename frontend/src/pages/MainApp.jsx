@@ -241,8 +241,20 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  }
  };
 
+ useEffect(() => {
+   window.openIngest = () => setShowIngest(true);
+   return () => { delete window.openIngest; };
+ }, []);
+
  const handleDemoInject = async () => {
- alert("현재 데이터 통합 연동은 베타 테스트 중입니다. B2B 스마트팜, 첨단제조업 등 사전 준비된 산업체 계정으로 전환(글로벌 파트너사 목록에서 빠른 이동)하여 진행해 주십시오.");
+    try {
+      const pathStr = userContext.location.join('/');
+      await axios.post(`${API_BASE_URL}/api/v1/demo/inject?path=${pathStr}`);
+      addToast("데모 데이터 패킷이 성공적으로 주입되었습니다.", "success");
+      fetchPersonal();
+    } catch(e) {
+      addToast("데모 주입 실패: " + e.message, "error");
+    }
  };
  const navigateTo = React.useCallback((name) => setCurrentPath([...currentPath, name]), [currentPath]);
  const goBack = React.useCallback(() => setCurrentPath(currentPath.slice(0, -1)), [currentPath]);
