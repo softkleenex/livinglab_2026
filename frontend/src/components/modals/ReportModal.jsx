@@ -18,10 +18,14 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
  useEffect(() => {
  const fetchReport = async () => {
  try {
- const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/report?path=${locationPath}&industry=${userContext?.industry || '공공'}`);
+ const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/report`, {
+   params: {
+     path: locationPath,
+     industry: userContext?.industry || '공공'
+   }
+ });
  setReport(res.data.report);
- } catch (err) {
- setReport("리포트를 생성하지 못했습니다.");
+ } catch (err) { setReport("리포트를 생성하지 못했습니다.");
  } finally {
  setLoading(false);
  }

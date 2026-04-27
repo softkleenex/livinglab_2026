@@ -160,7 +160,7 @@ async def ingest(
             f"데이터 내용: {content}",
             "위 데이터를 심도 있게 분석하여, 해당 사업장의 효율성을 높이거나 매출을 증대시킬 수 있는 날카롭고 즉시 실행 가능한(Actionable) 인사이트를 2~3문장으로 짧고 명확하게 제시해 주세요. 이모지를 적절히 사용하여 가독성을 높이세요."
         ]
-        if file and file_content_type.startswith('image/'):
+        if file and file_content_type and file_content_type.startswith('image/'):
             try:
                 img = Image.open(io.BytesIO(file_data))
                 prompt_parts.append(img)
@@ -174,7 +174,7 @@ async def ingest(
             insights = res.text
         except Exception as e:
             traceback.print_exc()
-            if file and file_content_type.startswith('image/'):
+            if file and file_content_type and file_content_type.startswith('image/'):
                 insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."

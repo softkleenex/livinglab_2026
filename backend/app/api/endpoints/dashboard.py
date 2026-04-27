@@ -96,6 +96,8 @@ async def generate_weekly_report(path: str, industry: str = "공공", db: Sessio
     
     # Get Parent context for competitiveness
     parent_obj = engine.get_object(db, path_list[:-1]) if len(path_list) > 1 else engine.get_object(db, ["전체 (Root)"])
+    if not parent_obj:
+        parent_obj = {"name": "상위 영역", "metadata": {"total_value": 0, "pulse_rate": 0}}
     
     entries = obj.get("data_entries", [])
     
