@@ -165,7 +165,7 @@ async def ingest(
                 img = Image.open(io.BytesIO(file_data))
                 prompt_parts.append(img)
             except Exception as e:
-                pass
+                print(f"Warning: Failed to parse image file: {e}")
 
         try:
             if not api_key: raise Exception("API Key missing")
