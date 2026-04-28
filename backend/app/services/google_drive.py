@@ -30,7 +30,7 @@ CACHE_LOCK = threading.Lock()
 
 def get_drive_service():
     service_account_info = settings.GOOGLE_SERVICE_ACCOUNT_JSON
-    if service_account_info:
+    if False and service_account_info:
         try:
             cleaned_info = service_account_info.strip()
             if cleaned_info.startswith("'") and cleaned_info.endswith("'"):
