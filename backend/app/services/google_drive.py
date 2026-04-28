@@ -41,9 +41,9 @@ def get_drive_service():
         except Exception as e:
             print("SA Error:", e)
 
-    client_id = settings.GOOGLE_OAUTH_CLIENT_ID
-    client_secret = settings.GOOGLE_OAUTH_CLIENT_SECRET
-    refresh_token = settings.GOOGLE_OAUTH_REFRESH_TOKEN
+    client_id = settings.GOOGLE_OAUTH_CLIENT_ID.strip() if settings.GOOGLE_OAUTH_CLIENT_ID else None
+    client_secret = settings.GOOGLE_OAUTH_CLIENT_SECRET.strip() if settings.GOOGLE_OAUTH_CLIENT_SECRET else None
+    refresh_token = settings.GOOGLE_OAUTH_REFRESH_TOKEN.strip() if settings.GOOGLE_OAUTH_REFRESH_TOKEN else None
 
     if client_id and client_secret and refresh_token:
         try:
