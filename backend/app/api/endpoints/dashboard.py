@@ -88,6 +88,15 @@ async def get_wallet_transactions(db: Session = Depends(get_db), user: dict = De
     } for tx in txs]
 
     return {"status": "success", "balance": int(user_wallet.balance), "transactions": tx_list}
+@router.get("/debug_env")
+async def debug_env():
+    from app.core.config import settings
+    return {
+        "client_id": settings.GOOGLE_OAUTH_CLIENT_ID[:15] + "...",
+        "secret": settings.GOOGLE_OAUTH_CLIENT_SECRET[:5] + "...",
+        "refresh": settings.GOOGLE_OAUTH_REFRESH_TOKEN[:10] + "..."
+    }
+
 @router.get("/report")
 async def generate_weekly_report(path: str, industry: str = "공공", db: Session = Depends(get_db)) -> dict:
     path_list = [p for p in path.split("/") if p]
