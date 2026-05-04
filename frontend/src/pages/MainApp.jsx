@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
- Radar, Map, Zap, X, ShieldCheck, Store, Coins, ShoppingCart, Target, MessageSquare, BarChart3, RefreshCw, Info
+ Radar, Map, Zap, X, ShieldCheck, Store, Coins, ShoppingCart, Target, MessageSquare, BarChart3, RefreshCw, Info, CloudRain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReportModal from '../components/modals/ReportModal.jsx';
@@ -12,6 +12,7 @@ import UpgradeModal from '../components/modals/UpgradeModal.jsx';
 import GovernanceSim from '../components/dashboard/GovernanceSim.jsx';
 import MDGACopilot from '../components/dashboard/MDGACopilot.jsx';
 import DataMarket from '../components/dashboard/DataMarket.jsx';
+import AgriculturalAX from '../components/dashboard/AgriculturalAX.jsx';
 import QuestBoard from '../components/dashboard/QuestBoard.jsx';
 import AgoraFeed from '../components/dashboard/AgoraFeed.jsx';
 import LiveTicker from '../components/dashboard/LiveTicker.jsx';
@@ -334,8 +335,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  <DataMarket addToast={addToast} userContext={userContext} setWalletBalance={setWalletBalance} />
  ) : activeTab === 'quest' ? (
  <QuestBoard addToast={addToast} userContext={userContext} />
- ) : activeTab === 'agora' ? (
- <AgoraFeed addToast={addToast} userContext={userContext} />
+ ) : activeTab === 'ax' ? (
+ <AgriculturalAX addToast={addToast} userContext={userContext} />
+ ) : activeTab === 'agora' ? ( <AgoraFeed addToast={addToast} userContext={userContext} />
  ) : null}
  </AnimatePresence>
  </div>
@@ -347,9 +349,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
  <BottomNavLink icon={<Store size={20}/>} label="내 사업장" active={activeTab === 'personal' && !showIngest} onClick={()=>{setActiveTab('personal'); setShowIngest(false);}} />
  )}
  <BottomNavLink icon={<Map size={20}/>} label="트윈 맵" active={activeTab === 'explorer' && !showIngest} onClick={()=>{setActiveTab('explorer'); setShowIngest(false);}} />
- <BottomNavLink icon={<ShoppingCart size={20}/>} label="마켓" active={activeTab === 'market' && !showIngest} onClick={()=>{setActiveTab('market'); setShowIngest(false);}} />
- <BottomNavLink icon={<MessageSquare size={20}/>} label="아고라" active={activeTab === 'agora' && !showIngest} onClick={()=>{setActiveTab('agora'); setShowIngest(false);}} />
- {userContext.role === 'store' && (
+ <BottomNavLink icon={<ShoppingCart size={20}/>} label="B2B마켓" active={activeTab === 'market' && !showIngest} onClick={()=>{setActiveTab('market'); setShowIngest(false);}} />
+ <BottomNavLink icon={<CloudRain size={20}/>} label="농업AX" active={activeTab === 'ax' && !showIngest} onClick={()=>{setActiveTab('ax'); setShowIngest(false);}} />
+ <BottomNavLink icon={<MessageSquare size={20}/>} label="아고라" active={activeTab === 'agora' && !showIngest} onClick={()=>{setActiveTab('agora'); setShowIngest(false);}} /> {userContext.role === 'store' && (
  <BottomNavLink icon={<Target size={20}/>} label="퀘스트" active={activeTab === 'quest' && !showIngest} onClick={()=>{setActiveTab('quest'); setShowIngest(false);}} />
  )}
  {(userContext.role === 'gov' || userContext.role === 'leader') && (
