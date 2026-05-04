@@ -25,7 +25,9 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
    }
  });
  setReport(res.data.report);
- } catch (err) { setReport("리포트를 생성하지 못했습니다.");
+ } catch (err) { 
+   console.error(err);
+   setReport("리포트를 생성하지 못했습니다.");
  } finally {
  setLoading(false);
  }

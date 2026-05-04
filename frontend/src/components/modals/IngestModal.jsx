@@ -38,6 +38,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
       setRes(response.data);
       setTimeout(() => onSuccess(response.data.value_added), 2500);
     } catch (err) { 
+      console.error(err);
       addToast("업로드에 실패했습니다. 사진 용량이나 네트워크를 확인해주세요.", "error"); 
     }
     finally { setLoading(false); }

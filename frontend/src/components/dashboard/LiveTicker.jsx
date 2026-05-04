@@ -14,7 +14,7 @@ export default function LiveTicker() {
         const res = await axios.get(`${API_BASE_URL}/api/v1/agora/feed`);
         setFeed(res.data.feed.slice(0, 8)); // Get latest 8 for ticker
       } catch (err) {
-        console.error("Failed to load ticker data");
+        console.error("Failed to load ticker data", err);
       }
     };
     fetchFeed();

@@ -35,6 +35,7 @@ const reverseGeocode = async (lat, lng) => {
       industry: 'IT/서비스'
     };
   } catch(e) {
+    console.error(e);
     return { gu: '미분류 구', dong: '미분류 동', street: '미분류 거리', name: '신규 사업장', industry: '기타' };
   }
 };
@@ -105,6 +106,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  }
  } catch (e) {
  setExistingStores([]);
+ console.error(e);
  }
  } else {
  setExistingStores([]);

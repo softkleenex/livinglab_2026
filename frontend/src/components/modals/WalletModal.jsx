@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
-export default function WalletModal({ onClose, personalData, addToast, setWalletBalance }) {
+export default function WalletModal({ onClose, addToast, setWalletBalance }) {
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);

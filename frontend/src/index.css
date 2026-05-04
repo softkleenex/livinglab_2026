@@ -22,14 +22,40 @@ body {
 /* Scrollbar styling for better aesthetic */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #1e293b; /* slate-800 */
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
+  background: #334155; /* slate-700 */
+}
+
+/* Custom scrollbar utility class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(10, 15, 26, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #fff;
+  border-radius: 8px;
+}
+.custom-popup .leaflet-popup-tip {
+  background: rgba(10, 15, 26, 0.95);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+  border-right: 1px solid rgba(59, 130, 246, 0.3);
 }

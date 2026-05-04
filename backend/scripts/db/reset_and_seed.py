@@ -13,7 +13,7 @@ load_dotenv('backend/.env')
 context = ssl._create_unverified_context()
 requests.packages.urllib3.disable_warnings()
 
-API_URL = "https://mdga-api.onrender.com"
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
 HEADERS = {"Authorization": "Bearer mdga-admin-seed-2026"}
 
 print("==================================================")

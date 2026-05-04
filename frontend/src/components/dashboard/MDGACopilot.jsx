@@ -78,6 +78,7 @@ export default function MDGACopilot({ locationPath, industry, entries = [], onAc
         onActionComplete();
       }
     } catch (err) {
+      console.error(err);
       setMessages(prev => [...prev, { id: Date.now(), text: "오류가 발생했습니다. 다시 시도해주세요.", sender: 'ai', error: true }]);
     } finally {
       setLoading(false);
