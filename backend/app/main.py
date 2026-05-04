@@ -44,6 +44,7 @@ from app.api.endpoints.agora import router as agora_router
 from app.api.endpoints.admin import router as admin_router
 from app.api.endpoints.ax_data import router as ax_data_router
 from app.api.endpoints.b2b_market import router as b2b_market_router
+from app.api.endpoints.data_marketplace import router as data_marketplace_router
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
@@ -112,6 +113,7 @@ app.include_router(agora_router, prefix="/api/v1/agora", tags=["Agora v1"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin v1"])
 app.include_router(ax_data_router, prefix="/api/v1/ax-data", tags=["AX Synthetic Data v1"])
 app.include_router(b2b_market_router, prefix="/api/v1/b2b-market", tags=["B2B Market & Logistics v1"])
+app.include_router(data_marketplace_router, prefix="/api/v1/data-marketplace", tags=["Phase 4 Commercial Data Hub v1"])
 
 # Legacy routers mapped to root /api to avoid breaking old cached mobile clients
 app.include_router(hierarchy_router, prefix="/api/hierarchy", tags=["Legacy v0"], include_in_schema=False)
@@ -120,3 +122,4 @@ app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Legacy v0"]
 app.include_router(ingest_router, prefix="/api/ingest", tags=["Legacy v0"], include_in_schema=False)
 app.include_router(chat_router, prefix="/api/chat", tags=["Legacy v0"], include_in_schema=False)
 app.include_router(agora_router, prefix="/api/agora", tags=["Legacy v0"], include_in_schema=False)
+
