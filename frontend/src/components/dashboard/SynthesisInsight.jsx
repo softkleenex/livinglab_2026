@@ -108,6 +108,50 @@ export default function SynthesisInsight({ userContext }) {
           </div>
         </div>
 
+        {/* Phase 4: Commercial Data Hub Export Actions */}
+        <div className="flex gap-2 mb-4">
+          <button 
+            onClick={async () => {
+              try {
+                const res = await axios.get(`${API_BASE_URL}/api/v1/data-marketplace/export/synthetic-yield`, {
+                  headers: { 'x-api-key': 'mdga-b2b-snowflake-key' },
+                  responseType: 'blob'
+                });
+                const url = window.URL.createObjectURL(new Blob([res.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'mdga_synthetic_yield_export.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+              } catch(e) { console.error(e); }
+            }}
+            className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 py-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <Database size={14} /> Snowflake 연동 (CSV)
+          </button>
+          <button 
+            onClick={async () => {
+              try {
+                const res = await axios.get(`${API_BASE_URL}/api/v1/data-marketplace/export/ai-ready-vision`, {
+                  headers: { 'x-api-key': 'mdga-b2b-aihub-key' },
+                  responseType: 'blob'
+                });
+                const url = window.URL.createObjectURL(new Blob([res.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'mdga_ai_ready_vision_logs.jsonl');
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+              } catch(e) { console.error(e); }
+            }}
+            className="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 py-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <Database size={14} /> AI Hub 납품 (JSONL)
+          </button>
+        </div>
+
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/50 flex flex-col justify-center">
             <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
