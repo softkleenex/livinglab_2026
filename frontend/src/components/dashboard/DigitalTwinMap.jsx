@@ -22,9 +22,9 @@ const DynamicMapBounds = React.memo(({ childrenData }) => {
 });
 
 const DigitalTwinMap = React.memo(({ childrenData, onMarkerClick }) => {
+  const initialCenter = useMemo(() => childrenData?.[0]?.location || [35.8714, 128.6014], [childrenData]);
+
   if (!childrenData || childrenData.length === 0) return null;
-  
-  const initialCenter = useMemo(() => childrenData[0]?.location || [35.8714, 128.6014], [childrenData]);
 
   return (
     <div className="h-64 w-full rounded-2xl overflow-hidden border border-slate-800 relative z-0 shadow-inner mb-6">

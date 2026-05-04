@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Layers, TrendingUp, ShieldCheck, MapPin, ChevronRight, Activity, ArrowLeft } from 'lucide-react';
+import { Layers, TrendingUp, ShieldCheck, MapPin, ChevronRight, Activity, ArrowLeft, Database, FileText } from 'lucide-react';
 import DigitalTwinMap from './DigitalTwinMap.jsx';
 import PulseChart from './PulseChart.jsx';
 

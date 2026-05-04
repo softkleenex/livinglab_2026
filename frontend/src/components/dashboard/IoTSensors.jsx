@@ -5,8 +5,6 @@ import { Thermometer, Droplets, Wind, Zap } from 'lucide-react';
 export default function IoTSensors({ industry }) {
   const isFarm = industry && (industry.includes('스마트팜') || industry.includes('농업'));
   const isManuf = industry && (industry.includes('제조') || industry.includes('물류'));
-  
-  if (!isFarm && !isManuf) return null;
 
   const [sensors, setSensors] = useState([
     { id: 1, label: isFarm ? "내부 온도" : "설비 온도", value: 24.5, unit: "°C", icon: Thermometer, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
@@ -24,6 +22,8 @@ export default function IoTSensors({ industry }) {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  if (!isFarm && !isManuf) return null;
 
   return (
     <div className="bg-[#101725] p-5 rounded-2xl border border-slate-800 shadow-lg mt-6">

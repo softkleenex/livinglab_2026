@@ -1,37 +1,49 @@
-# MDGA (Universal Data Engine) - Documentation Index
+# MDGA (Universal Data Engine) - Phase 2 Documentation
 
-Welcome to the documentation directory for the **MDGA (Universal Data Engine)** project. This repository contains the architectural blueprints, evaluation metrics, troubleshooting guides, and historical design documents (archived) for the platform.
+Welcome to the documentation directory for the **MDGA (Universal Data Engine)** project. We have completed the **Phase 1 (Pre-Midterm) Evaluation** and are currently in the **Post-Midterm Review & Pivot Planning Phase**.
 
-## 📌 Main Documents
+## 📊 Presentations & Media
+*   **[Mid-term Review Presentation (Google Slides)](https://docs.google.com/presentation/d/1YdNnu-E1zeBuX0HBhhQn7WLnKPvmXeGV/edit?usp=sharing&ouid=102789731851871759953&rtpof=true&sd=true)**
 
-These documents represent the current, active state of the project and its production environment.
+## 📌 Active Documents (Phase 2)
 
-*   **[00_FINAL_ARCHITECTURE_AND_EVALUATION.md](./00_FINAL_ARCHITECTURE_AND_EVALUATION.md)**
-    *   The comprehensive guide to the final, refactored 3NF architecture.
-    *   Contains the core technical stack details, database schema (Stateless Hierarchy Engine), AI integration workflows, and performance/security evaluation results (Lighthouse scores).
-*   **[01_DEPLOYMENT_TROUBLESHOOTING.md](./01_DEPLOYMENT_TROUBLESHOOTING.md)**
-    *   A log of issues encountered during the production deployment phase on Render and Cloudflare Pages.
-    *   Includes bugfixes for Google Drive OAuth token expiration, ZIP file ingestion parsing errors, and Gemini API model/billing errors.
+*   **[00_MIDTERM_REVIEW_AND_PIVOT_PLAN.md](./00_MIDTERM_REVIEW_AND_PIVOT_PLAN.md)**
+    *   This is the core planning document for Phase 2. It will contain the decision matrix for whether to close the project or execute a new pivot, focusing heavily on business viability, user feedback from Phase 1, and new strategic directions.
+*   **[01_PIVOT_FEATURE_IDEATION.md](./01_PIVOT_FEATURE_IDEATION.md)**
+    *   Brainstorming document containing 10 proposed feature expansions from the team, divided into technical specialization (Synthetic Data) and domain specialization (B2B SaaS).
+*   **[02_PHASE2_FEATURE_PROPOSAL.md](./02_PHASE2_FEATURE_PROPOSAL.md)**
+    *   The final, unified feature proposal document to be submitted to the mentor, containing the consolidated list of features to be developed in Phase 2.
 
-## 🗄️ Archives (Historical Documents)
+## 🗄️ Archives (Historical Documents - Phase 1)
 
-The `archive/` directory contains older, superseded documents that track the evolutionary journey of the MDGA project from its initial MVP proposal to the final enterprise-grade pivot. These are kept for historical context and rationale.
+The `archive/` directory contains all documents related to Phase 1 of the MDGA project, categorized for easier navigation.
 
-*   `0_ARCHITECTURE.md` - Initial system architecture draft.
+### 📝 Planning & Proposal (`archive/planning/`)
+Documents related to the early project proposal, business strategy, and initial Smart Farm pivot.
 *   `1_PROPOSAL.md` - Early project proposal.
 *   `2_STRATEGY.md` - Business and go-to-market strategy.
+*   `4_functions.txt` - Early functional requirements.
+*   `10_SMART_FARM_PIVOT.md` - Phase 1 pivot towards Smart Farming.
+
+### 🏗️ Architecture & Technical (`archive/architecture/`)
+Documents charting the evolution of the system architecture from a monolithic MVP to the final normalized 3NF hierarchy.
+*   `0_ARCHITECTURE.md` - Initial system architecture draft.
 *   `3_TECHNICAL.md` - Early technical specifications.
 *   `5_DATA_LIFECYCLE.md` - Initial data flow logic.
 *   `8_REVISED_APP_FLOW.md` - Revisions to the application flow based on testing.
 *   `9_FINAL_ARCHITECTURE.md` - The architecture prior to the final 3NF refactoring.
-*   `10_SMART_FARM_PIVOT.md` - Strategic document detailing the pivot towards industry-specific verticals (e.g., Smart Farming).
-*   `11_EVALUATION_PLAN.md` - The plan for testing the MVP.
-*   `12_ARCHITECTURE_REFACTORING_PLAN.md` - The blueprint for moving from a monolithic structure to the current normalized hierarchy.
-*   `13_FINAL_PITCH_SCRIPT.md` - Presentation script for the final project review.
-*   `14_FINAL_TECH_SPECS.md` - Technical specifications pre-dating the final evaluation.
-*   `16_SYSTEM_ENCAPSULATION_PLAN.md` - Strategy for modularizing and encapsulating the core logic.
+*   `12_ARCHITECTURE_REFACTORING_PLAN.md` - Monolithic to normalized hierarchy blueprint.
+*   `14_FINAL_TECH_SPECS.md` - Phase 1 technical specifications.
+*   `16_SYSTEM_ENCAPSULATION_PLAN.md` - Modularization strategy.
+*   `17_PHASE1_FINAL_ARCHITECTURE.md` - Final architecture and evaluation of Phase 1.
+
+### 🚀 Evaluation & Deployment (`archive/evaluation/`)
+Testing plans, presentation scripts, and deployment logs from Phase 1.
+*   `11_EVALUATION_PLAN.md` - Testing plan for MVP.
+*   `13_FINAL_PITCH_SCRIPT.md` - Presentation script for Phase 1 review.
+*   `18_PHASE1_DEPLOYMENT.md` - Deployment troubleshooting log from Phase 1.
 
 ## 📁 Other Directories
 
-*   **`screenshots/`**: Visual evidence of evaluations, Lighthouse scores, and interface testing.
-*   **`test_data/`**: Sample assets and data files used for unit/integration testing of the ingestion pipeline.
+*   **`screenshots/`**: Visual evidence of evaluations and interfaces.
+*   **`test_data/`**: Sample assets used for testing.

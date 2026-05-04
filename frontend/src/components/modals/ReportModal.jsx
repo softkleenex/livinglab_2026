@@ -60,7 +60,7 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
  window.speechSynthesis.cancel();
  setSpeaking(false);
  } else {
- const cleanText = report.replace(/[*#_\[\]]/g, '');
+ const cleanText = report.replace(/[*#_[\]]/g, '');
  const utterance = new SpeechSynthesisUtterance(cleanText);
  utterance.lang = 'ko-KR';
  utterance.rate = 1.15;
