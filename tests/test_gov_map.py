@@ -11,10 +11,10 @@ client = TestClient(app)
 def test_gov_explorer_hierarchy():
     # 1. Inject some mock data to populate the hierarchy
     path_str = "대구광역시/북구/산격동/지니스팜"
-    client.post(f"/api/demo/inject?path={path_str}")
+    client.post(f"/api/v1/demo/inject?path={path_str}")
 
     path_str2 = "대구광역시/중구/동성로/카페A"
-    client.post(f"/api/demo/inject?path={path_str2}")
+    client.post(f"/api/v1/demo/inject?path={path_str2}")
 
     # 2. As a Gov/Leader, fetch the explorer root data
     res = client.get("/api/hierarchy/explore?path=대구광역시")

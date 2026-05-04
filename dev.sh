@@ -24,7 +24,7 @@ echo "📡 [1/2] FastAPI 백엔드 서버 시작 중 (Port: 8000)..."
 cd $PROJECT_ROOT/backend
 source venv/bin/activate
 # nohup이나 로그 파일 없이 실시간 출력을 위해 백그라운드 실행
-python app/main.py &
+uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 # 백엔드가 뜰 때까지 잠시 대기

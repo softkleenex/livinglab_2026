@@ -14,7 +14,7 @@ def run_integration_test():
     
     print("\nStep 1: 데이터 주입 및 시맨틱 라우팅 테스트...")
     try:
-        res = requests.post(f"{API_URL}/api/ingest", data=test_data)
+        res = requests.post(f"{API_URL}/api/v1/ingest", data=test_data)
         if res.status_code == 200:
             result = res.json()
             path = result.get("assigned_path") or result.get("data", {}).get("path")

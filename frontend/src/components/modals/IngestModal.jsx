@@ -79,7 +79,10 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
               ) : (
                 <p className="text-xs text-emerald-400 text-center font-bold">✨ 구글 공식 인증 계정: 업로드 데이터에 높은 신뢰도 가중치가 부여됩니다.</p>
               )}
-              <p className="text-xs text-slate-400 text-center">텍스트는 물론, 사업장의 전경이나 데이터를 업로드하면 Vision AI가 분석하여 자산화합니다.</p>
+              <p className="text-xs text-slate-400 text-center bg-indigo-900/30 p-2 rounded-lg border border-indigo-500/20 text-indigo-300">
+                <strong className="text-indigo-400 block mb-1">원터치 AI-Ready 데이터 변환기 (B-3 / C-2)</strong>
+                비정형 데이터(수기 장부, 영농일지 사진 등)를 업로드하면 멀티모달 AI가 분석하여 AI 허브 라벨링 규칙에 맞춘 정형 데이터(JSON)로 자동 변환 및 자산화합니다.
+              </p>
               
               {preview && (
                 <div className="relative w-full h-32 bg-black rounded-xl overflow-hidden border border-slate-800">

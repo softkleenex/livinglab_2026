@@ -11,7 +11,7 @@ def test_data_flow():
     print("=====================================")
     
     # 1. Test Ingest Flow
-    print("\n1. Testing Ingest Flow (POST /api/ingest => GET /api/hierarchy/explore)...")
+    print("\n1. Testing Ingest Flow (POST /api/v1/ingest => GET /api/hierarchy/explore)...")
     try:
         files = {'file': ('dummy_test.txt', b'Hello World Dummy Content for Google Drive', 'text/plain')}
         data = {
@@ -20,7 +20,7 @@ def test_data_flow():
             'is_guest': 'false',
             'industry': '스마트팜'
         }
-        res = requests.post(f"{API_URL}/api/ingest", data=data, files=files, verify=False, timeout=30)
+        res = requests.post(f"{API_URL}/api/v1/ingest", data=data, files=files, verify=False, timeout=30)
         res.raise_for_status()
         body = res.json()
         print(f"  👉 Ingest Status: {body.get('status', 'OK')}")
@@ -47,10 +47,10 @@ def test_data_flow():
         print(f"  ❌ Ingest flow error: {e}")
 
     # 2. Test User Context Flow
-    print("\n2. Testing User Context Flow (POST /api/user/context)...")
+    print("\n2. Testing User Context Flow (POST /api/v1/user/context)...")
     try:
         data = {'role': 'store', 'industry': '스마트팜', 'location': ['대구광역시', '북구', '산격동', '연암로 스마트팜 밸리', '지니스팜 제1농장']}
-        res = requests.post(f"{API_URL}/api/user/context", json=data, verify=False, timeout=30)
+        res = requests.post(f"{API_URL}/api/v1/user/context", json=data, verify=False, timeout=30)
         res.raise_for_status()
         body = res.json()
         print(f"  👉 User Context Status: {body['status']}")

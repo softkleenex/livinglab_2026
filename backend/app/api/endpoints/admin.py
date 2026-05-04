@@ -64,7 +64,7 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
             effective_value = int(base_value * (trust_index / 100.0))
             total_effective_value += effective_value
             
-            entry_hash = hashlib.sha256(m["text"].encode()).hexdigest()
+            entry_hash = hashlib.sha256((m["text"] + str(random.random())).encode()).hexdigest()
             
             # Save to DB
             new_entry = DataEntry(

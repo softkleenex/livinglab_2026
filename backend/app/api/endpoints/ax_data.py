@@ -19,6 +19,54 @@ async def get_yield_prediction(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/crop-simulator")
+async def get_crop_simulator(
+    region: str = Query(..., description="Target region"),
+    crop: str = Query(..., description="Target crop")
+):
+    try:
+        result = await public_data_service.generate_crop_simulator(region, crop)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/oversupply-risk")
+async def get_oversupply_risk(
+    crop: str = Query(..., description="Target crop")
+):
+    try:
+        result = await public_data_service.generate_oversupply_risk(crop)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/livestock-alert")
+async def get_livestock_alert(
+    region: str = Query(..., description="Target region"),
+    livestock_type: str = Query(..., description="Livestock type (e.g. 한우, 돼지)")
+):
+    try:
+        result = await public_data_service.generate_livestock_alert(region, livestock_type)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/resource-efficiency")
+async def get_resource_efficiency(
+    region: str = Query(..., description="Target region"),
+    crop: str = Query(..., description="Target crop")
+):
+    try:
+        result = await public_data_service.generate_resource_efficiency(region, crop)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/history")
 async def get_synthetic_data_history(
     region: str = Query(None),

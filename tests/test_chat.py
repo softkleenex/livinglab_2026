@@ -17,10 +17,10 @@ def test_chat_copilot():
         "industry": "요식업",
         "location": ["대구광역시", "북구", "산격동", "테스트매장"]
     }
-    client.post("/api/user/context", json=payload)
+    client.post("/api/v1/user/context", json=payload)
     
     # Inject some data
-    client.post(f"/api/demo/inject?path={path_str}")
+    client.post(f"/api/v1/demo/inject?path={path_str}")
     
     # Chat payload
     chat_payload = {
@@ -29,7 +29,7 @@ def test_chat_copilot():
         "message": "이번 주말 매출을 올리려면 어떻게 해야 할까?"
     }
     
-    res = client.post("/api/chat", json=chat_payload)
+    res = client.post("/api/v1/chat", json=chat_payload)
     assert res.status_code == 200
     data = res.json()
     assert "reply" in data
