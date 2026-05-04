@@ -221,9 +221,26 @@ export default function Onboarding({ onComplete, googleUser }) {
  {levelId && (
  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6">
  {levelId === 'store' && (
- <div className="space-y-2">
- <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry (산업군)</label>
- <input required placeholder="예: 스마트팜, 제조업, IT서비스, 요식업" value={industry} onChange={e=>setIndustry(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 outline-none text-white transition-colors" />
+ <div className="space-y-3">
+ <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry & Persona (산업군 및 페르소나)</label>
+ <div className="grid grid-cols-2 gap-3">
+   <button type="button" onClick={() => setIndustry('생산자 (농업/스마트팜)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '생산자 (농업/스마트팜)' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">🚜</span>
+     <span className="text-xs font-bold">생산자 (농가)</span>
+   </button>
+   <button type="button" onClick={() => setIndustry('소상공인 (카페/식당)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '소상공인 (카페/식당)' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">☕</span>
+     <span className="text-xs font-bold">소상공인 (카페/식당)</span>
+   </button>
+   <button type="button" onClick={() => setIndustry('유통업 (도매/물류)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '유통업 (도매/물류)' ? 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">🚚</span>
+     <span className="text-xs font-bold">유통업 (도매/물류)</span>
+   </button>
+   <button type="button" onClick={() => setIndustry('공공/기타')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '공공/기타' ? 'bg-slate-700/50 border-slate-500 text-white shadow-[0_0_15px_rgba(100,116,139,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">🏢</span>
+     <span className="text-xs font-bold">공공/기타</span>
+   </button>
+ </div>
  </div>
  )}
  

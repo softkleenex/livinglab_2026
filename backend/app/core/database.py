@@ -32,6 +32,7 @@ class User(Base):
     
     stores = relationship("Store", back_populates="owner")
     wallet = relationship("Wallet", back_populates="user", uselist=False)
+    products = relationship("Product", back_populates="seller")
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -70,6 +71,7 @@ class Region(Base):
     
     children = relationship("Region", backref="parent", remote_side=[id])
     stores = relationship("Store", back_populates="region")
+    products = relationship("Product", back_populates="region")
 
 class Store(Base):
     __tablename__ = "stores"
@@ -108,6 +110,57 @@ class DataEntry(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
     store = relationship("Store", back_populates="entries")
+
+# Phase 2 New Models
+
+class Product(Base):
+    """B급 농산물, 유휴 농기계, 퇴비 부산물 등 거래/매칭 대상"""
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    seller_id = Column(Integer, ForeignKey("users.id"), index=True)
+    region_id = Column(Integer, ForeignKey("regions.id"), index=True)
+    category = Column(String, index=True) # 'b_grade_crop', 'machinery', 'byproduct', 'co-purchase'
+    title = Column(String)
+    description = Column(Text)
+    price = Column(Integer, default=0)
+    stock = Column(Integer, default=1)
+    status = Column(String, default="available") # 'available', 'matched', 'completed'
+    image_url = Column(String, nullable=True)
+    ai_grade = Column(String, nullable=True) # A, B, C 등급 (비전 모델 분석 결과)
+    ai_recommendation = Column(String, nullable=True) # 용도 추천 (예: 잼 가공용)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    seller = relationship("User", back_populates="products")
+    region = relationship("Region", back_populates="products")
+    matchings = relationship("Matching", back_populates="product")
+
+class Matching(Base):
+    """공동구매, 대여, 수거 등 B2B 트랜잭션 기록"""
+    __tablename__ = "matchings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), index=True)
+    buyer_id = Column(Integer, ForeignKey("users.id"), index=True)
+    quantity = Column(Integer, default=1)
+    status = Column(String, default="pending") # 'pending', 'accepted', 'rejected', 'completed'
+    message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    product = relationship("Product", back_populates="matchings")
+
+class SyntheticData(Base):
+    """백엔드 배치 작업으로 생성된 기상-수확량-가격 융합 데이터 캐싱"""
+    __tablename__ = "synthetic_data"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    region_path = Column(String, index=True) # ex: "대구광역시/북구"
+    data_type = Column(String, index=True) # 'yield_prediction', 'oversupply_risk', 'heat_stress'
+    raw_sources = Column(JSON, default=list) # e.g., [{"source": "기상청", "type": "단기예보"}]
+    synthetic_result = Column(JSON) # AI가 생성한 최종 결과물 (JSON 형태)
+    confidence_score = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
 Base.metadata.create_all(bind=engine)
 
