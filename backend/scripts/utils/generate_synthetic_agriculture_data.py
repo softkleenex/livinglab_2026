@@ -6,30 +6,34 @@ import os
 def generate_data():
     print("🚀 [Agricultural AX] Open-Source Synthetic Data Generation using SDV (Synthetic Data Vault)")
     
-    # 1. Create a dummy initial dataset mimicking Weather + Yield data
-    data = {
-        'region': ['대구광역시 북구', '대구광역시 북구', '대구광역시 동구', '대구광역시 동구', '안동시', '안동시'],
-        'crop': ['사과', '사과', '사과', '포도', '사과', '포도'],
-        'avg_temp': [14.5, 15.0, 14.8, 16.2, 13.5, 15.5],
-        'precipitation': [1100.5, 1050.0, 1120.0, 980.5, 1200.0, 1000.0],
-        'soil_moisture': [35.2, 34.1, 36.5, 30.0, 38.0, 32.5],
-        'yield_per_hectare': [2500, 2450, 2550, 2100, 2700, 2150]
-    }
-    df = pd.DataFrame(data)
-    print("--- Original Sample Data ---")
-    print(df)
+    # 1. Fetch real dataset from GitHub
+    dataset_url = "data/test_data/Crop_Recommendation.csv"
+    print(f"📥 Loading real agricultural dataset from local file: {dataset_url}")
+    try:
+        df = pd.read_csv(dataset_url)
+    except Exception as e:
+        print(f"❌ Failed to fetch dataset: {e}")
+        return
+
+    # To keep it manageable, we'll take a sample
+    df = df.sample(n=1000, random_state=42).reset_index(drop=True)
+    
+    print("--- Original Sample Data (Real World) ---")
+    print(df.head())
+    print(f"Total Rows: {len(df)}, Columns: {list(df.columns)}")
     
     # 2. Detect Metadata
     metadata = SingleTableMetadata()
     metadata.detect_from_dataframe(df)
     
     # 3. Initialize and train the open-source synthesizer
+    print("\n🧠 Training GaussianCopulaSynthesizer on the real dataset...")
     synthesizer = GaussianCopulaSynthesizer(metadata)
     synthesizer.fit(df)
     
     # 4. Generate synthetic data
-    print("\n⏳ Generating 100 synthetic rows to augment our Agricultural AI model...")
-    synthetic_data = synthesizer.sample(num_rows=100)
+    print("\n⏳ Generating 1000 synthetic rows to augment our Agricultural AI model...")
+    synthetic_data = synthesizer.sample(num_rows=1000)
     
     # 5. Save to CSV
     os.makedirs('docs/test_data', exist_ok=True)
