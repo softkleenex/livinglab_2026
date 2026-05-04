@@ -74,7 +74,7 @@ class PublicDataService:
 
         # 3. Request to Gemini
         try:
-            res = model.generate_content(prompt)
+            res = await asyncio.to_thread(model.generate_content, prompt)
             raw_eval = res.text.replace("```json", "").replace("```", "").strip()
             synthetic_result = json.loads(raw_eval)
         except Exception as e:
