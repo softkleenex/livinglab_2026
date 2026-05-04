@@ -1,12 +1,45 @@
+# Python
 .env
-*.log
 venv/
-node_modules/
-dist/
-.DS_Store
-app/data/*.json
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.db
 backend/client_secret.json
 backend/token.json
-**/__pycache__/
+
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.local
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project specific
+*.log
+app/data/*.json
 chrome/
-*.db
+.gemini/

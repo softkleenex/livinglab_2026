@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
@@ -28,7 +28,7 @@ class User(Base):
     name = Column(String)
     picture = Column(String, nullable=True)
     role = Column(String, default="store") # 'store', 'gov', 'leader', 'guest'
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     stores = relationship("Store", back_populates="owner")
     wallet = relationship("Wallet", back_populates="user", uselist=False)
@@ -50,7 +50,7 @@ class Transaction(Base):
     amount = Column(Integer)
     tx_type = Column(String, index=True) # 'EARN', 'SPEND'
     description = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     wallet = relationship("Wallet", back_populates="transactions")
 
@@ -67,7 +67,7 @@ class Region(Base):
     pulse_rate = Column(Integer, default=70)
     nodes = Column(Integer, default=0)
     history = Column(JSON, default=list)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     children = relationship("Region", backref="parent", remote_side=[id])
     stores = relationship("Store", back_populates="region")
@@ -87,7 +87,7 @@ class Store(Base):
     history = Column(JSON, default=list)
     lat = Column(Float, nullable=True)
     lng = Column(Float, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     region = relationship("Region", back_populates="stores")
     owner = relationship("User", back_populates="stores")
@@ -107,7 +107,7 @@ class DataEntry(Base):
     trust_index = Column(Float)
     effective_value = Column(Integer)
     hash_val = Column(String, unique=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     store = relationship("Store", back_populates="entries")
 
@@ -129,7 +129,7 @@ class Product(Base):
     image_url = Column(String, nullable=True)
     ai_grade = Column(String, nullable=True) # A, B, C 등급 (비전 모델 분석 결과)
     ai_recommendation = Column(String, nullable=True) # 용도 추천 (예: 잼 가공용)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     seller = relationship("User", back_populates="products")
     region = relationship("Region", back_populates="products")
@@ -145,8 +145,8 @@ class Matching(Base):
     quantity = Column(Integer, default=1)
     status = Column(String, default="pending") # 'pending', 'accepted', 'rejected', 'completed'
     message = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     product = relationship("Product", back_populates="matchings")
 
@@ -160,7 +160,7 @@ class SyntheticData(Base):
     raw_sources = Column(JSON, default=list) # e.g., [{"source": "기상청", "type": "단기예보"}]
     synthetic_result = Column(JSON) # AI가 생성한 최종 결과물 (JSON 형태)
     confidence_score = Column(Float, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
 Base.metadata.create_all(bind=engine)
 

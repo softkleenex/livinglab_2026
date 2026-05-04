@@ -60,7 +60,7 @@ try:
                 trust_index=95.0,
                 effective_value=effective_value,
                 hash_val=trust_hash,
-                created_at=datetime.datetime.utcnow() - datetime.timedelta(days=1) # Seed data from yesterday
+                created_at=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1) # Seed data from yesterday
             )
             db.add(new_entry)
             
