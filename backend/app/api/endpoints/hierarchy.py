@@ -16,6 +16,7 @@ class ContextPayload(BaseModel):
 async def set_user_context(payload: ContextPayload, db: Session = Depends(get_db)):
     types = ["City", "District", "Village", "Farm"]
     engine.create_or_get_path(db, payload.location, types)
+    db.commit()
     return {"status": "success", "message": "Context initialized", "path": payload.location}
 
 @router.get("/explore")

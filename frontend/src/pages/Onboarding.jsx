@@ -94,7 +94,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  }, []);
 
  useEffect(() => {
- const fetchStores = async () => {
+ const fetchFarms = async () => {
  if (levelId === 'farm' && locCity && locDistrict && locVillage) {
  try {
  const pathStr = `${locCity}/${locDistrict}/${locVillage}`;
@@ -114,7 +114,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  }
  };
  // Debounce slightly
- const timer = setTimeout(fetchStores, 500);
+ const timer = setTimeout(fetchFarms, 500);
  return () => clearTimeout(timer);
  }, [locCity, locDistrict, locVillage, levelId, locFarm]);
 
@@ -127,7 +127,7 @@ export default function Onboarding({ onComplete, googleUser }) {
   else if (locCity.includes('달성')) setMapCenter([35.7746, 128.4312]);
  }, [locDistrict, locCity]);
 
- const handleFetchAllStores = async () => {
+ const handleFetchAllFarms = async () => {
    if (showAllFarms) { setShowAllFarms(false); return; }
    setShowAllFarms(true);
    setLoadingAllFarms(true);
@@ -367,7 +367,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  </button>
 
  <div className="mt-4 pt-4 border-t border-slate-800/60">
-    <button type="button" onClick={handleFetchAllStores} className="w-full py-3 bg-slate-800/50 text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors flex justify-center items-center gap-2">
+    <button type="button" onClick={handleFetchAllFarms} className="w-full py-3 bg-slate-800/50 text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors flex justify-center items-center gap-2">
        {showAllFarms ? "목록 닫기" : "기존에 등록된 모든 농장/필지 찾아보기"}
     </button>
 
