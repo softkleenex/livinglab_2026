@@ -114,13 +114,13 @@ class DataEntry(Base):
 # Phase 2 New Models
 
 class Product(Base):
-    """B급 농산물, 유휴 농기계, 퇴비 부산물 등 거래/매칭 대상"""
+    """AI 합성 데이터, 농기계 로그, 생육 데이터 등 거래/매칭 대상"""
     __tablename__ = "products"
     
     id = Column(Integer, primary_key=True, index=True)
     seller_id = Column(Integer, ForeignKey("users.id"), index=True)
     region_id = Column(Integer, ForeignKey("regions.id"), index=True)
-    category = Column(String, index=True) # 'b_grade_crop', 'machinery', 'byproduct', 'co-purchase'
+    category = Column(String, index=True) # 'synthetic_data', 'machinery', 'raw_data', 'co-purchase'
     title = Column(String)
     description = Column(Text)
     price = Column(Integer, default=0)

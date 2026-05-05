@@ -13,7 +13,7 @@ def test_gov_explorer_hierarchy():
     path_str = "대구광역시/북구/산격동/지니스팜"
     client.post(f"/api/v1/demo/inject?path={path_str}")
 
-    path_str2 = "대구광역시/중구/동성로/카페A"
+    path_str2 = "대구광역시/중구/동성로/사과농장B"
     client.post(f"/api/v1/demo/inject?path={path_str2}")
 
     # 2. As a Gov/Leader, fetch the explorer root data

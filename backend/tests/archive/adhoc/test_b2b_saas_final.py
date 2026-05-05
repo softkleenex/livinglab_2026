@@ -16,7 +16,7 @@ requests.post(f"{API_URL}/api/reset_schema", headers=HEADERS)
 print("\n[2] Ingesting data as mock-jwt-token user to earn $MDGA...")
 store_path = "서울특별시/테스트구/테스트동/테스트로/내상점"
 res = requests.post(f"{API_URL}/api/v1/ingest", data={
-    "raw_text": "매출 증가 데이터 보고",
+    "raw_text": "수확량 증가 데이터 보고",
     "location": store_path,
     "industry": "IT",
     "is_guest": "false"

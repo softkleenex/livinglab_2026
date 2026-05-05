@@ -1,30 +1,88 @@
-# MDGA (Universal Data Engine) - Final Documentation
+# MDGA (Universal Data Engine) - 최종 프로젝트 명세서
 
-Welcome to the documentation directory for the **MDGA (Universal Data Engine)** project. We have successfully completed Phase 1 through Phase 3, pivoting from a general data hub to a specialized **[Agricultural AX + Local B2B Matching Platform]**. We are currently scaling towards Phase 4 (Commercial Data Hub Integrations).
+Welcome to the documentation directory for the **MDGA (Universal Data Engine)** 프로젝트.
+본 문서는 과거 수많은 기획과 피봇(Pivot) 과정을 거쳐 최종적으로 확정된 **[농림/스마트팜 특화 데이터 파이프라인 및 합성 데이터 솔루션]**의 아키텍처, 핵심 기능, 그리고 공공데이터 활용 파이프라인을 총망라한 단일 통합 문서(Single Source of Truth)입니다.
 
-## 📌 Active Documents
+이전 단계의 불확실하거나 중복된 기획 문서들은 본 문서로 모두 편입 및 정리되었습니다.
 
-*   **[04_PIVOT_AND_FEATURE_DOCUMENTATION.md](./04_PIVOT_AND_FEATURE_DOCUMENTATION.md)**
-    *   The core documentation summarizing the pivot strategy, mentor feedback integration, and comprehensive visual overviews of the 4 main features (Data Converter, Twin Map, B2B Market, Agricultural AX).
-*   **[PORTFOLIO_GUIDE.md](./PORTFOLIO_GUIDE.md)**
-    *   A guide for team members to extract key technical and business achievements for resumes and portfolios.
+---
 
-## 🗄️ Archives (Historical Planning Documents)
+## 1. 프로젝트 개요 (Overview)
 
-The `archive/` directory contains all previous iterations, planning docs, and technical specifications, categorized by phase.
+초기 MDGA는 모든 산업군을 아우르는 범용 데이터 허브를 목표로 했으나, 타겟의 불명확성과 방대한 스코프라는 한계에 직면했습니다. 이에 중간점검 멘토링 피드백을 적극 수용하여 다음과 같이 비즈니스 모델(BM)과 핵심 타겟을 날카롭게 피봇했습니다.
 
-### 📝 Phase 1: Planning & Architecture (`archive/planning/`, `archive/architecture/`, `archive/evaluation/`)
-Documents related to the early project proposal, initial Smart Farm pivot, and evolution of the architecture from monolithic to normalized 3NF.
+*   **타겟 집중:** 범용 상권 -> **생산자(농가/스마트팜) 및 연구기관(AI 데이터 허브)**
+*   **문제 정의:** 파편화된 농기계 데이터와 작물 생육 데이터의 결합 부재
+*   **해결 및 고부가가치 창출:** 단순 데이터 저장 및 챗봇 서비스를 넘어, 수집된 실측 데이터와 공공 데이터를 결합하여 고품질의 **'합성 데이터(Synthetic Data)'를 생성하고 유통(Data Seller)**하는 비즈니스 모델로 스케일업.
 
-### 🔄 Phase 2: Pivot & Ideation (`archive/phase2/`)
-*   `00_MIDTERM_REVIEW_AND_PIVOT_PLAN.md` - Post-midterm decision matrix.
-*   `01_PIVOT_FEATURE_IDEATION.md` - Brainstorming the Agricultural AX and B2B SaaS features.
-*   `02_PHASE2_FEATURE_PROPOSAL.md` - Final feature proposal submitted to mentors.
-*   `03_PHASE2_DEVELOPMENT_PLAN.md` - Engineering and external API integration plan.
+---
 
-### 🚀 Phase 3 & 4: Expansion (`archive/phase3/`, `archive/phase4/`)
-*   `archive/phase3/01_PHASE3_ROADMAP.md` - Plan for advanced features like Livestock Mortality Alerts and Reverse Logistics. (Fully Implemented)
-*   `archive/phase4/01_COMMERCIAL_DATA_HUB_INTEGRATION.md` - Scaling strategy for integrating with Snowflake, Databricks, and AI Hub.
+## 2. 핵심 기능 (Core Features)
 
-## 📁 Media & Assets
-*   **`screenshots/`**: Visual evidence of the application and features used in presentations and docs.
+앱의 UI/UX는 **Dark & Neon (Blue/Emerald/Yellow/Rose)** 테마를 기반으로, 복잡한 데이터를 직관적으로 파악할 수 있는 모바일 최적화 대시보드 형태로 구현되었습니다.
+
+### 2.1. 데이터 자산화 파이프라인 (Data Converter)
+![데이터 변환기 화면](./screenshots/feature_data_converter.png)
+*   **의도:** 농기계 로그, 수기 영농일지, 작물 사진 등을 멀티모달 AI(Gemini Vision)로 스캔하여 정부 표준 포맷(JSON)의 'AI-Ready Data'로 자동 변환.
+*   **기능:** 카메라 및 음성 입력을 통한 멀티모달 데이터 수집, 실시간 JSON 변환 로그 확인, 구글 드라이브(Data Lake) 기반 자동 자산화.
+
+### 2.2. Twin Map 지역 계층 엔진
+![트윈 맵 화면](./screenshots/feature_twin_map.png)
+*   **의도:** 개별 농가의 데이터를 동 -> 구 -> 시 단위로 자동 롤업하여 실시간 경제/생육 건강도를 지도 상에 렌더링.
+*   **기능:** Leaflet 기반 실시간 농업 자원 및 작물 현황 매핑, Recharts 기반 지역 데이터 시각화 대시보드.
+
+### 2.3. 합성 데이터 거래소 (Synthetic Data Market)
+![B2B 마켓 화면](./screenshots/feature_b2b_market.png)
+*   **의도:** 수집된 데이터 및 생성된 합성 데이터를 연구기관이나 기업에 B2B로 구독/판매.
+*   **기능:** 데이터 패키지(기후변화 대응 사과 데이터셋, 트랙터 센서 로그 등) 가치 산정, B2B 구매자 매칭, 안전한 데이터 거래 제안.
+
+### 2.4. AI 자동화 대시보드 및 거버넌스 (Synthesis Insight)
+![농업 AX 화면](./screenshots/feature_agricultural_ax.png)
+*   **의도:** 지역 특산물의 기후 변화(아열대화) 대응을 위해 기상청 및 농진청 데이터를 융합한 시뮬레이션 및 인사이트 제공.
+*   **기능:** 주간 마크다운 보고서 자동 생성, 지역 평균 대비 데이터 교차 검증, 작물 생산성 시뮬레이터 및 AI 코파일럿(RAG 챗봇) 연동.
+
+---
+
+## 3. 공공데이터 기반 '합성 데이터(Synthetic Data)' 생성 파이프라인
+
+MDGA의 핵심 경쟁력은 단순 공공데이터의 시각화 조회를 넘어, **LLM(Gemini 2.5 Pro)의 추론 능력과 결합해 새로운 가치의 합성 데이터를 만들어낸다**는 점입니다.
+
+### 3.1. 외부 데이터 소스 연동
+*   **기상청 (KMA) API:** 지역별 최고/최저 기온, 강수량, 습도 등 단기/중기 예보 및 기후 변화 시나리오(RCP 8.5 등) 데이터 호출.
+*   **농촌진흥청 (RDA) API:** 토양 건강 지수, 권장 관수량, 필요 질소량 등 정밀 농업 토양 데이터 수집.
+*   **Hugging Face Datasets API:** `KisanVaani` 등 글로벌 농업 특화 QA 및 생육 데이터셋을 비동기(`httpx`)로 직접 연동하여 글로벌 트렌드 교차 검증.
+
+### 3.2. AI 프롬프트 인젝션을 통한 지표 시뮬레이션
+수집된 실측 데이터와 공공 데이터를 LLM의 컨텍스트(Context)에 동적으로 주입(`backend/app/services/public_data_service.py`)하여 다음과 같은 5대 핵심 지표를 생성합니다.
+
+1.  **수확량 변동성 예측:** 날씨 및 토양 데이터를 융합해 이번 시즌 예상 수확량 증감 수치화.
+2.  **미래 기후 시뮬레이터:** 10년 후 기후 변화에 따른 기존 작물 생존율 예측 및 대체 아열대 작물 추천.
+3.  **수급 불균형 경보:** 농산물유통정보(aT) 데이터를 바탕으로 산지 폐기 확률 및 가격 하락폭 경고.
+4.  **가축 폭염 폐사 방지:** 온도습도지수(THI) 기반 폐사 위험 골든타임(Golden Time) 산출.
+5.  **자원 투입 최적화 (탄소 저감):** 토양 데이터를 활용해 최적의 관수량/비료 절감 비율 및 탄소 저감 기대치(kg) 산출.
+
+### 3.3. 데이터 캐싱 및 자산화
+AI에 의해 추론/생성된 지표 결과는 1회성 출력으로 끝나지 않고 백엔드 DB의 `SyntheticData` 테이블에 원본 소스 정보(`raw_sources`) 및 AI 신뢰도 점수(`confidence_score`)와 함께 영구 저장됩니다. 이렇게 축적된 데이터는 추후 B2B 마켓에서 고가에 거래될 수 있는 '디지털 자산'이 됩니다.
+
+---
+
+## 4. 기술적 아키텍처 및 트러블슈팅
+
+### 4.1. 모놀리식 구조에서 3NF 정규화 DB로 전환
+초기 상태(Stateful) 메모리 기반 아키텍처의 스케일아웃 불가 문제를 해결하기 위해, Postgres 기반의 RDBMS로 전면 전환했습니다. Region, Store, DataEntry를 3NF로 정규화하고 `ON DELETE CASCADE`를 적용해 무결성 보장 및 100% Stateless 서버 구조를 확립했습니다.
+
+### 4.2. LLM의 안전망(Safety Alignment) 우회 제어
+사용자의 "방금 올린 데이터 삭제해줘"라는 자연어 명령을 LLM이 권한 문제로 거부하는 한계를 돌파했습니다.
+*   **2-Step 파싱:** 대화형 페르소나와 분리된 감정 없는 '시스템 제어용 의도 분석기(Intent Parser)'를 도입해 JSON(`action: DELETE`) 스키마만을 추출.
+*   백엔드가 이를 해석해 트랜잭션을 실행한 뒤 AI가 결과를 통보하는 우회 구조를 통해 안전한 데이터베이스 CRUD 구현.
+
+### 4.3. Google Drive OAuth 스코프 최소화 (보안 격리)
+데이터 레이크(Data Lake)로 활용되는 구글 드라이브 연동 시, 전역 권한(`drive`)을 요구할 때 발생하는 보안 이슈(`403 Forbidden`)를 극복했습니다.
+*   최소 권한인 `auth/drive.file` 스코프만 사용하여 앱이 생성한 파일에만 접근 가능하도록 격리.
+*   DB의 고유 `hash_val`과 Drive의 `File ID`를 1:1 매핑하여 외과 수술처럼 타겟 파일만 삭제/관리하는 구조 설계.
+
+---
+
+## 5. 향후 스케일업 전략 (Phase 4)
+*   **상용 데이터 허브 API 연동:** Snowflake, Databricks, 국내 AI 허브 등 글로벌/공공 마켓플레이스와의 API 파이프라인 개통.
+*   **데이터 셀러(Data Seller) 생태계 구축:** 농가에서 수집/생성된 양질의 AI-Ready 합성 데이터를 금융사(대안 신용평가), 기후 연구소 등에 지속적으로 구독(Subscribe) 판매하는 비즈니스 모델 안착.

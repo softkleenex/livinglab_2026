@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # Google Gemini
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-2.5-pro"
 
     # Security
     ALLOWED_ORIGINS: str = "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev"

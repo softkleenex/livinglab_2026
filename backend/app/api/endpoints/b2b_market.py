@@ -25,9 +25,8 @@ async def create_product(
             description=description,
             price=price,
             stock=stock,
-            # AI vision classification would happen here for B-grade crops
-            ai_grade="B" if category == "b_grade_crop" else None,
-            ai_recommendation="가공용(잼, 주스)으로 적합합니다." if category == "b_grade_crop" else None
+            ai_grade="A" if category == "synthetic_data" else None,
+            ai_recommendation="기후/생육 AI 모델 학습용으로 적합합니다." if category == "synthetic_data" else None
         )
         db.add(new_product)
         db.commit()

@@ -87,23 +87,23 @@ for i, name in enumerate(farm_names):
         "insight": generate_sensor_json("smartfarm")
     })
 
-# --- MICRO: F&B / RETAIL (중구 동성로 & 달서구 상인동) ---
-fnb_names = ["MDGA 로스터리", "동성로 한우오마카세", "24시 국밥집", "마라탕 1번지", "디저트 부띠끄", "스시야", "베이커리 카페", "수제맥주 펍"]
+# --- MICRO: F&B / RETAIL -> DATA HUB / RESEARCH (중구 동성로 & 달서구 상인동) ---
+fnb_names = ["MDGA 데이터허브", "동성로 AI연구소", "기후변화 대응센터", "스마트팜 기술원", "농업 빅데이터 센터", "농산물 품질관리소", "농업기술실용화재단", "사과 연구 센터"]
 for i, name in enumerate(fnb_names):
     massive_data.append({
         "region": ["중구", "삼덕동", "동성로"] if i < 5 else ["달서구", "상인동", "상인역 번화가"],
-        "name": f"{name} {random.choice(['본점', '동성로점', '상인점'])}",
-        "industry": random.choice(["식음료", "요식업", "도소매"]),
+        "name": f"{name} {random.choice(['본점', '동성로분원', '상인분원'])}",
+        "industry": random.choice(["연구기관 (AI 데이터 허브)", "공공/기타"]),
         "insight": generate_sensor_json("fnb")
     })
 
 # --- MICRO: MANUFACTURING & LOGISTICS (달서구 성서산단) ---
-ind_names = ["AI 비전로보틱스", "스마트물류 대구센터", "미래차 밧데리", "정밀기계 금형(주)", "자율주행 부품(주)", "에코 패키징", "로지스틱스 24", "나노반도체(주)"]
+ind_names = ["AI 비전로보틱스", "스마트농기계 대구센터", "미래 농업드론", "정밀기계 스마트팜(주)", "자율주행 트랙터(주)", "에코 비료패키징", "농산물 로지스틱스", "스마트온실(주)"]
 for i, name in enumerate(ind_names):
     massive_data.append({
         "region": ["달서구", "성서동", "성서산업단지"],
         "name": name,
-        "industry": random.choice(["IT/서비스", "물류업", "제조업"]),
+        "industry": random.choice(["기업 (스마트팜/제조)", "유통업 (도매/물류)"]),
         "insight": generate_sensor_json("logistics")
     })
 

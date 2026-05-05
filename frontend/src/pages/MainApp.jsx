@@ -116,7 +116,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
           
           <BottomNavLink icon={<Camera size={20}/>} label="기록" special active={showIngest} onClick={() => setShowIngest(true)} />
           
-          <BottomNavLink icon={<ShoppingCart size={20}/>} label="B2B 마켓" active={activeTab === 'b2b'} onClick={() => setActiveTab('b2b')} />
+          <BottomNavLink icon={<ShoppingCart size={20}/>} label="합성데이터 마켓" active={activeTab === 'b2b'} onClick={() => setActiveTab('b2b')} />
           <BottomNavLink icon={<CloudRain size={20}/>} label="농업AX" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
         </nav>
 

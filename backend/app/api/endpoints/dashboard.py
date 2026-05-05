@@ -207,14 +207,14 @@ async def export_csv(path: str, industry: str = "공공", db: Session = Depends(
         val = random.randint(100000, 5000000)
         trust = round(random.uniform(85.0, 99.9), 1)
         
-        if industry == '스마트팜':
-            insight = random.choice(['토양 수분량 최적화 달성', '스마트 관수 시스템 가동', '병해충 사전 예측 및 방제', '신규 엽채류 수확 및 출하', '온실 온도 0.5도 하향 조정 완료'])
-        elif industry in ['요식업', '식음료']:
-            insight = random.choice(['주말 디너 웨이팅 20팀 돌파', '신메뉴 리뷰 평점 4.8 달성', '배달 플랫폼 우수 사업장 선정', '식자재 폐기율 5% 감소', '단체 회식 예약 3건 접수'])
-        elif industry in ['IT/제조', '제조업']:
-            insight = random.choice(['공정 불량률 0.1% 개선', 'A라인 가동률 98% 달성', '스마트 팩토리 센서 데이터 동기화', '신규 부품 품질 검수 통과', '야간 무인 가동 테스트 성공'])
+        if industry in ['생산자 (농가/스마트팜)', '스마트팜']:
+            insight = random.choice(['토양 수분량 최적화 달성', '스마트 관수 시스템 가동', '병해충 사전 예측 및 방제', '작물 생장 속도 15% 증가', '온실 온도 0.5도 하향 조정 완료'])
+        elif industry == '연구기관 (AI 데이터 허브)':
+            insight = random.choice(['합성 데이터(Synthetic Data) 품질 지수 98% 달성', '기후 변화(아열대화) 시뮬레이션 모델 갱신', '농기계 센서 로그 기반 트레이닝 셋 생성', '수확량 예측 모델 오차율 2% 미만', '신규 RAG 파이프라인 검증 통과'])
+        elif industry == '기업 (스마트팜/제조)':
+            insight = random.choice(['자율주행 트랙터 가동률 95% 달성', '스마트 팩토리 센서 데이터 동기화 완료', '온실 제어 시스템 에너지 효율 10% 개선', '신규 농기계 부품 내구성 검수 통과', '야간 무인 방제 드론 테스트 성공'])
         else:
-            insight = random.choice(['주간 목표 성과 120% 달성', '고객 만족도 설문 우수', '신규 계약 2건 성사', '운영 리소스 10% 절감', '분기 매출 목표 조기 달성'])
+            insight = random.choice(['지역 농가-기업 간 데이터 B2B 매칭 3건 성사', '공공 데이터 API 호출 성공률 100%', '농업 기술 지원 만족도 95점', '탄소 저감 목표 120% 조기 달성', '데이터 기반 거버넌스 시뮬레이션 완료'])
             
         mock_hash = hashlib.sha256(f"{obj['name']}{insight}{i}".encode()).hexdigest()[:16]
         

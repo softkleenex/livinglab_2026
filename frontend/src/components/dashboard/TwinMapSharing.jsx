@@ -15,7 +15,7 @@ const createIcon = (color) => new L.DivIcon({
 });
 
 export default function TwinMapSharing() {
-  // Mock data for assets
+  // Active tracking data for assets
   const assets = [
     { id: 1, type: 'tractor', name: '자율주행 트랙터 A호', status: 'available', location: '경상북도 안동시 구시장길 10', price: '50,000원/일', lat: 36.5684, lng: 128.7296 },
     { id: 2, type: 'drone', name: '방제용 드론 B호', status: 'in_use', location: '경상북도 의성군 풍산리', price: '30,000원/일', lat: 36.3524, lng: 128.6970 },

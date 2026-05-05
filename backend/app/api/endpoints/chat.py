@@ -112,7 +112,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
             # Normal conversational reply
             chat_prompt = f"""
             당신은 '{obj['name']}' ({payload.industry})의 전담 AI 비서(MDGA Copilot) 입니다.
-            - 누적 매출/생산 가치: {current_value}원 (상권 평균: {parent_avg}원)
+            - 누적 생육/데이터 가치: {current_value}원 (지역 평균: {parent_avg}원)
             - 사업장 활성도: {current_pulse} BPM
             
             [선택된 데이터 파일 목록]

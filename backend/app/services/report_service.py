@@ -29,7 +29,7 @@ class ReportService:
         대상 산업군(Industry)은 '{industry}'이며, B2B SaaS 환경에서 가장 전문적이고 날카로운 통찰력을 제공하는 것이 당신의 목표입니다.
 
         [정량적 데이터 지표 (Quantitative Data)]
-        - 누적 자산(매출/생산가치): {current_value:,}원
+        - 누적 자산(데이터 가치): {current_value:,}원
         - 상권/지역({parent_name}) 평균 자산 대비 점유율: {market_share}%
         - 현재 조직 활성도(Pulse): {current_pulse} BPM
         - 주간 기상 및 환경 예측: {weather_info}

@@ -9,8 +9,7 @@ import L from 'leaflet';
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const LEVELS = [
- { id: 'store', role: 'store', name: '사업장 (Store)', icon: <Store size={24}/>, desc: '매출, 현황, 리뷰 등 내 사업장 데이터' },
- { id: 'street', role: 'leader', name: '거리 (Street)', icon: <Map size={24}/>, desc: '해당 거리 내 사업자들의 취합 데이터' },
+ { id: 'store', role: 'store', name: '사업장 (Store/Farm)', icon: <Store size={24}/>, desc: '센서 로그, 생육 현황, 수확량 등 데이터' }, { id: 'street', role: 'leader', name: '거리 (Street)', icon: <Map size={24}/>, desc: '해당 거리 내 사업자들의 취합 데이터' },
  { id: 'dong', role: 'leader', name: '동 (Dong)', icon: <Users size={24}/>, desc: '거리 데이터들의 집합 (동 단위 트렌드)' },
  { id: 'gu', role: 'gov', name: '구 (Gu)', icon: <Building2 size={24}/>, desc: '동 데이터들의 집합 (구별 산업 특성)' }
 ];
@@ -226,24 +225,23 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div className="space-y-3">
  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry & Persona (산업군 및 페르소나)</label>
  <div className="grid grid-cols-2 gap-3">
-   <button type="button" onClick={() => setIndustry('생산자 (농업/스마트팜)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '생산자 (농업/스마트팜)' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+   <button type="button" onClick={() => setIndustry('생산자 (농가/스마트팜)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '생산자 (농가/스마트팜)' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
      <span className="text-2xl">🚜</span>
      <span className="text-xs font-bold">생산자 (농가)</span>
    </button>
-   <button type="button" onClick={() => setIndustry('소상공인 (카페/식당)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '소상공인 (카페/식당)' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
-     <span className="text-2xl">☕</span>
-     <span className="text-xs font-bold">소상공인 (카페/식당)</span>
+   <button type="button" onClick={() => setIndustry('연구기관 (AI 데이터 허브)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '연구기관 (AI 데이터 허브)' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">🧠</span>
+     <span className="text-xs font-bold">연구기관 (AI 데이터 허브)</span>
    </button>
-   <button type="button" onClick={() => setIndustry('유통업 (도매/물류)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '유통업 (도매/물류)' ? 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
-     <span className="text-2xl">🚚</span>
-     <span className="text-xs font-bold">유통업 (도매/물류)</span>
+   <button type="button" onClick={() => setIndustry('기업 (농기계/스마트팜)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '기업 (농기계/스마트팜)' ? 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">⚙️</span>
+     <span className="text-xs font-bold">기업 (스마트팜/제조)</span>
    </button>
-   <button type="button" onClick={() => setIndustry('공공/기타')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '공공/기타' ? 'bg-slate-700/50 border-slate-500 text-white shadow-[0_0_15px_rgba(100,116,139,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
-     <span className="text-2xl">🏢</span>
-     <span className="text-xs font-bold">공공/기타</span>
+   <button type="button" onClick={() => setIndustry('지자체/관공서')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '지자체/관공서' ? 'bg-slate-700/50 border-slate-500 text-white shadow-[0_0_15px_rgba(100,116,139,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
+     <span className="text-2xl">🏛️</span>
+     <span className="text-xs font-bold">지자체/관공서</span>
    </button>
- </div>
- </div>
+ </div> </div>
  )}
  
  <div className="space-y-4">

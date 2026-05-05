@@ -18,68 +18,41 @@ def seed_b2b_products():
             Product(
                 seller_id=1, 
                 region_id=1,
-                category="b_grade_crop",
-                title="의성 마늘 (B급/크기 불규칙)",
-                description="크기가 고르지 않으나 향과 맛은 훌륭합니다.",
-                price=15000,
+                category="synthetic_data",
+                title="대구 사과 기후변화 대응 합성 데이터셋 (10만 건)",
+                description="기상청 기후 시나리오와 생육 데이터를 결합한 고품질 데이터셋입니다.",
+                price=1500000,
                 stock=50,
                 status="available",
-                image_url='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23facc15;stop-opacity:1" /><stop offset="100%" style="stop-color:%23a16207;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" fill="url(%23grad1)" /><text x="50%" y="50%" font-family="sans-serif" font-size="24" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">마늘</text></svg>',
-                ai_grade="B",
-                ai_recommendation="다진마늘, 마늘빵 소스용으로 최적화"
+                image_url='https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=600&auto=format&fit=crop',
+                ai_grade="A",
+                ai_recommendation="아열대화 기후 예측 모델 학습용"
             ),
             Product(
                 seller_id=1, 
                 region_id=1,
-                category="b_grade_crop",
-                title="안동 사과 (흠집/주스용)",
-                description="태풍으로 약간의 흠집이 있으나 당도는 높습니다.",
-                price=12000,
+                category="synthetic_data",
+                title="스마트팜 환경-생육 상관관계 결합 데이터 (API)",
+                description="수분, 온도 센서 로그와 엽채류 생육 지표의 시계열 데이터",
+                price=500000,
                 stock=100,
                 status="available",
-                image_url='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ef4444;stop-opacity:1" /><stop offset="100%" style="stop-color:%237f1d1d;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" fill="url(%23grad2)" /><text x="50%" y="50%" font-family="sans-serif" font-size="24" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">사과</text></svg>',
-                ai_grade="B",
-                ai_recommendation="애플주스, 사과잼용으로 최적화"
+                image_url='https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop',
+                ai_grade="A",
+                ai_recommendation="농업용 AI 에이전트 RAG 파이프라인 최적화"
             ),
             Product(
                 seller_id=1, 
                 region_id=1,
-                category="co-purchase",
-                title="청송 고추가루 50kg 공동구매",
-                description="동네 식당 연합 공동구매 건입니다.",
-                price=80000,
+                category="raw_data",
+                title="자율주행 트랙터 일일 가동 및 토양 압축 센서 로그",
+                description="경북 안동 일대 자율주행 트랙터의 주행 경로 및 토양 압축력 데이터.",
+                price=300000,
                 stock=5,
                 status="available",
-                image_url='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23dc2626;stop-opacity:1" /><stop offset="100%" style="stop-color:%23991b1b;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" fill="url(%23grad3)" /><text x="50%" y="50%" font-family="sans-serif" font-size="20" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">고추가루</text></svg>',
-                ai_grade="A",
-                ai_recommendation="대용량 고춧가루가 필요한 요식업소"
-            ),
-            # Phase 3: Urban Byproduct Reverse Logistics (도심 부산물 역순환)
-            Product(
-                seller_id=1, 
-                region_id=1,
-                category="urban_byproduct",
-                title="수성구 대형카페 커피찌꺼기 100kg",
-                description="잘 말린 커피찌꺼기입니다. 친환경 비료나 퇴비로 활용 가능합니다.",
-                price=0,
-                stock=1,
-                status="available",
-                image_url='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%2378350f;stop-opacity:1" /><stop offset="100%" style="stop-color:%23451a03;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" fill="url(%23grad4)" /><text x="50%" y="50%" font-family="sans-serif" font-size="20" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">커피박</text></svg>',
-                ai_grade="A",
-                ai_recommendation="과수원(사과, 배) 친환경 퇴비 원료"
-            ),
-            Product(
-                seller_id=1, 
-                region_id=1,
-                category="urban_byproduct",
-                title="식품공장 콩비지 2톤 (매주 배출)",
-                description="두부 제조 공장에서 나오는 신선한 콩비지입니다.",
-                price=50000,
-                stock=4,
-                status="available",
-                image_url='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23fef3c7;stop-opacity:1" /><stop offset="100%" style="stop-color:%23d97706;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" fill="url(%23grad5)" /><text x="50%" y="50%" font-family="sans-serif" font-size="20" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">콩비지</text></svg>',
+                image_url='https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop',
                 ai_grade="B",
-                ai_recommendation="한우/돼지 축산 농가 특식 사료용"
+                ai_recommendation="농기계 제조사 R&D 부서 모델 개선용"
             )
         ]
         

@@ -1,22 +1,27 @@
 import pandas as pd
 from sdv.single_table import GaussianCopulaSynthesizer
 from sdv.metadata import SingleTableMetadata
+from datasets import load_dataset
 import os
 
 def generate_data():
     print("🚀 [Agricultural AX] Open-Source Synthetic Data Generation using SDV (Synthetic Data Vault)")
     
-    # 1. Fetch real dataset from GitHub
-    dataset_url = "data/test_data/Crop_Recommendation.csv"
-    print(f"📥 Loading real agricultural dataset from local file: {dataset_url}")
+    # 1. Fetch real dataset from Hugging Face
+    dataset_name = "jason1966/aksahaha_crop-recommendation"
+    print(f"📥 Loading real agricultural dataset from Hugging Face: {dataset_name}")
     try:
-        df = pd.read_csv(dataset_url)
+        dataset = load_dataset(dataset_name, split="train")
+        df = dataset.to_pandas()
     except Exception as e:
-        print(f"❌ Failed to fetch dataset: {e}")
+        print(f"❌ Failed to fetch dataset from Hugging Face: {e}")
         return
 
     # To keep it manageable, we'll take a sample
-    df = df.sample(n=1000, random_state=42).reset_index(drop=True)
+    if len(df) > 1000:
+        df = df.sample(n=1000, random_state=42).reset_index(drop=True)
+    else:
+        df = df.copy()
     
     print("--- Original Sample Data (Real World) ---")
     print(df.head())

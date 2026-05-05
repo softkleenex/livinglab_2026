@@ -41,9 +41,9 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
         target_obj = engine.create_or_get_path(db, path_list, types)
         
         mock_insights = [
-            {"date": "2026-04-05", "text": "가상 지능 분석: 주말 매출이 지난 주 대비 15% 상승했습니다. 특히 아메리카노와 케이크 세트 메뉴의 반응이 좋습니 다. 세트 메뉴 프로모션을 연장하는 것을 권장합니다.", "trust": 88.5},
-            {"date": "2026-04-07", "text": "가상 지능 분석: 원두 재고 소진 속도가 예상보다 빠릅니다. 내일까지 원두가 5kg 미만으로 떨어질 수 있으니, 즉시  인근 로스터리에서 비상 구매를 하거나 거래처에 긴급 배송을 요청하세요.", "trust": 92.0},
-            {"date": "2026-04-08", "text": "가상 지능 분석 (비전): 업로드하신 현장 이미지를 스캔했습니다. 프로세스 및 공간 배치가 효율적이나, 추가적인 모 니터링 센서 도입 시 효율을 15% 더 늘릴 수 있습니다.", "trust": 95.5, "link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"}
+            {"date": "2026-04-05", "text": "합성 데이터 예측: 다음 주 강수량 부족으로 인해 토양 수분 지수가 경고 수준에 도달할 예정입니다. 스프링클러 가동 시간을 20% 늘리는 것을 권장합니다.", "trust": 88.5},
+            {"date": "2026-04-07", "text": "합성 데이터 분석: 폭염 대비 관수 시스템 용량이 부족할 것으로 예상됩니다. 내일까지 예비 용수 확보가 필요하므로 주변 농가와 자원 공유 일정을 협의하세요.", "trust": 92.0},
+            {"date": "2026-04-08", "text": "AI 멀티모달 분석 (비전): 업로드하신 작물 이미지를 스캔했습니다. 잎사귀의 갈변 현상이 관찰되며, 질소 비료 결핍 또는 초기 병충해일 가능성이 있습니다. 추가 토양 검사를 권장합니다.", "trust": 95.5, "link": "https://drive.google.com/file/d/1Xdvq-HOVBOdaS0oalgrVXrXSvi0AYonQ/view?usp=drivesdk"}
         ]
         
         total_effective_value = 0

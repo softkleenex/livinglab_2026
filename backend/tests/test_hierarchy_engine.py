@@ -99,8 +99,8 @@ def test_get_object_with_data_entries(db_session, hierarchy_engine):
     store = db_session.query(Store).filter(Store.name == "바다식당").first()
     
     # Add data entries
-    entry1 = DataEntry(location_path="부산광역시/해운대구/바다식당", store_id=store.id, industry="요식업", effective_value=5000, hash_val="hash1")
-    entry2 = DataEntry(location_path="부산광역시/해운대구/바다식당", store_id=store.id, industry="요식업", effective_value=3000, hash_val="hash2")
+    entry1 = DataEntry(location_path="부산광역시/해운대구/에그리팜", store_id=store.id, industry="스마트팜", effective_value=5000, hash_val="hash1")
+    entry2 = DataEntry(location_path="부산광역시/해운대구/에그리팜", store_id=store.id, industry="스마트팜", effective_value=3000, hash_val="hash2")
     db_session.add_all([entry1, entry2])
     db_session.commit()
     

@@ -31,7 +31,7 @@ export default function UpgradeModal({ onClose, addToast }) {
             <Crown size={40} className="drop-shadow-[0_0_15px_rgba(139,92,246,0.8)]"/>
           </div>
           <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">MDGA <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">PRO</span></h2>
-          <p className="text-slate-400 text-sm max-w-md mb-8">모든 데이터를 무제한으로 연동하고, 최고 수준의 AI 모델(Gemini 1.5 Pro)이 생성하는 심층 분석 리포트를 받아보세요.</p>
+          <p className="text-slate-400 text-sm max-w-md mb-8">모든 데이터를 무제한으로 연동하고, 최고 수준의 AI 모델(Gemini 2.5 Pro Vision)이 생성하는 심층 분석 리포트를 받아보세요.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8 text-left">
             {[

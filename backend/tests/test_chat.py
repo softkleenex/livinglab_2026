@@ -14,7 +14,7 @@ def test_chat_copilot():
     # Create context
     payload = {
         "role": "store",
-        "industry": "요식업",
+        "industry": "스마트팜",
         "location": ["대구광역시", "북구", "산격동", "테스트매장"]
     }
     client.post("/api/v1/user/context", json=payload)
@@ -25,8 +25,8 @@ def test_chat_copilot():
     # Chat payload
     chat_payload = {
         "path": path_str,
-        "industry": "요식업",
-        "message": "이번 주말 매출을 올리려면 어떻게 해야 할까?"
+        "industry": "스마트팜",
+        "message": "이번 주말 수확량을 올리려면 어떻게 해야 할까?"
     }
     
     res = client.post("/api/v1/chat", json=chat_payload)

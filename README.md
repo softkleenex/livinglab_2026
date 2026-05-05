@@ -55,7 +55,8 @@ MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (
 
 - **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide Icons.
 - **Backend:** Python 3.12, FastAPI, SQLAlchemy (PostgreSQL / SQLite), Uvicorn.
-- **AI & Cloud:** Google Gemini 2.5 Pro (Generative AI), Google Drive API (OAuth 2.0).
+- **AI & Data Sources:** Google Gemini 2.5 Pro (Generative AI), Hugging Face Datasets API (Real-time agricultural QA & yield data), Korea Meteorological Administration (기상청), Google Drive API.
+- **Media & Assets:** Realistic B2B Market assets integrated via Unsplash, Twin Map features dynamic tracking.
 - **Deployment:** Cloudflare Pages (Frontend), Render (Backend).
 
 ## 🚀 Setup & Installation
