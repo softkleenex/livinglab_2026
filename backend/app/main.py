@@ -112,7 +112,7 @@ app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["Agora v1"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin v1"])
 app.include_router(ax_data_router, prefix="/api/v1/ax-data", tags=["AX Synthetic Data v1"])
-app.include_router(b2b_market_router, prefix="/api/v1/b2b-market", tags=["B2B Market & Logistics v1"])
+app.include_router(b2b_market_router, prefix="/api/v1/b2b-market", tags=["Synthetic Data Market v1"])
 app.include_router(data_marketplace_router, prefix="/api/v1/data-marketplace", tags=["Phase 4 Commercial Data Hub v1"])
 
 # Legacy routers mapped to root /api to avoid breaking old cached mobile clients

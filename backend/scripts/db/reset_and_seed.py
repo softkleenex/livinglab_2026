@@ -50,22 +50,22 @@ def generate_sensor_json(sensor_type):
             "status": random.choice(["OPTIMAL", "WARNING", "OPTIMAL", "OPTIMAL"]),
             "yield_forecast": f"+{random.randint(5, 15)}%"
         }, indent=2)
-    elif sensor_type == "logistics":
+    elif sensor_type == "weather_station":
         return json.dumps({
             "timestamp": (datetime.now() - timedelta(minutes=random.randint(1, 60))).strftime("%Y-%m-%d %H:%M"),
-            "fleet_status": "ACTIVE",
-            "agv_battery_avg": f"{random.randint(40, 98)}%",
-            "inventory_turnover": round(random.uniform(3.5, 8.2), 1),
-            "throughput_daily": random.randint(15000, 30000),
-            "bottleneck_detected": random.choice([False, False, True])
+            "wind_speed_ms": round(random.uniform(1.2, 5.5), 1),
+            "solar_radiation_wm2": random.randint(200, 800),
+            "precipitation_mm": round(random.uniform(0, 15.0), 1),
+            "uv_index": random.randint(2, 9),
+            "extreme_weather_alert": random.choice([False, False, True])
         }, indent=2)
-    elif sensor_type == "fnb":
+    elif sensor_type == "soil_sensor":
         return json.dumps({
             "report_date": datetime.now().strftime("%Y-%m-%d"),
-            "daily_revenue": random.randint(1500000, 5000000),
-            "foot_traffic": random.randint(300, 1200),
-            "peak_hours": ["12:00-13:00", "18:00-20:00"],
-            "delivery_app_ratio": f"{random.randint(20, 60)}%"
+            "soil_moisture_percent": random.randint(20, 60),
+            "soil_temperature_c": round(random.uniform(15.0, 22.0), 1),
+            "nitrogen_mg_kg": random.randint(10, 50),
+            "phosphorus_mg_kg": random.randint(5, 30)
         }, indent=2)
     return "{}"
 
@@ -94,7 +94,7 @@ for i, name in enumerate(fnb_names):
         "region": ["중구", "삼덕동", "동성로"] if i < 5 else ["달서구", "상인동", "상인역 번화가"],
         "name": f"{name} {random.choice(['본점', '동성로분원', '상인분원'])}",
         "industry": random.choice(["연구기관 (AI 데이터 허브)", "공공/기타"]),
-        "insight": generate_sensor_json("fnb")
+        "insight": generate_sensor_json("soil_sensor")
     })
 
 # --- MICRO: MANUFACTURING & LOGISTICS (달서구 성서산단) ---
@@ -103,8 +103,8 @@ for i, name in enumerate(ind_names):
     massive_data.append({
         "region": ["달서구", "성서동", "성서산업단지"],
         "name": name,
-        "industry": random.choice(["기업 (스마트팜/제조)", "유통업 (도매/물류)"]),
-        "insight": generate_sensor_json("logistics")
+        "industry": random.choice(["기업 (스마트팜/제조)", "애그테크 (스마트 농기계)"]),
+        "insight": generate_sensor_json("weather_station")
     })
 
 print(f"Generated {len(massive_data)} realistic B2B/Public entries.")
@@ -153,3 +153,4 @@ if os.path.exists(dummy_img_path):
 print("\n==================================================")
 print(f"🎉 MASSIVE SEEDING COMPLETE! ({success_count}/{len(massive_data)} Success) 🎉")
 print("==================================================")
+===")
