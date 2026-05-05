@@ -1,11 +1,9 @@
-import os
 import json
 import urllib.parse
 import urllib.request
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, Farm, Region, DataEntry
 from app.services.google_drive import get_drive_service
-from app.core.config import settings
 
 def get_full_path(db: Session, farm: Farm):
     path = [farm.name]

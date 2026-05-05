@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from app.core.database import get_db, SessionLocal, User, Wallet
+from app.core.database import get_db, User, Wallet
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from app.core.config import settings
@@ -32,12 +32,12 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
         role_to_assign = "admin" if email == "test@mdga.io" else "farm"
         user = User(email=email, name=name, picture=picture, role=role_to_assign)
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.flush()
         
         wallet = Wallet(user_id=user.id, balance=0)
         db.add(wallet)
         db.commit()
+        db.refresh(user)
         
     return {"user_id": user.id, "email": user.email, "role": "admin" if email == "test@mdga.io" else user.role}
 

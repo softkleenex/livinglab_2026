@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Farm, Region
+from app.core.database import get_db, Farm, Region
 import random
 from pydantic import BaseModel
 
@@ -37,13 +37,13 @@ async def explore(path: str = "", db: Session = Depends(get_db)):
     }
 
 @router.get("/farms/all")
-def get_all_stores(db: Session = Depends(get_db)):
+def get_all_farms(db: Session = Depends(get_db)):
     try:
         farms = []
-        all_stores = db.query(Farm).all()
+        all_farms = db.query(Farm).all()
         all_regions = {r.id: r for r in db.query(Region).all()}
-        
-        for s in all_stores:
+
+        for s in all_farms:
             path_parts = []
             curr_r_id = s.region_id
             while curr_r_id:
@@ -56,7 +56,7 @@ def get_all_stores(db: Session = Depends(get_db)):
             
             gu = path_parts[0] if len(path_parts) > 0 else ""
             dong = path_parts[1] if len(path_parts) > 1 else ""
-            street = path_parts[2] if len(path_parts) > 2 else ""
+            street = "/".join(path_parts[2:]) if len(path_parts) > 2 else ""
             
             farms.append({
                 "path": path,

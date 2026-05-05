@@ -1,6 +1,4 @@
 import os
-import json
-import hashlib
 
 def run_checks():
     print("🔍 MDGA System Integrity Check Starting...")

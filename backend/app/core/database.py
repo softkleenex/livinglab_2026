@@ -1,5 +1,4 @@
-import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, Boolean, UniqueConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, JSON, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime, timezone
 from app.core.config import settings

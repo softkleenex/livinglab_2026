@@ -1,7 +1,4 @@
 import requests
-import json
-import urllib.parse
-from dotenv import load_dotenv
 
 API_URL = "https://mdga-api.onrender.com"
 HEADERS = {"Authorization": "Bearer mock-jwt-token"}

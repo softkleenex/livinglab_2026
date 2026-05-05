@@ -12,7 +12,6 @@ import datetime
 import traceback
 import hashlib
 import random
-import os
 import asyncio
 import time
 from googleapiclient.http import MediaIoBaseUpload
@@ -23,7 +22,6 @@ from app.core.config import settings
 FOLDER_ID = settings.GOOGLE_DRIVE_FOLDER_ID
 api_key = settings.GEMINI_API_KEY
 
-from app.core.database import SessionLocal
 
 def with_retries(func):
     def wrapper(*args, **kwargs):
@@ -69,16 +67,6 @@ def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_
                 insight_metadata = {'name': f"AI_Insight_{now_str}_{short_hash}.txt", 'parents': [generated_folder_id]}
                 insight_media = MediaIoBaseUpload(io.BytesIO(insights.encode('utf-8')), mimetype='text/plain', resumable=True)
                 drive_service.files().create(body=insight_metadata, media_body=insight_media, fields='id', supportsAllDrives=True).execute()
-                
-            if entry_id and drive_link:
-                db = SessionLocal()
-                try:
-                    entry = db.query(DataEntry).filter(DataEntry.id == entry_id).first()
-                    if entry:
-                        entry.drive_link = drive_link
-                        db.commit()
-                finally:
-                    db.close()
                     
     except Exception as e:
         print("Drive Error:", e)
@@ -139,7 +127,7 @@ async def ingest(
     try:
         content = raw_text if raw_text else ""
         path_list = [p for p in location.split("/") if p]
-        is_guest_bool = is_guest.lower() == "true"
+        is_guest_bool = is_guest.lower() == "true" or user["role"] == "guest"
         
         file_data = None
         file_content_type = None
@@ -149,6 +137,24 @@ async def ingest(
             file_data = await file.read()
             file_content_type = file.content_type
             file_filename = file.filename
+
+        trust_hash = hashlib.sha256(content.encode()).hexdigest()
+        existing_entry = db.query(DataEntry).filter(DataEntry.hash_val == trust_hash).first()
+        if existing_entry:
+            return {
+                "status": "success",
+                "message": "Data already ingested.",
+                "assigned_path": path_list,
+                "entry": {
+                    "hash": trust_hash,
+                    "drive_link": existing_entry.drive_link,
+                    "insights": existing_entry.insights,
+                    "trust_index": existing_entry.trust_index,
+                    "raw_text": existing_entry.raw_text,
+                    "effective_value": existing_entry.effective_value
+                },
+                "value_added": 0
+            }
 
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
@@ -174,7 +180,7 @@ async def ingest(
             # Unblock the event loop for LLM inference
             res = await asyncio.to_thread(model.generate_content, prompt_parts)
             insights = res.text
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             if file and file_content_type and file_content_type.startswith('image/'):
                 insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
@@ -264,12 +270,14 @@ async def ingest(
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": effective_value}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/farm")
-async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+async def delete_farm(path: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     try:
         path_list = [p for p in path.split("/") if p]
         
@@ -305,6 +313,8 @@ async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list[:-1], "value_added": 0, "pulse_rate": 0}))
         
         return {"status": "success", "message": "Farm and all associated data deleted."}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -346,6 +356,8 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
         
         return {"status": "success", "message": "Data deleted and values rolled back."}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

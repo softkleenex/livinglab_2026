@@ -1,4 +1,4 @@
-import os, json
+import os
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
@@ -33,7 +33,7 @@ for item in results.get('files', []):
 
 # Clean root folder as well
 print('\n=== Wiping Garbage from Root Folder ===')
-query_root = f"'root' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'"
+query_root = "'root' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'"
 results_root = service.files().list(q=query_root, fields='files(id, name)').execute()
 for item in results_root.get('files', []):
     name = item['name']

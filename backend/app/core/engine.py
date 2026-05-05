@@ -1,4 +1,3 @@
-import datetime
 import random
 from sqlalchemy.orm import Session
 from app.core.database import Region, Farm, DataEntry
@@ -86,7 +85,7 @@ class HierarchyEngine:
             }
         else:
             children_regions = db.query(Region).filter(Region.parent_id == curr_obj.id).all()
-            children_stores = db.query(Farm).filter(Farm.region_id == curr_obj.id).all()
+            children_farms = db.query(Farm).filter(Farm.region_id == curr_obj.id).all()
             
             children_dict = {}
             for c in children_regions:
@@ -94,7 +93,7 @@ class HierarchyEngine:
                     "type": c.level_type,
                     "metadata": {"total_value": c.total_value, "pulse_rate": c.pulse_rate, "history": c.history, "location": [c.lat, c.lng]}
                 }
-            for s in children_stores:
+            for s in children_farms:
                 children_dict[s.name] = {
                     "type": "Farm",
                     "metadata": {"total_value": s.total_value, "pulse_rate": s.pulse_rate, "history": s.history, "location": [s.lat, s.lng]}
@@ -251,19 +250,28 @@ class HierarchyEngine:
         parent_id = None
         regions = []
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).with_for_update().first()
+            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
             if r:
                 regions.append(r)
                 parent_id = r.id
             else:
                 return False
                 
+        region_ids = [r.id for r in regions]
+        region_ids.sort()
+        
+        locked_regions = []
+        for rid in region_ids:
+            locked_r = db.query(Region).filter(Region.id == rid).with_for_update().first()
+            if locked_r:
+                locked_regions.append(locked_r)
+                
         farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).with_for_update().first()
         if not farm: return False
         
         value_to_remove = farm.total_value
         
-        for r in regions:
+        for r in locked_regions:
             r.total_value = Region.total_value - value_to_remove
             r.nodes = Region.nodes - 1
             db.add(r)

@@ -12,7 +12,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
-import traceback
 import logging
 from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -30,9 +29,6 @@ logger = logging.getLogger("mdga_enterprise")
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"), override=True)
 
-from app.core.engine import engine
-from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, SessionLocal
 from app.core.websocket import manager
 from app.core.config import settings
 

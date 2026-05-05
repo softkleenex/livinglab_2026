@@ -3,7 +3,7 @@ import asyncio
 import json
 import random
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any
 from app.services.gemini_ai import model
 from app.core.database import SessionLocal, SyntheticData
 

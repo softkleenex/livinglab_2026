@@ -50,7 +50,7 @@ time.sleep(10)
 
 # 2. Check Drive for Copilot_Log
 print('\n[2] Checking Google Drive (Data Lake) for generated AI log...')
-search_query = f"name contains 'Copilot_Log' and trashed=false"
+search_query = "name contains 'Copilot_Log' and trashed=false"
 results = drive_service.files().list(q=search_query, fields='files(id, name, parents)').execute()
 files = results.get('files', [])
 

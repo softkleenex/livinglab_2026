@@ -26,7 +26,7 @@ path = '서울특별시/강남구/테헤란로/스타트업밸리/테스트AI랩
 industry = 'IT/서비스'
 
 # Onboard
-urllib.request.urlopen(urllib.request.Request('https://mdga-api.onrender.com/api/user/context', json.dumps({
+urllib.request.urlopen(urllib.request.Request('http://localhost:8000/api/user/context', json.dumps({
     'role': 'farm', 'industry': industry, 'location': path.split('/')
 }).encode('utf-8'), headers={'Content-Type': 'application/json'}), context=context)
 
@@ -40,7 +40,7 @@ body = (
     f'--{boundary}\r\nContent-Disposition: form-data; name="is_guest"\r\n\r\nfalse\r\n'
     f'--{boundary}--\r\n'
 )
-req = urllib.request.Request('https://mdga-api.onrender.com/api/ingest', data=body.encode('utf-8'))
+req = urllib.request.Request('http://localhost:8000/api/ingest', data=body.encode('utf-8'))
 req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
 res = urllib.request.urlopen(req, context=context)
 data = json.loads(res.read().decode('utf-8'))
@@ -60,7 +60,7 @@ for f in files_before:
     print(f"  - {f['name']}")
 
 print('\n=== 3. DELETE ENTRY ===')
-delete_req = urllib.request.Request(f'https://mdga-api.onrender.com/api/ingest/delete?path={urllib.parse.quote(path)}&hash_val={hash_val}', method='DELETE')
+delete_req = urllib.request.Request(f'http://localhost:8000/api/ingest/delete?path={urllib.parse.quote(path)}&hash_val={hash_val}', method='DELETE')
 urllib.request.urlopen(delete_req, context=context)
 print("Deleted via API.")
 

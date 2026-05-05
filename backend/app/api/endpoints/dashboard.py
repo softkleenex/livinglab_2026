@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Farm, User, Wallet, Transaction, Region
-from app.services.gemini_ai import model
+from app.core.database import get_db, Farm, Wallet, Transaction, Region
 from app.api.deps import verify_token
 import httpx
 import io
@@ -68,7 +67,7 @@ async def get_weather_forecast(lat: float, lng: float) -> str:
                 total_precip = sum(precip)
                 return f"향후 7일 평균 최고기온 {avg_max:.1f}°C, 총 강수량 {total_precip:.1f}mm 예상."
             return "기상 데이터 수집 지연."
-    except Exception as e:
+    except Exception:
         return "기상 데이터 API 오류."
 
 @router.get("/wallet/transactions")

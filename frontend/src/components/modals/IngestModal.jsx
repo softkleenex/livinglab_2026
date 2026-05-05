@@ -66,7 +66,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
                     className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-xs text-blue-400 focus:ring-1 focus:ring-blue-500 outline-none appearance-none"
                   >
                     <option value={locationPath}>🏢 현재 상위 계층 ({locationPath.split('/').pop() || 'Root'}) 전체 공유 데이터로 올리기</option>
-                    <optgroup label="👇 하위 특정 계층/상점으로 올리기">
+                    <optgroup label="👇 하위 특정 계층/농장으로 올리기">
                       {childOptions.map((c, i) => (
                         <option key={i} value={`${locationPath ? locationPath + '/' : ''}${c.name}`}>{c.name} ({c.type})</option>
                       ))}

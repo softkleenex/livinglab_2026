@@ -1,12 +1,9 @@
 import os
 import json
 from google_auth_oauthlib.flow import Flow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import webbrowser
-import threading
 
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 REDIRECT_URI = 'http://localhost:19000'
@@ -54,7 +51,7 @@ def main():
         prompt='consent'
     )
 
-    print(f"👉 다음 URL을 브라우저에서 직접 열어주세요:\n")
+    print("👉 다음 URL을 브라우저에서 직접 열어주세요:\n")
     print(auth_url)
     print("\n브라우저에서 로그인 후 허용(Allow)을 누르면 localhost:19000으로 리디렉션됩니다.")
     print("로컬 서버가 코드를 자동 캡처합니다... 잠시 대기 중...\n")

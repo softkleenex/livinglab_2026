@@ -2,7 +2,6 @@ import json
 import threading
 from collections import OrderedDict
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 from app.core.config import settings

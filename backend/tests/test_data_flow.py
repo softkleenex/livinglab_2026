@@ -1,13 +1,13 @@
-import json
+from fastapi.testclient import TestClient
+from app.main import app
 import urllib.parse
-import requests
 import warnings
 warnings.filterwarnings("ignore")
 
-API_URL = "https://mdga-api.onrender.com"
+client = TestClient(app)
 
 def test_data_flow():
-    print(f"🚀 Testing Data Flow -> {API_URL}")
+    print(f"🚀 Testing Data Flow -> Local App")
     print("=====================================")
     
     # 1. Test Ingest Flow
@@ -20,7 +20,7 @@ def test_data_flow():
             'is_guest': 'false',
             'industry': '스마트팜'
         }
-        res = requests.post(f"{API_URL}/api/v1/ingest", data=data, files=files, verify=False, timeout=30)
+        res = client.post("/api/v1/ingest", data=data, files=files, timeout=30)
         res.raise_for_status()
         body = res.json()
         print(f"  👉 Ingest Status: {body.get('status', 'OK')}")
@@ -34,7 +34,7 @@ def test_data_flow():
             
         print(f"  🔍 Verifying via Explore... Path: {path}")
         path_query = urllib.parse.quote("/".join(path))
-        res2 = requests.get(f"{API_URL}/api/hierarchy/explore?path={path_query}", verify=False, timeout=15)
+        res2 = client.get(f"/api/hierarchy/explore?path={path_query}", timeout=15)
         res2.raise_for_status()
         obj_data = res2.json()
         entries = obj_data.get("data_entries", [])
@@ -50,7 +50,7 @@ def test_data_flow():
     print("\n2. Testing User Context Flow (POST /api/v1/user/context)...")
     try:
         data = {'role': 'farm', 'industry': '스마트팜', 'location': ['대구광역시', '북구', '산격동', '연암로 스마트팜 밸리', '지니스팜 제1농장']}
-        res = requests.post(f"{API_URL}/api/v1/user/context", json=data, verify=False, timeout=30)
+        res = client.post("/api/v1/user/context", json=data, timeout=30)
         res.raise_for_status()
         body = res.json()
         print(f"  👉 User Context Status: {body['status']}")
@@ -58,6 +58,7 @@ def test_data_flow():
     except Exception as e:
         import traceback; traceback.print_exc()
         print(f"  ❌ User Context flow error: {e}")
+        raise
 
 if __name__ == '__main__':
     test_data_flow()

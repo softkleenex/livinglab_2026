@@ -97,13 +97,10 @@ export default function Onboarding({ onComplete, googleUser }) {
  const fetchFarms = async () => {
  if (levelId === 'farm' && locCity && locDistrict && locVillage) {
  try {
- const pathStr = `${locCity}/${locDistrict}/${locVillage}`;
- const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${pathStr}`);
+ const pathStr = [locCity, locDistrict, locVillage].filter(Boolean).join('/');
+ const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${encodeURIComponent(pathStr)}`);
  if (res.data && res.data.children) {
  setExistingFarms(res.data.children.map(c => c.name));
- if (!res.data.children.find(c => c.name === locFarm)) {
- setLocFarm('');
- }
  }
  } catch (e) {
  setExistingFarms([]);
@@ -117,7 +114,6 @@ export default function Onboarding({ onComplete, googleUser }) {
  const timer = setTimeout(fetchFarms, 500);
  return () => clearTimeout(timer);
  }, [locCity, locDistrict, locVillage, levelId]);
-
  useEffect(() => {
   if (locDistrict.includes('효령') || locDistrict.includes('부계')) setMapCenter([36.1963, 128.6186]); 
   else if (locDistrict.includes('유가') || locDistrict.includes('구지')) setMapCenter([35.6358, 128.4111]); 
@@ -173,7 +169,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  } else {
      if (locCity) location.push(locCity);
      if ((levelId === 'dong' || levelId === 'street' || levelId === 'farm') && locDistrict) location.push(locDistrict);
-     if ((levelId === 'street' || levelId === 'farm') && locVillage) location.push(locVillage);
+     if ((levelId === 'street' || levelId === 'farm') && locVillage) location.push(...locVillage.split('/'));
      if (levelId === 'farm' && locFarm) location.push(locFarm);
  }
  setLoading(true);

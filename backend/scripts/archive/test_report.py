@@ -1,5 +1,4 @@
 import asyncio
-import os
 from app.services.report_service import report_service
 
 async def run():

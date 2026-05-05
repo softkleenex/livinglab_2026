@@ -1,4 +1,3 @@
-import pandas as pd
 from sdv.single_table import GaussianCopulaSynthesizer
 from sdv.metadata import SingleTableMetadata
 from datasets import load_dataset

@@ -1,4 +1,3 @@
-import os
 import io
 import datetime
 from googleapiclient.http import MediaIoBaseUpload

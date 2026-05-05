@@ -1,6 +1,4 @@
 import requests
-import json
-import time
 
 API_URL = "https://mdga-api.onrender.com"
 

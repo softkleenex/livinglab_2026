@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
-import os
 
 class Settings(BaseSettings):
     # App Settings
@@ -10,7 +9,7 @@ class Settings(BaseSettings):
     ENV: str = "production"
 
     # Database
-    DATABASE_URL: str = "postgresql://postgres.nwtnczpvczppajomtbiy:Xhdtls12!%40%23@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
+    DATABASE_URL: str = "sqlite:///./test.db"
     
     # Google OAuth
     GOOGLE_OAUTH_CLIENT_ID: str = ""
@@ -18,7 +17,7 @@ class Settings(BaseSettings):
     GOOGLE_OAUTH_REFRESH_TOKEN: str = ""
     
     # Google Drive
-    GOOGLE_DRIVE_FOLDER_ID: str = "1AwBjhyJf0rJqB1J3JeW8m40speWB_VV-"
+    GOOGLE_DRIVE_FOLDER_ID: str = ""
     GOOGLE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Google Gemini

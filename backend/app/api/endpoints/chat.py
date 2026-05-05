@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db, DataEntry, Farm, Region
 from app.core.engine import engine
 from app.core.websocket import manager
-from app.services.gemini_ai import model
 from app.services.google_drive import get_drive_service, get_or_create_drive_folder
 from app.api.deps import verify_token
 from app.api.endpoints.ingest import sync_drive_delete, sync_drive_modify, sync_drive_upload
@@ -148,9 +147,9 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                         asyncio.create_task(manager.broadcast({"type": "update", "path": del_path_list, "value_added": penalty, "pulse_rate": current_pulse}))
                         reply = f"✨ [시스템] 선택하신 데이터(해시: {target_hash[:8]})가 성공적으로 삭제 및 롤백되었습니다."
                     else:
-                        reply = f"⚠️ [시스템] 삭제 권한이 없거나 데이터를 찾을 수 없습니다."
+                        reply = "⚠️ [시스템] 삭제 권한이 없거나 데이터를 찾을 수 없습니다."
                 else:
-                    reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
+                    reply = "⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
 
         elif action_type == "MODIFY":
             if user["role"] == "guest":
@@ -169,11 +168,11 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                         # Fix Data Drift
                         background_tasks.add_task(sync_drive_modify, entry_to_mod.hash_val[:8], new_text)
                         
-                        reply = f"✨ [시스템] 데이터가 성공적으로 수정되었습니다."
+                        reply = "✨ [시스템] 데이터가 성공적으로 수정되었습니다."
                     else:
-                        reply = f"⚠️ [시스템] 수정 권한이 없거나 데이터를 찾을 수 없습니다."
+                        reply = "⚠️ [시스템] 수정 권한이 없거나 데이터를 찾을 수 없습니다."
                 else:
-                    reply = f"⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
+                    reply = "⚠️ [시스템] 권한 밖이거나 찾을 수 없는 해시값입니다."
                 
         elif action_type == "CREATE":
             if user["role"] == "guest":
@@ -209,7 +208,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 background_tasks.add_task(sync_drive_upload, path_list, new_hash[:8], None, None, None, new_text, "AI 챗봇을 통해 시스템에서 자동 생성된 데이터입니다.")
 
                 asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": val_added, "pulse_rate": current_pulse}))
-                reply = f"✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
+                reply = "✨ [시스템] 새로운 데이터가 성공적으로 추가 및 자산화되었습니다."
             
         # Delegate Drive API to Background Task
         background_tasks.add_task(sync_chat_log_drive_upload, path_list, payload.industry, payload.message, reply)
