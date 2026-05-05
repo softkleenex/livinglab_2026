@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Radar, Map, Farm, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
+import { Radar, Map, Store, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -323,7 +323,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  {/* FARM Level */}
  {levelId === 'farm' && (
  <div className="col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
- <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Farm size={12}/> 농장/필지 선택 및 신규 등록</label>
+ <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 농장/필지 선택 및 신규 등록</label>
  
  {existingStores.length > 0 && (
  <div className="flex flex-wrap gap-2">
