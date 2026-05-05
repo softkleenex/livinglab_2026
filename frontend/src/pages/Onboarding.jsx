@@ -97,7 +97,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  const fetchFarms = async () => {
  if (levelId === 'farm' && locCity && locDistrict && locVillage) {
  try {
- const pathStr = [locCity, locDistrict, locVillage].filter(Boolean).join('/');
+ const pathStr = [locCity, locDistrict, ...locVillage.split('/')].filter(Boolean).join('/');
  const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${encodeURIComponent(pathStr)}`);
  if (res.data && res.data.children) {
  setExistingFarms(res.data.children.map(c => c.name));
