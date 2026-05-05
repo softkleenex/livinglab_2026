@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.core.engine import engine
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, Region
+from app.core.database import get_db, DataEntry, Farm, Region
 import random
 from pydantic import BaseModel
 
@@ -14,7 +14,7 @@ class ContextPayload(BaseModel):
 
 @router.post("/user/context")
 async def set_user_context(payload: ContextPayload, db: Session = Depends(get_db)):
-    types = ["Gu", "Dong", "Street", "Store"]
+    types = ["City", "District", "Village", "Farm"]
     engine.create_or_get_path(db, payload.location, types)
     return {"status": "success", "message": "Context initialized", "path": payload.location}
 
@@ -30,16 +30,16 @@ async def explore(path: str = "", db: Session = Depends(get_db)):
     return {
         "current": obj["name"], "type": obj["type"], "metadata": obj["metadata"],
         "total_value": obj["metadata"].get("total_value", 0),
-        "trust_index": round(avg_trust, 1) if obj["type"] == "Store" else obj["metadata"].get("trust_index", 50.0),
+        "trust_index": round(avg_trust, 1) if obj["type"] == "Farm" else obj["metadata"].get("trust_index", 50.0),
         "children": [ {"name": k, "type": v["type"], "value": v["metadata"].get("total_value", 0), "pulse": v["metadata"]["pulse_rate"], "history": v["metadata"].get("history", []), "location": v["metadata"].get("location", [35.8714 + random.uniform(-0.05, 0.05), 128.6014 + random.uniform(-0.05, 0.05)])} for k, v in obj["children"].items() ],
         "entries": entries
     }
 
-@router.get("/stores/all")
+@router.get("/farms/all")
 def get_all_stores(db: Session = Depends(get_db)):
     try:
-        stores = []
-        all_stores = db.query(Store).all()
+        farms = []
+        all_stores = db.query(Farm).all()
         all_regions = {r.id: r for r in db.query(Region).all()}
         
         for s in all_stores:
@@ -57,7 +57,7 @@ def get_all_stores(db: Session = Depends(get_db)):
             dong = path_parts[1] if len(path_parts) > 1 else ""
             street = path_parts[2] if len(path_parts) > 2 else ""
             
-            stores.append({
+            farms.append({
                 "path": path,
                 "gu": gu,
                 "dong": dong,
@@ -66,6 +66,6 @@ def get_all_stores(db: Session = Depends(get_db)):
                 "industry": s.industry
             })
 
-        return {"status": "success", "stores": stores}
+        return {"status": "success", "farms": farms}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -13,7 +13,7 @@ def test_chat_copilot():
     
     # Create context
     payload = {
-        "role": "store",
+        "role": "farm",
         "industry": "스마트팜",
         "location": ["대구광역시", "북구", "산격동", "테스트매장"]
     }

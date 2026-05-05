@@ -3,13 +3,13 @@ import json
 import urllib.parse
 import urllib.request
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, Store, Region, DataEntry
+from app.core.database import SessionLocal, Farm, Region, DataEntry
 from app.services.google_drive import get_drive_service
 from app.core.config import settings
 
-def get_full_path(db: Session, store: Store):
-    path = [store.name]
-    curr_region = db.query(Region).filter(Region.id == store.region_id).first()
+def get_full_path(db: Session, farm: Farm):
+    path = [farm.name]
+    curr_region = db.query(Region).filter(Region.id == farm.region_id).first()
     while curr_region:
         path.insert(0, curr_region.name)
         if curr_region.parent_id:
@@ -23,10 +23,10 @@ def delete_region_recursive(db, region_id):
     for child in children:
         delete_region_recursive(db, child.id)
     
-    stores = db.query(Store).filter(Store.region_id == region_id).all()
-    for store in stores:
-        db.query(DataEntry).filter(DataEntry.store_id == store.id).delete()
-        db.delete(store)
+    farms = db.query(Farm).filter(Farm.region_id == region_id).all()
+    for farm in farms:
+        db.query(DataEntry).filter(DataEntry.store_id == farm.id).delete()
+        db.delete(farm)
         
     db.query(Region).filter(Region.id == region_id).delete()
 
@@ -66,25 +66,25 @@ def main():
         print(f"Drive API Error: {e}")
 
     print("\n--- 2. Checking all entities ---")
-    stores = db.query(Store).all()
-    print(f"Found {len(stores)} stores in DB.")
+    farms = db.query(Farm).all()
+    print(f"Found {len(farms)} farms in DB.")
     
     API_BASE = "https://mdga-api.onrender.com"
     all_healthy = True
     
-    for store in stores:
-        path_list = get_full_path(db, store)
+    for farm in farms:
+        path_list = get_full_path(db, farm)
         path_str = "/".join(path_list)
         print(f"\nChecking: {path_str}")
         
         # 1. Check Drive 'origin' folder
-        query_store = f"name='{store.name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+        query_store = f"name='{farm.name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
         try:
             res_store = service.files().list(q=query_store, spaces='drive', fields='files(id, name)').execute()
             store_folders = res_store.get('files', [])
             
             if not store_folders:
-                print("  ❌ Store folder not found in Drive.")
+                print("  ❌ Farm folder not found in Drive.")
                 all_healthy = False
                 continue
                 
@@ -113,7 +113,7 @@ def main():
             all_healthy = False
             
         # 2. Check AI Report API
-        industry = store.industry or "일반 비즈니스"
+        industry = farm.industry or "일반 비즈니스"
         encoded_path = urllib.parse.quote(path_str)
         encoded_industry = urllib.parse.quote(industry)
         

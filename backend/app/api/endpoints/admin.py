@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Form, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, Region
+from app.core.database import get_db, DataEntry, Farm, Region
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
@@ -17,7 +17,7 @@ def clear_db(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     db.query(DataEntry).delete()
-    db.query(Store).delete()
+    db.query(Farm).delete()
     db.query(Region).delete()
     db.commit()
     return {"status": "success", "message": "DB Cleared"}
@@ -37,7 +37,7 @@ def reset_schema(user: dict = Depends(verify_token)):
 async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     try:
         path_list = [p for p in path.split("/") if p]
-        types = ["Gu", "Dong", "Street", "Store"]
+        types = ["City", "District", "Village", "Farm"]
         target_obj = engine.create_or_get_path(db, path_list, types)
         
         mock_insights = [
@@ -56,7 +56,7 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
             else:
                 break
                 
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
         
         for i, m in enumerate(mock_insights):
             trust_index = m["trust"]
@@ -69,7 +69,7 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
             # Save to DB
             new_entry = DataEntry(
                 location_path=path,
-                store_id=store.id if store else None,
+                store_id=farm.id if farm else None,
                 industry="테스트",
                 is_guest=0,
                 raw_text=f"[{m['date']}] 사용자가 직접 입력한 모의 테스트 데이터입니다.",

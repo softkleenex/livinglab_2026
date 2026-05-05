@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Radar, Map, Store, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
+import { Radar, Map, Farm, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -9,7 +9,7 @@ import L from 'leaflet';
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const LEVELS = [
- { id: 'store', role: 'store', name: '농장/필지 (Farm/Field)', icon: <Store size={24}/>, desc: '센서 로그, 생육 현황, 수확량, 영농 일지' }, 
+ { id: 'farm', role: 'farm', name: '농장/필지 (Farm/Field)', icon: <Farm size={24}/>, desc: '센서 로그, 생육 현황, 수확량, 영농 일지' }, 
  { id: 'street', role: 'leader', name: '마을/재배지 (Village/Zone)', icon: <Map size={24}/>, desc: '해당 마을 내 농가들의 취합 데이터' },
  { id: 'dong', role: 'leader', name: '읍/면/동 (Eup/Myeon/Dong)', icon: <Users size={24}/>, desc: '마을 데이터들의 집합 (읍/면 단위 트렌드)' },
  { id: 'gu', role: 'gov', name: '시/군/구 (City/Gun/Gu)', icon: <Building2 size={24}/>, desc: '지역 데이터들의 집합 (군 단위 기후 및 생산량)' }
@@ -67,11 +67,11 @@ function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, se
 }
 
 export default function Onboarding({ onComplete, googleUser }) {
- const [levelId, setLevelId] = useState(googleUser?.isGuest ? '' : 'store');
+ const [levelId, setLevelId] = useState(googleUser?.isGuest ? '' : 'farm');
  const [industry, setIndustry] = useState('');
- const [locGu, setLocGu] = useState('');
- const [locDong, setLocDong] = useState('');
- const [locStreet, setLocStreet] = useState('');
+ const [locCity, setLocGu] = useState('');
+ const [locDistrict, setLocDong] = useState('');
+ const [locVillage, setLocStreet] = useState('');
  const [locStore, setLocStore] = useState('');
  const [loading, setLoading] = useState(false);
  const [mapCenter, setMapCenter] = useState([36.2388, 128.5728]); // Default to Gunwi-gun (Agricultural Hub of Daegu)
@@ -84,10 +84,10 @@ export default function Onboarding({ onComplete, googleUser }) {
  useEffect(() => {
    const loadAllStores = async () => {
      try {
-       const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/stores/all`);
-       setAllStoresList(res.data.stores || []);
+       const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);
+       setAllStoresList(res.data.farms || []);
      } catch (e) {
-       console.error("Failed to fetch all stores for combobox", e);
+       console.error("Failed to fetch all farms for combobox", e);
      }
    };
    loadAllStores();
@@ -95,9 +95,9 @@ export default function Onboarding({ onComplete, googleUser }) {
 
  useEffect(() => {
  const fetchStores = async () => {
- if (levelId === 'store' && locGu && locDong && locStreet) {
+ if (levelId === 'farm' && locCity && locDistrict && locVillage) {
  try {
- const pathStr = `${locGu}/${locDong}/${locStreet}`;
+ const pathStr = `${locCity}/${locDistrict}/${locVillage}`;
  const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${pathStr}`);
  if (res.data && res.data.children) {
  setExistingStores(res.data.children.map(c => c.name));
@@ -116,24 +116,24 @@ export default function Onboarding({ onComplete, googleUser }) {
  // Debounce slightly
  const timer = setTimeout(fetchStores, 500);
  return () => clearTimeout(timer);
- }, [locGu, locDong, locStreet, levelId, locStore]);
+ }, [locCity, locDistrict, locVillage, levelId, locStore]);
 
  useEffect(() => {
-  if (locDong.includes('효령') || locDong.includes('부계')) setMapCenter([36.1963, 128.6186]); 
-  else if (locDong.includes('유가') || locDong.includes('구지')) setMapCenter([35.6358, 128.4111]); 
-  else if (locDong.includes('하빈')) setMapCenter([35.6033, 128.4372]); 
-  else if (locDong.includes('공산') || locDong.includes('백안')) setMapCenter([35.9863, 128.6436]); 
-  else if (locGu.includes('군위')) setMapCenter([36.2388, 128.5728]);
-  else if (locGu.includes('달성')) setMapCenter([35.7746, 128.4312]);
- }, [locDong, locGu]);
+  if (locDistrict.includes('효령') || locDistrict.includes('부계')) setMapCenter([36.1963, 128.6186]); 
+  else if (locDistrict.includes('유가') || locDistrict.includes('구지')) setMapCenter([35.6358, 128.4111]); 
+  else if (locDistrict.includes('하빈')) setMapCenter([35.6033, 128.4372]); 
+  else if (locDistrict.includes('공산') || locDistrict.includes('백안')) setMapCenter([35.9863, 128.6436]); 
+  else if (locCity.includes('군위')) setMapCenter([36.2388, 128.5728]);
+  else if (locCity.includes('달성')) setMapCenter([35.7746, 128.4312]);
+ }, [locDistrict, locCity]);
 
  const handleFetchAllStores = async () => {
    if (showAllStores) { setShowAllStores(false); return; }
    setShowAllStores(true);
    setLoadingAllStores(true);
    try {
-     const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/stores/all`);     
-     setAllStoresList(res.data.stores || []);
+     const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);     
+     setAllStoresList(res.data.farms || []);
    } catch(e) {
      alert("데이터를 불러오지 못했습니다: " + e.message);
    } finally {
@@ -168,13 +168,13 @@ export default function Onboarding({ onComplete, googleUser }) {
  
  const selectedLevel = LEVELS.find(l => l.id === levelId);
  let location = [];
- if (window.selectedStoreFullPath && levelId === 'store' && locStore === window.selectedStoreFullPath[window.selectedStoreFullPath.length - 1]) {
+ if (window.selectedStoreFullPath && levelId === 'farm' && locStore === window.selectedStoreFullPath[window.selectedStoreFullPath.length - 1]) {
      location = window.selectedStoreFullPath;
  } else {
-     if (locGu) location.push(locGu);
-     if ((levelId === 'dong' || levelId === 'street' || levelId === 'store') && locDong) location.push(locDong);
-     if ((levelId === 'street' || levelId === 'store') && locStreet) location.push(locStreet);
-     if (levelId === 'store' && locStore) location.push(locStore);
+     if (locCity) location.push(locCity);
+     if ((levelId === 'dong' || levelId === 'street' || levelId === 'farm') && locDistrict) location.push(locDistrict);
+     if ((levelId === 'street' || levelId === 'farm') && locVillage) location.push(locVillage);
+     if (levelId === 'farm' && locStore) location.push(locStore);
  }
  setLoading(true);
  try {
@@ -193,7 +193,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div className="w-full bg-[#0E1420] border border-slate-700 rounded-3xl p-6 shadow-2xl relative overflow-hidden mt-4 shrink-0"> <div className="absolute top-0 right-0 p-8 opacity-5"><Radar size={200}/></div>
  <h1 className="text-3xl font-black text-white mb-2 relative z-10">Agri-Data Hub Setup</h1>
  <p className="text-slate-400 mb-8 relative z-10 text-[11px] leading-relaxed break-keep">
- {levelId === 'store' ? (
+ {levelId === 'farm' ? (
    !googleUser?.isGuest ? (
      <span className="text-emerald-400 font-bold">✨ 구글 인증 농장/필지(Farm) 모드입니다. 데이터 피딩 시 신뢰도 보너스가 적용됩니다.</span>
    ) : (
@@ -214,7 +214,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div key={l.id} onClick={() => setLevelId(l.id)} className={`p-4 rounded-xl border cursor-pointer transition-all ${levelId === l.id ? 'bg-emerald-600/20 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
  <div className="mb-3 text-emerald-400">{l.icon}</div>
  <div className="font-bold mb-1 text-sm flex items-center gap-1">
- {l.name} {l.id === 'store' && !googleUser?.isGuest && <ShieldCheck size={12} className="text-emerald-400" title="공식 인증" />}
+ {l.name} {l.id === 'farm' && !googleUser?.isGuest && <ShieldCheck size={12} className="text-emerald-400" title="공식 인증" />}
  </div>
  <div className="text-[10px] opacity-70 break-keep">{l.desc}</div>
  </div>
@@ -225,7 +225,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <AnimatePresence>
  {levelId && (
  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6">
- {levelId === 'store' && (
+ {levelId === 'farm' && (
  <div className="space-y-3">
  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Industry & Persona (산업군 및 페르소나)</label>
  <div className="grid grid-cols-2 gap-3">
@@ -277,13 +277,13 @@ export default function Onboarding({ onComplete, googleUser }) {
  {/* Dynamic Location Selection UX */}
  <div className="space-y-4 pt-4 border-t border-slate-800/60">
  {/* GU Level */}
- {(levelId === 'gu' || levelId === 'dong' || levelId === 'street' || levelId === 'store') && (
+ {(levelId === 'gu' || levelId === 'dong' || levelId === 'street' || levelId === 'farm') && (
  <div className="space-y-2">
  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
  <MapPin size={12} className="text-emerald-500"/> 시/군/구 (City/Gun/Gu)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- <input required list="gu-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locGu} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white" />
+ <input required list="gu-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locCity} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white" />
  <datalist id="gu-list">
   {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
  </datalist>
@@ -291,50 +291,50 @@ export default function Onboarding({ onComplete, googleUser }) {
  )}
 
  {/* DONG Level */}
- {(levelId === 'dong' || levelId === 'street' || levelId === 'store') && (
+ {(levelId === 'dong' || levelId === 'street' || levelId === 'farm') && (
  <div className="space-y-2">
  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
  <MapPin size={12} className="text-blue-400"/> 읍/면/동 (Eup/Myeon/Dong)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- <input required={(levelId === 'store' || levelId === 'street' || levelId === 'dong')} list="dong-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locDong} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-400 outline-none text-white" />
+ <input required={(levelId === 'farm' || levelId === 'street' || levelId === 'dong')} list="dong-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locDistrict} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-400 outline-none text-white" />
  <datalist id="dong-list">
-  {[...new Set(allStoresList.filter(s => !locGu || s.gu === locGu).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
+  {[...new Set(allStoresList.filter(s => !locCity || s.gu === locCity).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
  </datalist>
  </div>
  </div>
  )}
 
  {/* STREET Level */}
- {(levelId === 'street' || levelId === 'store') && (
+ {(levelId === 'street' || levelId === 'farm') && (
  <div className="space-y-2">
  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
  <MapPin size={12} className="text-orange-400"/> 마을/재배지 (Village/Zone)
  </label>
  <div className="flex flex-wrap gap-2 items-center">
- <input required={levelId==='store' || levelId==='street'} list="street-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locStreet} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-orange-400 outline-none text-white" />
+ <input required={levelId==='farm' || levelId==='street'} list="street-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locVillage} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-orange-400 outline-none text-white" />
  <datalist id="street-list">
-  {[...new Set(allStoresList.filter(s => (!locGu || s.gu === locGu) && (!locDong || s.dong === locDong)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
+  {[...new Set(allStoresList.filter(s => (!locCity || s.gu === locCity) && (!locDistrict || s.dong === locDistrict)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
  </datalist>
  </div>
  </div>
  )}
  
- {/* STORE Level */}
- {levelId === 'store' && (
+ {/* FARM Level */}
+ {levelId === 'farm' && (
  <div className="col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
- <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 농장/필지 선택 및 신규 등록</label>
+ <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Farm size={12}/> 농장/필지 선택 및 신규 등록</label>
  
  {existingStores.length > 0 && (
  <div className="flex flex-wrap gap-2">
- {existingStores.map(store => (
+ {existingStores.map(farm => (
  <button 
- key={store} 
+ key={farm} 
  type="button"
- onClick={() => { setLocStore(store); setIsNewStore(false); }}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locStore === store && !isNewStore ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
+ onClick={() => { setLocStore(farm); setIsNewStore(false); }}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locStore === farm && !isNewStore ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
  >
- {store}
+ {farm}
  </button>
  ))}
  <button 
@@ -349,9 +349,9 @@ export default function Onboarding({ onComplete, googleUser }) {
  
  {(existingStores.length === 0 || isNewStore) && (
  <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
- <input required list="store-list" placeholder="기존 농장 검색 또는 새로운 농장 이름 입력" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
- <datalist id="store-list">
-  {allStoresList.filter(s => (!locStreet || s.street === locStreet)).map(s => <option key={s.name} value={s.name} />)}
+ <input required list="farm-list" placeholder="기존 농장 검색 또는 새로운 농장 이름 입력" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ <datalist id="farm-list">
+  {allStoresList.filter(s => (!locVillage || s.street === locVillage)).map(s => <option key={s.name} value={s.name} />)}
  </datalist>
  </motion.div> )}
  </div>
@@ -384,7 +384,7 @@ export default function Onboarding({ onComplete, googleUser }) {
            ) : (
               allStoresList.map((s, idx) => (
                  <div key={idx} onClick={() => {
-                    setLevelId('store');
+                    setLevelId('farm');
                     window.selectedStoreFullPath = s.path.split("/");
                     setLocGu(s.gu); setLocDong(s.dong); setLocStreet(s.street); setLocStore(s.name); setIndustry(s.industry);
                     setShowAllStores(false);

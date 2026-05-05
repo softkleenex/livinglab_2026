@@ -13,8 +13,8 @@ export default function DataConverter({ userContext, openIngest, openVoice }) {
     try {
       const pathStr = userContext.location.join('/');
       const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/personal?path=${pathStr}`);
-      if (res.data?.store?.entries) {
-        setEntries(res.data.store.entries);
+      if (res.data?.farm?.entries) {
+        setEntries(res.data.farm.entries);
       }
     } catch (err) {
       console.error(err);

@@ -27,10 +27,10 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     name = Column(String)
     picture = Column(String, nullable=True)
-    role = Column(String, default="store") # 'store', 'gov', 'leader', 'guest'
+    role = Column(String, default="farm") # 'farm', 'gov', 'leader', 'guest'
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
-    stores = relationship("Store", back_populates="owner")
+    farms = relationship("Farm", back_populates="owner")
     wallet = relationship("Wallet", back_populates="user", uselist=False)
     products = relationship("Product", back_populates="seller")
 
@@ -70,12 +70,12 @@ class Region(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     children = relationship("Region", backref="parent", remote_side=[id])
-    stores = relationship("Store", back_populates="region")
+    farms = relationship("Farm", back_populates="region")
     products = relationship("Product", back_populates="region")
 
-class Store(Base):
-    __tablename__ = "stores"
-    __table_args__ = (UniqueConstraint('name', 'region_id', name='uix_store_name_region'),)
+class Farm(Base):
+    __tablename__ = "farms"
+    __table_args__ = (UniqueConstraint('name', 'region_id', name='uix_farm_name_region'),)
     id = Column(Integer, primary_key=True, index=True)
     region_id = Column(Integer, ForeignKey("regions.id"), index=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
@@ -89,16 +89,16 @@ class Store(Base):
     lng = Column(Float, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
-    region = relationship("Region", back_populates="stores")
-    owner = relationship("User", back_populates="stores")
-    entries = relationship("DataEntry", back_populates="store", cascade="all, delete-orphan")
+    region = relationship("Region", back_populates="farms")
+    owner = relationship("User", back_populates="farms")
+    entries = relationship("DataEntry", back_populates="farm", cascade="all, delete-orphan")
 
 class DataEntry(Base):
     __tablename__ = "data_entries"
 
     id = Column(Integer, primary_key=True, index=True)
     location_path = Column(String, index=True) 
-    store_id = Column(Integer, ForeignKey("stores.id"), index=True)
+    store_id = Column(Integer, ForeignKey("farms.id"), index=True)
     industry = Column(String, index=True)
     is_guest = Column(Integer, default=0)
     raw_text = Column(Text, nullable=True)
@@ -109,7 +109,7 @@ class DataEntry(Base):
     hash_val = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
-    store = relationship("Store", back_populates="entries")
+    farm = relationship("Farm", back_populates="entries")
 
 # Phase 2 New Models
 

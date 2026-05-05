@@ -21,7 +21,7 @@ industry = 'IT/서비스'
 print(f'\n[1] Onboarding new node: {path}')
 start = time.time()
 fetch_json('https://mdga-api.onrender.com/api/user/context', json.dumps({
-    'role': 'store', 'industry': industry, 'location': path.split('/')
+    'role': 'farm', 'industry': industry, 'location': path.split('/')
 }).encode('utf-8'), 'POST')
 print(f'  -> Success! ({time.time() - start:.2f}s)')
 

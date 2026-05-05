@@ -29,7 +29,7 @@ for item in realistic_data:
     industry = item["industry"]
     
     # 1. Onboard
-    data = json.dumps({'role': 'store', 'industry': industry, 'location': path_str.split('/')}).encode('utf-8')
+    data = json.dumps({'role': 'farm', 'industry': industry, 'location': path_str.split('/')}).encode('utf-8')
     req = urllib.request.Request('https://mdga-api.onrender.com/api/user/context', data=data, headers={'Content-Type': 'application/json'})
     try:
         urllib.request.urlopen(req, context=context)

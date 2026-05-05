@@ -49,7 +49,7 @@ def test_data_flow():
     # 2. Test User Context Flow
     print("\n2. Testing User Context Flow (POST /api/v1/user/context)...")
     try:
-        data = {'role': 'store', 'industry': '스마트팜', 'location': ['대구광역시', '북구', '산격동', '연암로 스마트팜 밸리', '지니스팜 제1농장']}
+        data = {'role': 'farm', 'industry': '스마트팜', 'location': ['대구광역시', '북구', '산격동', '연암로 스마트팜 밸리', '지니스팜 제1농장']}
         res = requests.post(f"{API_URL}/api/v1/user/context", json=data, verify=False, timeout=30)
         res.raise_for_status()
         body = res.json()

@@ -28,7 +28,7 @@ drive_service = build('drive', 'v3', credentials=creds)
 path = '대구광역시/달성군/유가읍/테크노폴리스 외곽/달성 딸기 스마트팜'
 industry = '스마트팜'
 
-print(f"Target Store: {path}")
+print(f"Target Farm: {path}")
 
 # 1. Copilot Query
 print('\n[1] Sending Query to AI Copilot...')

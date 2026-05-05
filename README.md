@@ -8,7 +8,7 @@ MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (
 ## ✨ Core Features & Highlights
 
 1. **Dynamic Regional Hierarchy Engine (Twin Map)**
-   - Automatically rolls up assets and activity levels (Pulse) from individual stores/nodes to upper geographical layers (City -> District -> Neighborhood -> Street).
+   - Automatically rolls up assets and activity levels (Pulse) from individual farms/nodes to upper geographical layers (City -> District -> Neighborhood -> Street).
    - Real-time rendering of a data-driven Twin Map reflecting local economic health.
    - ![Twin Map](docs/screenshots/07_twinmap.png)
 
@@ -19,11 +19,11 @@ MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (
    - ![Dashboard](docs/screenshots/06_dashboard.png)
 
 3. **Enterprise-Grade AI Copilot (Function Calling)**
-   - Context-aware chatbot that knows your store's total value, industry, and previous data entries.
+   - Context-aware chatbot that knows your farm's total value, industry, and previous data entries.
    - **System Execution via Two-Step Parsing:** The AI doesn't just talk; it modifies the system. Through an advanced parser, the Copilot securely processes commands to `DELETE`, `CREATE`, or `MODIFY` data entries on behalf of the user, keeping the DB and Drive synchronized in real-time.
 
 4. **Automated Weekly Dashboards & Governance Simulators**
-   - Automatically cross-validates your store's metrics against regional averages and real-time weather APIs to output professional, markdown-formatted reports.
+   - Automatically cross-validates your farm's metrics against regional averages and real-time weather APIs to output professional, markdown-formatted reports.
    - City planners can run a "Governance Simulator" to predict the ROI and Job Creation of macro-investments in specific regions.
 
 ---
@@ -31,11 +31,11 @@ MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (
 ## 🏗️ Technical Architecture & Refactoring Journey
 
 ### 1. Database Normalization & Stateless Scaling
-*   **Challenge:** The MVP relied on a monolithic `DataEntry` table and kept the entire hierarchical tree state in the server's RAM (`engine.py`). This prevented horizontal scaling (Scale-out) as multiple server instances would hold different states. Furthermore, there was no way to permanently delete a "Store" entity.
+*   **Challenge:** The MVP relied on a monolithic `DataEntry` table and kept the entire hierarchical tree state in the server's RAM (`engine.py`). This prevented horizontal scaling (Scale-out) as multiple server instances would hold different states. Furthermore, there was no way to permanently delete a "Farm" entity.
 *   **Overcome:** 
     *   Migrated from an append-only JSON-like DB to a **fully normalized Relational Database Model (RDBMS)**.
-    *   Separated into `Region`, `Store`, and `DataEntry` tables with rigid Foreign Keys.
-    *   Implemented `ON DELETE CASCADE`: Deleting a Store now safely triggers a transactional rollback—destroying all child `DataEntry` records, recalculating upstream `Total Value` for all parent regions, and orchestrating the deletion of corresponding files in Google Drive.
+    *   Separated into `Region`, `Farm`, and `DataEntry` tables with rigid Foreign Keys.
+    *   Implemented `ON DELETE CASCADE`: Deleting a Farm now safely triggers a transactional rollback—destroying all child `DataEntry` records, recalculating upstream `Total Value` for all parent regions, and orchestrating the deletion of corresponding files in Google Drive.
     *   The `HierarchyEngine` is now 100% **Stateless**, querying the DB dynamically on every request.
 
 ### 2. Bypassing AI "Safety Alignment" for System Control

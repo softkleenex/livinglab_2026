@@ -1,7 +1,7 @@
 import datetime
 import random
 from sqlalchemy.orm import Session
-from app.core.database import Region, Store, DataEntry
+from app.core.database import Region, Farm, DataEntry
 
 GEO_LOOKUP = {
     "서울특별시": (37.5665, 126.9780),
@@ -42,10 +42,10 @@ class HierarchyEngine:
         
         for i, p in enumerate(path_list):
             if i == len(path_list) - 1:
-                store = db.query(Store).filter(Store.name == p, Store.region_id == parent_id).first()
-                if store:
+                farm = db.query(Farm).filter(Farm.name == p, Farm.region_id == parent_id).first()
+                if farm:
                     is_store = True
-                    curr_obj = store
+                    curr_obj = farm
                     break
             
             region = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
@@ -57,7 +57,7 @@ class HierarchyEngine:
         
         if is_store:
             from sqlalchemy.orm import joinedload
-            entries = db.query(DataEntry).options(joinedload(DataEntry.store)).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
+            entries = db.query(DataEntry).options(joinedload(DataEntry.farm)).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
             entry_list = [{
                 "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
                 "insights": e.insights,
@@ -71,7 +71,7 @@ class HierarchyEngine:
             } for e in entries]
             
             return {
-                "name": curr_obj.name, "type": "Store",
+                "name": curr_obj.name, "type": "Farm",
                 "metadata": {
                     "created_at": curr_obj.created_at.strftime("%Y-%m-%d"),
                     "nodes": 1,
@@ -86,7 +86,7 @@ class HierarchyEngine:
             }
         else:
             children_regions = db.query(Region).filter(Region.parent_id == curr_obj.id).all()
-            children_stores = db.query(Store).filter(Store.region_id == curr_obj.id).all()
+            children_stores = db.query(Farm).filter(Farm.region_id == curr_obj.id).all()
             
             children_dict = {}
             for c in children_regions:
@@ -96,7 +96,7 @@ class HierarchyEngine:
                 }
             for s in children_stores:
                 children_dict[s.name] = {
-                    "type": "Store",
+                    "type": "Farm",
                     "metadata": {"total_value": s.total_value, "pulse_rate": s.pulse_rate, "history": s.history, "location": [s.lat, s.lng]}
                 }
                 
@@ -104,9 +104,9 @@ class HierarchyEngine:
             from sqlalchemy.orm import joinedload
             current_path_str = "/".join(path_list)
             if not current_path_str or current_path_str == "전체 (Root)":
-                entries = db.query(DataEntry).options(joinedload(DataEntry.store)).order_by(DataEntry.created_at.desc()).limit(100).all()
+                entries = db.query(DataEntry).options(joinedload(DataEntry.farm)).order_by(DataEntry.created_at.desc()).limit(100).all()
             else:
-                entries = db.query(DataEntry).options(joinedload(DataEntry.store)).filter(DataEntry.location_path.like(f"{current_path_str}%")).order_by(DataEntry.created_at.desc()).limit(100).all()
+                entries = db.query(DataEntry).options(joinedload(DataEntry.farm)).filter(DataEntry.location_path.like(f"{current_path_str}%")).order_by(DataEntry.created_at.desc()).limit(100).all()
                 
             entry_list = [{
                 "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
@@ -117,7 +117,7 @@ class HierarchyEngine:
                 "trust_index": e.trust_index,
                 "effective_value": e.effective_value,
                 "raw_text": e.raw_text,
-                "store_name": e.store.name if e.store else "Public"
+                "store_name": e.farm.name if e.farm else "Public"
             } for e in entries]
             
             return {
@@ -148,11 +148,11 @@ class HierarchyEngine:
             lat = base_lat + random.uniform(-offset, offset)
             lng = base_lng + random.uniform(-offset, offset)
             
-            if is_last and (len(types_list) <= i or types_list[i] == "Store"):
-                store = db.query(Store).filter(Store.name == p, Store.region_id == parent_id).first()
-                if not store:
-                    store = Store(name=p, region_id=parent_id, industry="기타", lat=lat, lng=lng, history=[random.randint(60, 80) for _ in range(5)])
-                    db.add(store)
+            if is_last and (len(types_list) <= i or types_list[i] == "Farm"):
+                farm = db.query(Farm).filter(Farm.name == p, Farm.region_id == parent_id).first()
+                if not farm:
+                    farm = Farm(name=p, region_id=parent_id, industry="기타", lat=lat, lng=lng, history=[random.randint(60, 80) for _ in range(5)])
+                    db.add(farm)
                     db.flush()
                     self._increment_nodes(db, parent_id)
             else:
@@ -222,16 +222,16 @@ class HierarchyEngine:
             if locked_r:
                 locked_regions.append(locked_r)
                 
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).with_for_update().first()
         
-        if store:
-            store.total_value = Store.total_value + value_added
-            store.pulse_rate = min(100, store.pulse_rate + 2)
-            hist = list(store.history)
-            hist.append(store.pulse_rate)
+        if farm:
+            farm.total_value = Farm.total_value + value_added
+            farm.pulse_rate = min(100, farm.pulse_rate + 2)
+            hist = list(farm.history)
+            hist.append(farm.pulse_rate)
             if len(hist) > 10: hist.pop(0)
-            store.history = hist
-            db.add(store)
+            farm.history = hist
+            db.add(farm)
             
         for r in locked_regions:
             r.total_value = Region.total_value + value_added
@@ -258,17 +258,17 @@ class HierarchyEngine:
             else:
                 return False
                 
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).with_for_update().first()
-        if not store: return False
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).with_for_update().first()
+        if not farm: return False
         
-        value_to_remove = store.total_value
+        value_to_remove = farm.total_value
         
         for r in regions:
             r.total_value = Region.total_value - value_to_remove
             r.nodes = Region.nodes - 1
             db.add(r)
             
-        db.delete(store)
+        db.delete(farm)
         return True
 
 engine = HierarchyEngine()

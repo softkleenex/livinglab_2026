@@ -1,7 +1,7 @@
 import hashlib
 import datetime
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, DataEntry, Store, Region
+from app.core.database import SessionLocal, DataEntry, Farm, Region
 from app.core.engine import engine
 
 db: Session = SessionLocal()
@@ -28,17 +28,17 @@ try:
         # Ensure hierarchy exists
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
-            target_obj = engine.create_or_get_path(db, path_list, ["Gu", "Dong", "Street", "Store"])
+            target_obj = engine.create_or_get_path(db, path_list, ["City", "District", "Village", "Farm"])
             
         parent_id = None
         for p in path_list[:-1]:
             r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
             if r: parent_id = r.id
             
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
-        if store and not store.industry:
-            store.industry = item["industry"]
-            db.add(store)
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
+        if farm and not farm.industry:
+            farm.industry = item["industry"]
+            db.add(farm)
             
         raw_text = f"B2B/공공 API 연동망을 통해 수집된 '{item['name']}'의 실시간 고용 및 경영 스냅샷 데이터입니다."
         insights = f"[초기 B2B 공공/기업 연동 데이터] {item['insight']}"
@@ -51,7 +51,7 @@ try:
             
             new_entry = DataEntry(
                 location_path=location_path,
-                store_id=store.id if store else None,
+                store_id=farm.id if farm else None,
                 industry=item["industry"],
                 is_guest=0,
                 raw_text=raw_text,
@@ -64,7 +64,7 @@ try:
             )
             db.add(new_entry)
             
-            # Roll up values to Regions/Store
+            # Roll up values to Regions/Farm
             engine.add_value_bottom_up(db, path_list, effective_value)
             
     db.commit()

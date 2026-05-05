@@ -122,7 +122,7 @@ for idx, item in enumerate(massive_data):
     try:
         # Pre-create context
         requests.post(f"{API_URL}/api/v1/user/context", json={
-            'role': 'store', 'industry': industry, 'location': path_str.split('/')
+            'role': 'farm', 'industry': industry, 'location': path_str.split('/')
         }, headers=HEADERS, verify=False)
     except Exception:
         pass

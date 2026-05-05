@@ -29,7 +29,7 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
         
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        role_to_assign = "admin" if email == "test@mdga.io" else "store"
+        role_to_assign = "admin" if email == "test@mdga.io" else "farm"
         user = User(email=email, name=name, picture=picture, role=role_to_assign)
         db.add(user)
         db.commit()

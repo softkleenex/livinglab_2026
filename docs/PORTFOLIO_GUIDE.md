@@ -38,7 +38,7 @@
 
 ### 🚀 1. 시스템 아키텍처 한계 극복 (모놀리식 -> 3NF 정규화)
 * **문제:** 초기 MVP는 메모리 상에서 트리 구조를 관리하는 상태 유지(Stateful) 서버 형태로, 트래픽 증가 시 Scale-out이 불가능했으며 데이터 무결성이 보장되지 않음.
-* **해결:** Postgres 기반의 관계형 데이터베이스로 전면 전환. Region, Store, DataEntry 등 테이블을 3정규화(3NF)하고 FK와 `ON DELETE CASCADE`를 적용. 결과적으로 상태를 DB로 완전히 위임(Stateless)하여 무한 확장이 가능한 백엔드 아키텍처 완성.
+* **해결:** Postgres 기반의 관계형 데이터베이스로 전면 전환. Region, Farm, DataEntry 등 테이블을 3정규화(3NF)하고 FK와 `ON DELETE CASCADE`를 적용. 결과적으로 상태를 DB로 완전히 위임(Stateless)하여 무한 확장이 가능한 백엔드 아키텍처 완성.
 
 ### 🤖 2. LLM의 'Safety Alignment' 우회 및 시스템 제어 체계 구축
 * **문제:** 사용자가 챗봇에게 "방금 올린 데이터 삭제해줘"라고 요청하면 LLM이 "권한이 없다"며 안전망(Safety Alignment)에 의해 거부하는 현상 발생.

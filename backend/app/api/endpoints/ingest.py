@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, Region, Wallet, Transaction
+from app.core.database import get_db, DataEntry, Farm, Region, Wallet, Transaction
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
@@ -152,7 +152,7 @@ async def ingest(
 
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
-            target_obj = engine.create_or_get_path(db, path_list, ["Gu", "Dong", "Street", "Store"])
+            target_obj = engine.create_or_get_path(db, path_list, ["City", "District", "Village", "Farm"])
 
         prompt_parts = [
             f"당신은 '{industry}' 산업군 및 농업 데이터 분석가(AI-Ready 데이터 변환기)입니다.",
@@ -222,15 +222,15 @@ async def ingest(
             r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
             if r: parent_id = r.id
             else: break
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
         
-        if store and not store.owner_id and not is_guest_bool:
-            store.owner_id = user["user_id"]
-            db.add(store)
+        if farm and not farm.owner_id and not is_guest_bool:
+            farm.owner_id = user["user_id"]
+            db.add(farm)
         
         new_entry = DataEntry(
             location_path=location,
-            store_id=store.id if store else None,
+            store_id=farm.id if farm else None,
             industry=industry,
             is_guest=1 if is_guest_bool else 0,
             raw_text=content,
@@ -268,24 +268,24 @@ async def ingest(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/store")
+@router.delete("/farm")
 async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     try:
         path_list = [p for p in path.split("/") if p]
         
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
-            raise HTTPException(status_code=404, detail="Store not found")
+            raise HTTPException(status_code=404, detail="Farm not found")
 
         parent_id = None
         for i, p in enumerate(path_list[:-1]):
             r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
             if r: parent_id = r.id
             else: break
-        store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
 
-        if store and (store.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
-            raise HTTPException(status_code=403, detail="Not authorized to delete this store")
+        if farm and (farm.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized to delete this farm")
 
         entries = target_obj.get("data_entries", [])        
         short_hashes = []
@@ -304,7 +304,7 @@ async def delete_store(path: str, background_tasks: BackgroundTasks, db: Session
         db.commit()
         asyncio.create_task(manager.broadcast({"type": "update", "path": path_list[:-1], "value_added": 0, "pulse_rate": 0}))
         
-        return {"status": "success", "message": "Store and all associated data deleted."}
+        return {"status": "success", "message": "Farm and all associated data deleted."}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -328,7 +328,7 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         if not entry_to_del:
             raise HTTPException(status_code=404, detail="Entry not found in DB")
             
-        if entry_to_del.store and (entry_to_del.store.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
+        if entry_to_del.farm and (entry_to_del.farm.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized to delete this entry")
 
         db.delete(entry_to_del)

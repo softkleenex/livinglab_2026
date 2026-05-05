@@ -7,6 +7,6 @@ with engine.connect() as conn:
     res = conn.execute(text("SELECT count(*) FROM regions;"))
     for row in res:
         print("Total regions in DB:", row[0])
-    res = conn.execute(text("SELECT count(*) FROM stores;"))
+    res = conn.execute(text("SELECT count(*) FROM farms;"))
     for row in res:
-        print("Total stores in DB:", row[0])
+        print("Total farms in DB:", row[0])

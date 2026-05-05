@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.core.database import get_db, DataEntry, Store, Region
+from app.core.database import get_db, DataEntry, Farm, Region
 from app.core.engine import engine
 from app.core.websocket import manager
 from app.services.gemini_ai import model
@@ -58,7 +58,7 @@ def sync_chat_log_drive_upload(path_list, payload_industry, message, reply):
 async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     path_list = [p for p in payload.path.split("/") if p]
     obj = engine.get_object(db, path_list)
-    if not obj: raise HTTPException(status_code=404, detail="Store not found")
+    if not obj: raise HTTPException(status_code=404, detail="Farm not found")
     
     parent_obj = engine.get_object(db, path_list[:-1]) if len(path_list) > 1 else engine.get_object(db, ["전체 (Root)"])
     parent_avg = parent_obj["metadata"].get("total_value", 0) // max(1, parent_obj["metadata"].get("nodes", 1))
@@ -133,7 +133,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 
                 if actual_entry:
                     entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
-                    if entry_to_del and (entry_to_del.store.owner_id == user["user_id"] or user["role"] == "admin"):
+                    if entry_to_del and (entry_to_del.farm.owner_id == user["user_id"] or user["role"] == "admin"):
                         penalty = -entry_to_del.effective_value
                         del_path_list = [p for p in entry_to_del.location_path.split("/") if p]
                         short_hash_to_del = entry_to_del.hash_val[:8]
@@ -162,7 +162,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 
                 if actual_entry:
                     entry_to_mod = db.query(DataEntry).filter(DataEntry.hash_val == actual_entry["hash"]).first()
-                    if entry_to_mod and (entry_to_mod.store.owner_id == user["user_id"] or user["role"] == "admin"):
+                    if entry_to_mod and (entry_to_mod.farm.owner_id == user["user_id"] or user["role"] == "admin"):
                         entry_to_mod.raw_text = new_text
                         db.commit()
                         
@@ -187,12 +187,12 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                     r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
                     if r: parent_id = r.id
                     else: break
-                store = db.query(Store).filter(Store.name == path_list[-1], Store.region_id == parent_id).first()
+                farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
 
                 val_added = 100000
                 new_entry = DataEntry(
                     location_path=payload.path,
-                    store_id=store.id if store else None,
+                    store_id=farm.id if farm else None,
                     industry=payload.industry,
                     is_guest=0,
                     raw_text=new_text,

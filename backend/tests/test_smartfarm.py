@@ -11,7 +11,7 @@ client = TestClient(app)
 def test_smartfarm_context_and_report():
     # 1. Setup context as a Smart Farm
     payload = {
-        "role": "store",
+        "role": "farm",
         "industry": "스마트팜",
         "location": ["대구광역시", "북구", "산격동", "지니스팜"]
     }

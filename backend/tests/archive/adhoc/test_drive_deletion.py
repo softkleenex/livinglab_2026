@@ -27,7 +27,7 @@ industry = 'IT/서비스'
 
 # Onboard
 urllib.request.urlopen(urllib.request.Request('https://mdga-api.onrender.com/api/user/context', json.dumps({
-    'role': 'store', 'industry': industry, 'location': path.split('/')
+    'role': 'farm', 'industry': industry, 'location': path.split('/')
 }).encode('utf-8'), headers={'Content-Type': 'application/json'}), context=context)
 
 # Ingest

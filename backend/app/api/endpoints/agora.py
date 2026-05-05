@@ -11,7 +11,7 @@ async def get_agora_feed(db: Session = Depends(get_db)):
         entries = db.query(DataEntry).order_by(DataEntry.created_at.desc()).limit(20).all()
         feed = []
         for e in entries:
-            # Anonymize store name by taking only Gu/Dong
+            # Anonymize farm name by taking only Gu/Dong
             path_parts = e.location_path.split("/")
             anon_location = f"{path_parts[0]} {path_parts[1]}" if len(path_parts) >= 2 else "지역 익명"
             feed.append({
