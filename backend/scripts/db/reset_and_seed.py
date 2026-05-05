@@ -71,10 +71,10 @@ def generate_sensor_json(sensor_type):
 
 massive_data = [
     # --- MACRO: CITY & GU LEVEL ---
-    {"region": [], "name": "대구광역시청 데이터허브", "industry": "공공", "insight": "[2026 대구 스마트시티 총괄 지표]\n- 1분기 GDP 성장률: 2.1%\n- 스마트팜 밸리 조성율: 85%\n- 성서산단 스마트팩토리 전환율: 42%\n(공공데이터포털 연동 API 요약)"},
+    {"region": [], "name": "대구광역시청 데이터허브", "industry": "공공", "insight": "[2026 대구 스마트시티 총괄 지표]\n- 1분기 GDP 성장률: 2.1%\n- 스마트팜 밸리 조성율: 85%\n- 스마트팜단지 스마트팩토리 전환율: 42%\n(공공데이터포털 연동 API 요약)"},
     {"region": ["북구"], "name": "북구청 산업지원과", "industry": "공공", "insight": "북구 연암로 스마트팜 밸리 일대 전력망 확충 공사 완료. 추가 15개 농가 입주 대기 중. 지역 화폐 결제액 전월 대비 12% 상승."},
     {"region": ["군위군"], "name": "군위군 농업정책과", "industry": "공공", "insight": "스마트 농업 지원 프로젝트 1단계 완료. 도입 농가 생산성 15% 증가. 고부가가치 작물 매출액 30% 증가."},
-    {"region": ["달서구"], "name": "성서산업단지 관리공단", "industry": "공공", "insight": "성서산단 입주기업 3,000개사 전력 피크타임 모니터링 결과, 오후 2~4시 공장 가동률 92% 달성. 탄소 배출 저감 캠페인으로 월 500톤 절감."},
+    {"region": ["달서구"], "name": "대구 스마트팜 관리센터", "industry": "공공", "insight": "스마트팜단지 입주기업 3,000개사 전력 피크타임 모니터링 결과, 오후 2~4시 스마트팜 가동률 92% 달성. 탄소 배출 저감 캠페인으로 월 500톤 절감."},
 ]
 
 # --- MICRO: SMART FARMS (북구 & 달성군) ---
@@ -97,13 +97,13 @@ for i, name in enumerate(fnb_names):
         "insight": generate_sensor_json("soil_sensor")
     })
 
-# --- MICRO: MANUFACTURING & LOGISTICS (달서구 성서산단) ---
+# --- MICRO: MANUFACTURING & LOGISTICS (달서구 스마트팜단지) ---
 ind_names = ["AI 비전로보틱스", "스마트농기계 대구센터", "미래 농업드론", "정밀기계 스마트팜(주)", "자율주행 트랙터(주)", "에코 비료패키징", "농산물 로지스틱스", "스마트온실(주)"]
 for i, name in enumerate(ind_names):
     massive_data.append({
         "region": ["달서구", "성서동", "성서산업단지"],
         "name": name,
-        "industry": random.choice(["기업 (스마트팜/제조)", "애그테크 (스마트 농기계)"]),
+        "industry": random.choice(["기업 (농기계/스마트팜)", "애그테크 (스마트 농기계)"]),
         "insight": generate_sensor_json("weather_station")
     })
 

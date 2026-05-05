@@ -29,7 +29,7 @@ export default function B2BMarket({ addToast }) {
             originalPrice: p.price === 0 ? null : `${(p.price * 1.5).toLocaleString()}원`,
             match: p.ai_recommendation || (activeTab === 'synthetic_data' ? '기후/생육 AI 모델 학습용' : '농기계 센서 분석용'),
             status: p.stock > 0 ? 'available' : 'matched',
-            imageUrl: p.image_url || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600&auto=format&fit=crop'
+            imageUrl: p.image_url || 'https://images.unsplash.com/photo-1586771107445-d3afeb0d2ba1?q=80&w=600&auto=format&fit=crop'
           }));
 
           // Fallback if DB is empty
@@ -68,7 +68,7 @@ export default function B2BMarket({ addToast }) {
                   location: "경북 안동시",
                   price: "300,000원",
                   originalPrice: null,
-                  match: "농기계 제조사 R&D 부서",
+                  match: "농기계사 R&D 부서",
                   status: "available",
                   imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop'
                 }

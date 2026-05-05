@@ -239,8 +239,7 @@ export default function Onboarding({ onComplete, googleUser }) {
    </button>
    <button type="button" onClick={() => setIndustry('기업 (농기계/스마트팜)')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '기업 (농기계/스마트팜)' ? 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
      <span className="text-2xl">⚙️</span>
-     <span className="text-xs font-bold">기업 (스마트팜/제조)</span>
-   </button>
+     <span className="text-xs font-bold">기업 (농기계/스마트팜)</span>   </button>
    <button type="button" onClick={() => setIndustry('지자체/관공서')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${industry === '지자체/관공서' ? 'bg-slate-700/50 border-slate-500 text-white shadow-[0_0_15px_rgba(100,116,139,0.2)]' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-600'}`}>
      <span className="text-2xl">🏛️</span>
      <span className="text-xs font-bold">지자체/관공서</span>

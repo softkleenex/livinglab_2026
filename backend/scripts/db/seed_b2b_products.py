@@ -52,7 +52,7 @@ def seed_b2b_products():
                 status="available",
                 image_url='https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop',
                 ai_grade="B",
-                ai_recommendation="농기계 제조사 R&D 부서 모델 개선용"
+                ai_recommendation="농기계 농기계사 R&D 부서 모델 개선용"
             )
         ]
         
