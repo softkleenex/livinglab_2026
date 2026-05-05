@@ -85,7 +85,7 @@ export default function DataConverter({ userContext, openIngest, openVoice }) {
                   <div className="text-xs text-slate-400 flex items-center gap-1">
                     <CheckCircle2 size={12} className="text-emerald-500" /> 변환 완료
                   </div>
-                  <div className="text-[10px] text-slate-500">{new Date(entry.timestamp * 1000).toLocaleString()}</div>
+                  <div className="text-[10px] text-slate-500">{entry.timestamp}</div>
                 </div>
                 <div className="text-sm text-slate-200 font-medium mb-3">
                   {entry.raw_text}
