@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from sqlalchemy.orm import Session
 from app.core.database import get_db, SyntheticData, DataEntry
+from app.core.config import settings
 import csv
 from io import StringIO
 from fastapi.responses import StreamingResponse
@@ -8,11 +9,8 @@ import traceback
 
 router = APIRouter()
 
-# Mock API Key for External B2B Consumers (e.g., Snowflake, Databricks, AI Hub)
-VALID_API_KEYS = ["mdga-b2b-snowflake-key", "mdga-b2b-aihub-key"]
-
 def verify_b2b_api_key(x_api_key: str = Header(None)):
-    if not x_api_key or x_api_key not in VALID_API_KEYS:
+    if not x_api_key or x_api_key not in settings.b2b_api_keys_list:
         raise HTTPException(status_code=401, detail="Unauthorized: Invalid B2B API Key")
     return x_api_key
 

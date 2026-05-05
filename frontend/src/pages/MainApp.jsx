@@ -69,7 +69,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-blue-600 rounded-lg shadow-md"><Zap size={16} className="text-white"/></div>
             <span className="text-sm font-black text-white tracking-wider flex items-center gap-2">
-              농업 AX Platform
+              MDGA Platform
             </span>
           </div>
           <div className="flex items-center gap-3">

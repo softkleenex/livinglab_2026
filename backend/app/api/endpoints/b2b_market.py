@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.core.database import get_db, Product, Matching
+from app.core.database import get_db, Product, Matching, Farm
+from app.api.deps import verify_token
 import traceback
 
 router = APIRouter()
@@ -12,14 +13,22 @@ async def create_product(
     description: str,
     price: int = 0,
     stock: int = 1,
-    db: Session = Depends(get_db)
-    # In a real scenario, seller_id and region_id would come from auth context
+    region_id: int = Query(None),
+    db: Session = Depends(get_db),
+    user: dict = Depends(verify_token)
 ):
     try:
-        # Mocking seller and region for now (id 1)
+        user_id = user["user_id"]
+        
+        # If region_id is not provided, try to get it from the user's first farm
+        if not region_id:
+            user_farm = db.query(Farm).filter(Farm.owner_id == user_id).first()
+            if user_farm:
+                region_id = user_farm.region_id
+        
         new_product = Product(
-            seller_id=1, 
-            region_id=1,
+            seller_id=user_id, 
+            region_id=region_id,
             category=category,
             title=title,
             description=description,
@@ -62,7 +71,13 @@ async def list_products(category: str = Query(None), db: Session = Depends(get_d
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/matchings")
-async def create_matching(product_id: int, quantity: int = 1, message: str = "", db: Session = Depends(get_db)):
+async def create_matching(
+    product_id: int, 
+    quantity: int = 1, 
+    message: str = "", 
+    db: Session = Depends(get_db),
+    user: dict = Depends(verify_token)
+):
     try:
         product = db.query(Product).filter(Product.id == product_id).first()
         if not product or product.stock < quantity:
@@ -70,7 +85,7 @@ async def create_matching(product_id: int, quantity: int = 1, message: str = "",
             
         new_match = Matching(
             product_id=product_id,
-            buyer_id=1, # Mock buyer
+            buyer_id=user["user_id"],
             quantity=quantity,
             message=message
         )

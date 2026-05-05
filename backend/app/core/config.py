@@ -27,10 +27,15 @@ class Settings(BaseSettings):
 
     # Security
     ALLOWED_ORIGINS: str = "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev"
+    B2B_API_KEYS: str = "mdga-b2b-snowflake-key,mdga-b2b-aihub-key"
     
     @property
     def cors_origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+        
+    @property
+    def b2b_api_keys_list(self) -> List[str]:
+        return [key.strip() for key in self.B2B_API_KEYS.split(",")]
 
     model_config = SettingsConfigDict(
         env_file=".env",
