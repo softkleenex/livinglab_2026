@@ -25,7 +25,7 @@ def delete_region_recursive(db, region_id):
     
     farms = db.query(Farm).filter(Farm.region_id == region_id).all()
     for farm in farms:
-        db.query(DataEntry).filter(DataEntry.store_id == farm.id).delete()
+        db.query(DataEntry).filter(DataEntry.farm_id == farm.id).delete()
         db.delete(farm)
         
     db.query(Region).filter(Region.id == region_id).delete()

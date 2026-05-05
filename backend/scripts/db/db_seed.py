@@ -51,7 +51,7 @@ try:
             
             new_entry = DataEntry(
                 location_path=location_path,
-                store_id=farm.id if farm else None,
+                farm_id=farm.id if farm else None,
                 industry=item["industry"],
                 is_guest=0,
                 raw_text=raw_text,

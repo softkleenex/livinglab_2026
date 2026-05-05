@@ -57,7 +57,7 @@ class HierarchyEngine:
         
         if is_store:
             from sqlalchemy.orm import joinedload
-            entries = db.query(DataEntry).options(joinedload(DataEntry.farm)).filter(DataEntry.store_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
+            entries = db.query(DataEntry).options(joinedload(DataEntry.farm)).filter(DataEntry.farm_id == curr_obj.id).order_by(DataEntry.created_at.asc()).all()
             entry_list = [{
                 "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
                 "insights": e.insights,
@@ -67,7 +67,7 @@ class HierarchyEngine:
                 "trust_index": e.trust_index,
                 "effective_value": e.effective_value,
                 "raw_text": e.raw_text,
-                "store_name": curr_obj.name
+                "farm_name": curr_obj.name
             } for e in entries]
             
             return {
@@ -117,7 +117,7 @@ class HierarchyEngine:
                 "trust_index": e.trust_index,
                 "effective_value": e.effective_value,
                 "raw_text": e.raw_text,
-                "store_name": e.farm.name if e.farm else "Public"
+                "farm_name": e.farm.name if e.farm else "Public"
             } for e in entries]
             
             return {

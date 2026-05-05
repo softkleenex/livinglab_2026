@@ -98,7 +98,7 @@ class DataEntry(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     location_path = Column(String, index=True) 
-    store_id = Column(Integer, ForeignKey("farms.id"), index=True)
+    farm_id = Column(Integer, ForeignKey("farms.id"), index=True)
     industry = Column(String, index=True)
     is_guest = Column(Integer, default=0)
     raw_text = Column(Text, nullable=True)

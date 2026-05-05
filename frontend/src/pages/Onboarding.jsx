@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Radar, Map, Store, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
+import { Radar, Map, Tractor, Users, Building2, ShieldCheck, Plus, RefreshCw, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -9,7 +9,7 @@ import L from 'leaflet';
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
 const LEVELS = [
- { id: 'farm', role: 'farm', name: '농장/필지 (Farm/Field)', icon: <Farm size={24}/>, desc: '센서 로그, 생육 현황, 수확량, 영농 일지' }, 
+ { id: 'farm', role: 'farm', name: '농장/필지 (Farm/Field)', icon: <Tractor size={24}/>, desc: '센서 로그, 생육 현황, 수확량, 영농 일지' }, 
  { id: 'street', role: 'leader', name: '마을/재배지 (Village/Zone)', icon: <Map size={24}/>, desc: '해당 마을 내 농가들의 취합 데이터' },
  { id: 'dong', role: 'leader', name: '읍/면/동 (Eup/Myeon/Dong)', icon: <Users size={24}/>, desc: '마을 데이터들의 집합 (읍/면 단위 트렌드)' },
  { id: 'gu', role: 'gov', name: '시/군/구 (City/Gun/Gu)', icon: <Building2 size={24}/>, desc: '지역 데이터들의 집합 (군 단위 기후 및 생산량)' }
@@ -48,7 +48,7 @@ function MapController({ center }) {
  return null;
 }
 
-function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocStore, setIndustry }) {
+function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, setLocFarm, setIndustry }) {
   const map = useMapEvents({
     click: async (e) => {
       const lat = e.latlng.lat;
@@ -59,7 +59,7 @@ function LocationSelector({ setMapCenter, setLocGu, setLocDong, setLocStreet, se
       setLocGu(addr.gu);
       setLocDong(addr.dong);
       setLocStreet(addr.street);
-      setLocStore(addr.name);
+      setLocFarm(addr.name);
       setIndustry(addr.industry);
     }
   });
@@ -72,17 +72,17 @@ export default function Onboarding({ onComplete, googleUser }) {
  const [locCity, setLocGu] = useState('');
  const [locDistrict, setLocDong] = useState('');
  const [locVillage, setLocStreet] = useState('');
- const [locStore, setLocStore] = useState('');
+ const [locFarm, setLocFarm] = useState('');
  const [loading, setLoading] = useState(false);
  const [mapCenter, setMapCenter] = useState([36.2388, 128.5728]); // Default to Gunwi-gun (Agricultural Hub of Daegu)
- const [existingStores, setExistingStores] = useState([]);
- const [isNewStore, setIsNewStore] = useState(false);
- const [showAllStores, setShowAllStores] = useState(false);
- const [allStoresList, setAllStoresList] = useState([]);
- const [loadingAllStores, setLoadingAllStores] = useState(false);
+ const [existingFarms, setExistingFarms] = useState([]);
+ const [isNewFarm, setIsNewFarm] = useState(false);
+ const [showAllFarms, setShowAllFarms] = useState(false);
+ const [allFarmsList, setAllStoresList] = useState([]);
+ const [loadingAllFarms, setLoadingAllFarms] = useState(false);
 
  useEffect(() => {
-   const loadAllStores = async () => {
+   const loadAllFarms = async () => {
      try {
        const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);
        setAllStoresList(res.data.farms || []);
@@ -90,7 +90,7 @@ export default function Onboarding({ onComplete, googleUser }) {
        console.error("Failed to fetch all farms for combobox", e);
      }
    };
-   loadAllStores();
+   loadAllFarms();
  }, []);
 
  useEffect(() => {
@@ -100,23 +100,23 @@ export default function Onboarding({ onComplete, googleUser }) {
  const pathStr = `${locCity}/${locDistrict}/${locVillage}`;
  const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/explore?path=${pathStr}`);
  if (res.data && res.data.children) {
- setExistingStores(res.data.children.map(c => c.name));
- if (!res.data.children.find(c => c.name === locStore)) {
- setLocStore('');
+ setExistingFarms(res.data.children.map(c => c.name));
+ if (!res.data.children.find(c => c.name === locFarm)) {
+ setLocFarm('');
  }
  }
  } catch (e) {
- setExistingStores([]);
+ setExistingFarms([]);
  console.error(e);
  }
  } else {
- setExistingStores([]);
+ setExistingFarms([]);
  }
  };
  // Debounce slightly
  const timer = setTimeout(fetchStores, 500);
  return () => clearTimeout(timer);
- }, [locCity, locDistrict, locVillage, levelId, locStore]);
+ }, [locCity, locDistrict, locVillage, levelId, locFarm]);
 
  useEffect(() => {
   if (locDistrict.includes('효령') || locDistrict.includes('부계')) setMapCenter([36.1963, 128.6186]); 
@@ -128,16 +128,16 @@ export default function Onboarding({ onComplete, googleUser }) {
  }, [locDistrict, locCity]);
 
  const handleFetchAllStores = async () => {
-   if (showAllStores) { setShowAllStores(false); return; }
-   setShowAllStores(true);
-   setLoadingAllStores(true);
+   if (showAllFarms) { setShowAllFarms(false); return; }
+   setShowAllFarms(true);
+   setLoadingAllFarms(true);
    try {
      const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);     
      setAllStoresList(res.data.farms || []);
    } catch(e) {
      alert("데이터를 불러오지 못했습니다: " + e.message);
    } finally {
-     setLoadingAllStores(false);
+     setLoadingAllFarms(false);
    }
  };
 
@@ -152,7 +152,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  setLocGu(addr.gu);
  setLocDong(addr.dong);
  setLocStreet(addr.street);
- setLocStore(addr.name);
+ setLocFarm(addr.name);
  setIndustry(addr.industry);
  },
  () => alert("위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 권한을 허용해주세요.")
@@ -168,13 +168,13 @@ export default function Onboarding({ onComplete, googleUser }) {
  
  const selectedLevel = LEVELS.find(l => l.id === levelId);
  let location = [];
- if (window.selectedStoreFullPath && levelId === 'farm' && locStore === window.selectedStoreFullPath[window.selectedStoreFullPath.length - 1]) {
-     location = window.selectedStoreFullPath;
+ if (window.selectedFarmFullPath && levelId === 'farm' && locFarm === window.selectedFarmFullPath[window.selectedFarmFullPath.length - 1]) {
+     location = window.selectedFarmFullPath;
  } else {
      if (locCity) location.push(locCity);
      if ((levelId === 'dong' || levelId === 'street' || levelId === 'farm') && locDistrict) location.push(locDistrict);
      if ((levelId === 'street' || levelId === 'farm') && locVillage) location.push(locVillage);
-     if (levelId === 'farm' && locStore) location.push(locStore);
+     if (levelId === 'farm' && locFarm) location.push(locFarm);
  }
  setLoading(true);
  try {
@@ -262,7 +262,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
  />
  <MapController center={mapCenter} />
- <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} setLocStore={setLocStore} setIndustry={setIndustry} />
+ <LocationSelector setMapCenter={setMapCenter} setLocGu={setLocGu} setLocDong={setLocDong} setLocStreet={setLocStreet} setLocFarm={setLocFarm} setIndustry={setIndustry} />
  <Marker position={mapCenter} icon={customMarkerIcon} />
  </MapContainer>
  <div className="absolute bottom-4 left-4 z-[400] pointer-events-none">
@@ -284,7 +284,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div className="flex flex-wrap gap-2 items-center">
  <input required list="gu-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locCity} onChange={e=>setLocGu(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-emerald-500 outline-none text-white" />
  <datalist id="gu-list">
-  {[...new Set(allStoresList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
+  {[...new Set(allFarmsList.map(s => s.gu).filter(Boolean))].map(g => <option key={g} value={g} />)}
  </datalist>
  </div> </div>
  )}
@@ -298,7 +298,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div className="flex flex-wrap gap-2 items-center">
  <input required={(levelId === 'farm' || levelId === 'street' || levelId === 'dong')} list="dong-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locDistrict} onChange={e=>setLocDong(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-blue-400 outline-none text-white" />
  <datalist id="dong-list">
-  {[...new Set(allStoresList.filter(s => !locCity || s.gu === locCity).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
+  {[...new Set(allFarmsList.filter(s => !locCity || s.gu === locCity).map(s => s.dong).filter(Boolean))].map(d => <option key={d} value={d} />)}
  </datalist>
  </div>
  </div>
@@ -313,7 +313,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  <div className="flex flex-wrap gap-2 items-center">
  <input required={levelId==='farm' || levelId==='street'} list="street-list" placeholder="직접입력 (또는 아래 목록 선택)" value={locVillage} onChange={e=>setLocStreet(e.target.value)} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:border-orange-400 outline-none text-white" />
  <datalist id="street-list">
-  {[...new Set(allStoresList.filter(s => (!locCity || s.gu === locCity) && (!locDistrict || s.dong === locDistrict)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
+  {[...new Set(allFarmsList.filter(s => (!locCity || s.gu === locCity) && (!locDistrict || s.dong === locDistrict)).map(s => s.street).filter(Boolean))].map(str => <option key={str} value={str} />)}
  </datalist>
  </div>
  </div>
@@ -322,35 +322,35 @@ export default function Onboarding({ onComplete, googleUser }) {
  {/* FARM Level */}
  {levelId === 'farm' && (
  <div className="col-span-2 space-y-3 pt-2 border-t border-slate-800/60">
- <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Store size={12}/> 농장/필지 선택 및 신규 등록</label>
+ <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5"><Tractor size={12}/> 농장/필지 선택 및 신규 등록</label>
  
- {existingStores.length > 0 && (
+ {existingFarms.length > 0 && (
  <div className="flex flex-wrap gap-2">
- {existingStores.map(farm => (
+ {existingFarms.map(farm => (
  <button 
  key={farm} 
  type="button"
- onClick={() => { setLocStore(farm); setIsNewStore(false); }}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locStore === farm && !isNewStore ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
+ onClick={() => { setLocFarm(farm); setIsNewFarm(false); }}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${locFarm === farm && !isNewFarm ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}`}
  >
  {farm}
  </button>
  ))}
  <button 
  type="button"
- onClick={() => { setLocStore(''); setIsNewStore(true); }}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed transition-all ${isNewStore ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500' : 'border-slate-600 text-slate-500 hover:text-slate-300'}`}
+ onClick={() => { setLocFarm(''); setIsNewFarm(true); }}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed transition-all ${isNewFarm ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500' : 'border-slate-600 text-slate-500 hover:text-slate-300'}`}
  >
  <Plus size={12} className="inline mr-1"/> 신규 등록
  </button>
  </div>
  )}
  
- {(existingStores.length === 0 || isNewStore) && (
+ {(existingFarms.length === 0 || isNewFarm) && (
  <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="relative group">
- <input required list="farm-list" placeholder="기존 농장 검색 또는 새로운 농장 이름 입력" value={locStore} onChange={e=>{setLocStore(e.target.value); setIsNewStore(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
+ <input required list="farm-list" placeholder="기존 농장 검색 또는 새로운 농장 이름 입력" value={locFarm} onChange={e=>{setLocFarm(e.target.value); setIsNewFarm(true);}} className="w-full bg-[#0A0F1A] border border-slate-800 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none text-white transition-colors" />
  <datalist id="farm-list">
-  {allStoresList.filter(s => (!locVillage || s.street === locVillage)).map(s => <option key={s.name} value={s.name} />)}
+  {allFarmsList.filter(s => (!locVillage || s.street === locVillage)).map(s => <option key={s.name} value={s.name} />)}
  </datalist>
  </motion.div> )}
  </div>
@@ -368,25 +368,25 @@ export default function Onboarding({ onComplete, googleUser }) {
 
  <div className="mt-4 pt-4 border-t border-slate-800/60">
     <button type="button" onClick={handleFetchAllStores} className="w-full py-3 bg-slate-800/50 text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors flex justify-center items-center gap-2">
-       {showAllStores ? "목록 닫기" : "기존에 등록된 모든 농장/필지 찾아보기"}
+       {showAllFarms ? "목록 닫기" : "기존에 등록된 모든 농장/필지 찾아보기"}
     </button>
 
     <AnimatePresence>
-      {showAllStores && (
+      {showAllFarms && (
         <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} exit={{opacity:0, height:0}} className="mt-4 space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-           {loadingAllStores ? (
+           {loadingAllFarms ? (
               <div className="p-4 text-center text-xs text-slate-500 flex justify-center items-center gap-2">
                  <RefreshCw size={14} className="animate-spin" /> 데이터를 불러오는 중...
               </div>
-           ) : allStoresList.length === 0 ? (
+           ) : allFarmsList.length === 0 ? (
               <div className="p-4 text-center text-xs text-slate-500">등록된 객체가 없습니다.</div>
            ) : (
-              allStoresList.map((s, idx) => (
+              allFarmsList.map((s, idx) => (
                  <div key={idx} onClick={() => {
                     setLevelId('farm');
-                    window.selectedStoreFullPath = s.path.split("/");
-                    setLocGu(s.gu); setLocDong(s.dong); setLocStreet(s.street); setLocStore(s.name); setIndustry(s.industry);
-                    setShowAllStores(false);
+                    window.selectedFarmFullPath = s.path.split("/");
+                    setLocGu(s.gu); setLocDong(s.dong); setLocStreet(s.street); setLocFarm(s.name); setIndustry(s.industry);
+                    setShowAllFarms(false);
                  }} className="p-3 bg-[#101725] border border-slate-800 hover:border-emerald-500/50 rounded-xl cursor-pointer transition-colors group">
                     <div className="flex justify-between items-center mb-1">
                        <span className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">{s.name}</span>

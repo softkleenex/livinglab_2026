@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Map, Zap, Store, FileJson, Camera, CloudRain, ShoppingCart, MessageSquare, Info, ShieldCheck, X, RefreshCw } from 'lucide-react';
+import { Map, Zap, Tractor, FileJson, Camera, CloudRain, ShoppingCart, MessageSquare, Info, ShieldCheck, X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Modals

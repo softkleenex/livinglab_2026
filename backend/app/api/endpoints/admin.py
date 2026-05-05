@@ -69,7 +69,7 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
             # Save to DB
             new_entry = DataEntry(
                 location_path=path,
-                store_id=farm.id if farm else None,
+                farm_id=farm.id if farm else None,
                 industry="테스트",
                 is_guest=0,
                 raw_text=f"[{m['date']}] 사용자가 직접 입력한 모의 테스트 데이터입니다.",

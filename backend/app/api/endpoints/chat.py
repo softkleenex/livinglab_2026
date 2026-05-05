@@ -192,7 +192,7 @@ async def chat_with_copilot(payload: ChatPayload, background_tasks: BackgroundTa
                 val_added = 100000
                 new_entry = DataEntry(
                     location_path=payload.path,
-                    store_id=farm.id if farm else None,
+                    farm_id=farm.id if farm else None,
                     industry=payload.industry,
                     is_guest=0,
                     raw_text=new_text,

@@ -230,7 +230,7 @@ async def ingest(
         
         new_entry = DataEntry(
             location_path=location,
-            store_id=farm.id if farm else None,
+            farm_id=farm.id if farm else None,
             industry=industry,
             is_guest=1 if is_guest_bool else 0,
             raw_text=content,
