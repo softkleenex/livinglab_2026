@@ -39,7 +39,7 @@ export default function UpgradeModal({ onClose, addToast }) {
               "주간/월간 심층 AI 경영 리포트",
               "CSV/Excel 데이터 Raw 파일 다운로드",
               "수기 영농일지/장부 AI 비전 스캔",
-              "우선순위 고객 지원 (24/7)",
+              "우선순위 농가/기업 컨설팅 지원 (24/7)",
               "지역 정책/예산 배정 우선 매칭 풀 등록"
             ].map((feature, idx) => (
               <div key={idx} className="flex items-center gap-3 bg-[#0E1420] p-3 rounded-xl border border-slate-800">

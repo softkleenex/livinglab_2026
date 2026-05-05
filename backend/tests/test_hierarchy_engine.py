@@ -25,7 +25,7 @@ def hierarchy_engine():
     return HierarchyEngine()
 
 def test_create_or_get_path(db_session, hierarchy_engine):
-    path_list = ["서울특별시", "강남구", "역삼동", "테헤란로 상권", "스타벅스 역삼점"]
+    path_list = ["대구광역시", "군위군", "효령면", "사과 재배단지", "청송농원"]
     types = ["City", "Gu", "Dong", "Street", "Store"]
     
     # Act
@@ -47,7 +47,7 @@ def test_create_or_get_path(db_session, hierarchy_engine):
     assert street.parent_id == dong.id
 
 def test_add_value_bottom_up(db_session, hierarchy_engine):
-    path_list = ["서울특별시", "강남구", "역삼동", "테헤란로 상권", "스타벅스 역삼점"]
+    path_list = ["대구광역시", "군위군", "효령면", "사과 재배단지", "청송농원"]
     types = ["City", "Gu", "Dong", "Street", "Store"]
     hierarchy_engine.create_or_get_path(db_session, path_list, types)
     

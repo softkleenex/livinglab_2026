@@ -179,7 +179,7 @@ async def ingest(
             if file and file_content_type and file_content_type.startswith('image/'):
                 insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
             else:
-                insights = "가상 지능 분석: 제공해주신 데이터가 로컬 스토어 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 상권 분석을 가능하게 합니다."
+                insights = "가상 지능 분석: 제공해주신 데이터가 농장/필지 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 기후/생육 분석을 가능하게 합니다."
 
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
         short_hash = trust_hash[:8]
