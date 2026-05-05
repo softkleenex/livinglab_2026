@@ -78,14 +78,14 @@ export default function Onboarding({ onComplete, googleUser }) {
  const [existingFarms, setExistingFarms] = useState([]);
  const [isNewFarm, setIsNewFarm] = useState(false);
  const [showAllFarms, setShowAllFarms] = useState(false);
- const [allFarmsList, setAllStoresList] = useState([]);
+ const [allFarmsList, setAllFarmsList] = useState([]);
  const [loadingAllFarms, setLoadingAllFarms] = useState(false);
 
  useEffect(() => {
    const loadAllFarms = async () => {
      try {
        const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);
-       setAllStoresList(res.data.farms || []);
+       setAllFarmsList(res.data.farms || []);
      } catch (e) {
        console.error("Failed to fetch all farms for combobox", e);
      }
@@ -116,7 +116,7 @@ export default function Onboarding({ onComplete, googleUser }) {
  // Debounce slightly
  const timer = setTimeout(fetchFarms, 500);
  return () => clearTimeout(timer);
- }, [locCity, locDistrict, locVillage, levelId, locFarm]);
+ }, [locCity, locDistrict, locVillage, levelId]);
 
  useEffect(() => {
   if (locDistrict.includes('효령') || locDistrict.includes('부계')) setMapCenter([36.1963, 128.6186]); 
@@ -133,7 +133,7 @@ export default function Onboarding({ onComplete, googleUser }) {
    setLoadingAllFarms(true);
    try {
      const res = await axios.get(`${API_BASE_URL}/api/v1/hierarchy/farms/all`);     
-     setAllStoresList(res.data.farms || []);
+     setAllFarmsList(res.data.farms || []);
    } catch(e) {
      alert("데이터를 불러오지 못했습니다: " + e.message);
    } finally {
