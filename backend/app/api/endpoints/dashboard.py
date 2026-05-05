@@ -102,7 +102,7 @@ async def generate_weekly_report(path: str, industry: str = "공공", db: Sessio
     entries = obj.get("data_entries", [])
     
     if not entries:
-        return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 사업장의 일상이나 현장 데이터를 먼저 피딩(업로드)해 주세요!"}
+        return {"status": "success", "report": "아직 충분한 데이터가 수집되지 않았습니다. 농장/필지의 일상이나 현장 데이터를 먼저 피딩(업로드)해 주세요!"}
 
     from app.services.report_service import report_service
     report_text = await report_service.generate_weekly_report(

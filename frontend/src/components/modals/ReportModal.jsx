@@ -107,7 +107,7 @@ export default function ReportModal({ onClose, locationPath, userContext }) {
  </div>
  <div className="text-center space-y-2">
  <p className="text-base text-white font-bold tracking-wide">데이터 교차 분석 및 리포트 작성 중...</p>
- <p className="text-xs text-slate-500">상권/지역 평균 지표와 사업장 실시간 펄스(Pulse)를 비교하고 있습니다.</p>
+ <p className="text-xs text-slate-500">지역 평균 지표와 농장 실시간 펄스(Pulse)를 비교하고 있습니다.</p>
  </div>
  </motion.div>
  ) : (

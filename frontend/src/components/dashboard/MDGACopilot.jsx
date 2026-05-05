@@ -139,7 +139,7 @@ export default function MDGACopilot({ locationPath, industry, entries = [], onAc
                         <span className="text-[10px] text-slate-300 truncate font-mono">[{e.hash.substring(0,8)}] {e.raw_text || e.insights.substring(0, 20)}...</span>
                       </div>
                     ))}
-                    {entries.length === 0 && <p className="text-[10px] text-slate-500 py-1">현재 사업장에 데이터가 없습니다.</p>}
+                    {entries.length === 0 && <p className="text-[10px] text-slate-500 py-1">현재 농장/필지에 데이터가 없습니다.</p>}
                   </motion.div>
                 )}
               </AnimatePresence>

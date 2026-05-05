@@ -40,10 +40,10 @@ def test_create_or_get_path(db_session, hierarchy_engine):
     store = db_session.query(Store).filter(Store.name == "스타벅스 역삼점").first()
     assert store is not None
     
-    street = db_session.query(Region).filter(Region.name == "테헤란로 상권").first()
+    street = db_session.query(Region).filter(Region.name == "사과 재배단지").first()
     assert store.region_id == street.id
     
-    dong = db_session.query(Region).filter(Region.name == "역삼동").first()
+    dong = db_session.query(Region).filter(Region.name == "효령면").first()
     assert street.parent_id == dong.id
 
 def test_add_value_bottom_up(db_session, hierarchy_engine):

@@ -94,7 +94,7 @@ async def demo_inject(path: str, db: Session = Depends(get_db), user: dict = Dep
 async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
     try:
         prompt = f"""
-    우리는 현재 '{region}' 구역(상권)의 경제/산업 생태계 활성화를 위해 '{budget:,} 원'의 인프라 및 기술 예산을 투입하는 B2B 거버넌스 정책 시뮬레이션을 수행하고 있습니다.
+    우리는 현재 '{region}' 구역(마을/재배지)의 농업 생태계 활성화를 위해 '{budget:,} 원'의 인프라 및 기술 예산을 투입하는 B2B 거버넌스 정책 시뮬레이션을 수행하고 있습니다.
     
     당신은 최고 수준의 스마트시티 정책 분석가이자 데이터 사이언티스트입니다.
     다음의 키를 가진 유효한 JSON 포맷으로 예측 결과를 렌더링하세요. 다른 포맷팅 텍스트나 마크다운(```)은 모두 제외하세요.
