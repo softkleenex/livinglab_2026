@@ -11,8 +11,8 @@
 * **프로젝트명:** MDGA (Universal Data Engine) - 농림/스마트팜 특화 피봇 모델
 * **진행 기간:** (본인의 진행 기간 기입)
 * **사용 기술:** 
-  * **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Leaflet
-  * **Backend:** Python 3.12, FastAPI, SQLAlchemy, PostgreSQL
+  * **Frontend:** React 19, Vite, Tailwind CSS, Framer Motion, Leaflet
+  * **Backend:** Python 3.11, FastAPI, SQLAlchemy, PostgreSQL
   * **AI/Data:** Google Gemini 2.5 Pro (Multimodal), Hugging Face, 공공데이터 API (기상청, 농진청 등)
   * **DevOps:** Render (Backend), Cloudflare Pages (Frontend), GitHub Actions
 * **핵심 역할:** (예: 풀스택 개발, 백엔드 아키텍처 설계, AI 프롬프트 엔지니어링 등)

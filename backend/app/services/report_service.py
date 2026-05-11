@@ -1,29 +1,45 @@
 import asyncio
 import logging
-from app.services.gemini_ai import model
+from app.services.gemini_ai import client, model_name
 from app.services.weather_service import weather_service
 
 logger = logging.getLogger("mdga_enterprise")
 
+
 class ReportService:
-    async def generate_weekly_report(self, path: str, industry: str, obj_metadata: dict, parent_metadata: dict, parent_name: str, entries: list) -> str:
+    async def generate_weekly_report(
+        self,
+        path: str,
+        industry: str,
+        obj_metadata: dict,
+        parent_metadata: dict,
+        parent_name: str,
+        entries: list,
+    ) -> str:
         """Generates an AI-powered weekly business report based on raw insights and context."""
         if not entries:
             return "아직 충분한 데이터가 수집되지 않았습니다. 사업장의 일상이나 현장 데이터를 먼저 피딩(업로드)해 주세요!"
-            
-        history_text = "\n".join([f"- {e['timestamp']}: {e['insights']} (신뢰도: {e.get('trust_index', 50)}%)" for e in entries[-7:]])
-        
+
+        history_text = "\n".join(
+            [
+                f"- {e['timestamp']}: {e['insights']} (신뢰도: {e.get('trust_index', 50)}%)"
+                for e in entries[-7:]
+            ]
+        )
+
         current_value = obj_metadata.get("total_value", 0)
         current_pulse = obj_metadata.get("pulse_rate", 0)
         parent_val = parent_metadata.get("total_value", 0)
-        
+
         # Calculate competitiveness
-        market_share = round((current_value / parent_val * 100) if parent_val > 0 else 0, 1)
-        
+        market_share = round(
+            (current_value / parent_val * 100) if parent_val > 0 else 0, 1
+        )
+
         # Fetch real weather data
         location = obj_metadata.get("location", [35.8714, 128.6014])
         weather_info = await weather_service.get_forecast(location[0], location[1])
-            
+
         prompt = f"""
         당신은 '{path}' 농장/기업의 전담 최고농업경영자(CEO) 컨설턴트이자 최고 데이터 분석가(CDO)입니다.
         대상 산업군(Industry)은 '{industry}'이며, B2B SaaS 환경에서 가장 전문적이고 날카로운 통찰력을 제공하는 것이 당신의 목표입니다.
@@ -53,10 +69,13 @@ class ReportService:
         (구체적이고 당장 실행 가능한 지시사항 3가지를 명확히 제시)
         """
         try:
-            res = await asyncio.to_thread(model.generate_content, prompt)
+            res = await asyncio.to_thread(
+                client.models.generate_content, model=model_name, contents=prompt
+            )
             return res.text
         except Exception as e:
             logger.error(f"ReportService AI error: {str(e)}")
             return "현재 AI 서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요."
+
 
 report_service = ReportService()

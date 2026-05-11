@@ -33,6 +33,18 @@ const BottomNavLink = React.memo(({ icon, label, active, onClick, special }) => 
   );
 });
 
+/**
+ * MainApp Component
+ *
+ * Acts as the primary layout and routing container for the MDGA platform.
+ * It manages bottom navigation, modals, and the global notification system.
+ *
+ * @param {Object} props
+ * @param {Object} props.userContext - The current user's context (e.g., location, industry).
+ * @param {Object} props.googleUser - The authenticated Google user object or guest user details.
+ * @param {Function} props.onLogout - Callback to handle user logout.
+ * @returns {React.ReactElement} The MainApp interface.
+ */
 export default function MainApp({ userContext, googleUser, onLogout }) {
   const [activeTab, setActiveTab] = useState('converter');
   const [showIngest, setShowIngest] = useState(false);

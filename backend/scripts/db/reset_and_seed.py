@@ -1,14 +1,14 @@
 import os
-import json
 import ssl
 import time
 import requests
-import random
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from PIL import Image
 
-load_dotenv('backend/.env')
+# Import shared massive data generation
+from seed_data import get_massive_data, generate_sensor_json
+
+load_dotenv("backend/.env")
 
 context = ssl._create_unverified_context()
 requests.packages.urllib3.disable_warnings()
@@ -23,129 +23,78 @@ print("==================================================")
 # 1. Reset Schema
 print("\n[1/3] Resetting Production Database Schema...")
 try:
-    res = requests.post(f'{API_URL}/api/v1/reset_schema', headers=HEADERS, verify=False)
+    res = requests.post(f"{API_URL}/api/v1/reset_schema", headers=HEADERS, verify=False)
     print("  -> Schema Reset Successfully:", res.text)
 except Exception as e:
     print("  -> Failed to reset schema:", e)
 
 # 2. Dummy Image Generation
 dummy_img_path = "seed_dummy.png"
-img = Image.new('RGB', (200, 200), color = (45, 60, 80))
+img = Image.new("RGB", (200, 200), color=(45, 60, 80))
 img.save(dummy_img_path)
 
 # 3. Procedural Data Generation
 print("\n[2/3] Generating Massive Realistic Datasets...")
-
-def generate_sensor_json(sensor_type):
-    if sensor_type == "smartfarm":
-        return json.dumps({
-            "timestamp": (datetime.now() - timedelta(minutes=random.randint(10, 1000))).strftime("%Y-%m-%d %H:%M"),
-            "sensors": {
-                "temperature": round(random.uniform(22.0, 26.5), 1),
-                "humidity": round(random.uniform(60.0, 75.0), 1),
-                "co2_ppm": random.randint(400, 800),
-                "ph_level": round(random.uniform(5.5, 6.5), 2),
-                "ec_level": round(random.uniform(1.2, 2.5), 2)
-            },
-            "status": random.choice(["OPTIMAL", "WARNING", "OPTIMAL", "OPTIMAL"]),
-            "yield_forecast": f"+{random.randint(5, 15)}%"
-        }, indent=2)
-    elif sensor_type == "weather_station":
-        return json.dumps({
-            "timestamp": (datetime.now() - timedelta(minutes=random.randint(1, 60))).strftime("%Y-%m-%d %H:%M"),
-            "wind_speed_ms": round(random.uniform(1.2, 5.5), 1),
-            "solar_radiation_wm2": random.randint(200, 800),
-            "precipitation_mm": round(random.uniform(0, 15.0), 1),
-            "uv_index": random.randint(2, 9),
-            "extreme_weather_alert": random.choice([False, False, True])
-        }, indent=2)
-    elif sensor_type == "soil_sensor":
-        return json.dumps({
-            "report_date": datetime.now().strftime("%Y-%m-%d"),
-            "soil_moisture_percent": random.randint(20, 60),
-            "soil_temperature_c": round(random.uniform(15.0, 22.0), 1),
-            "nitrogen_mg_kg": random.randint(10, 50),
-            "phosphorus_mg_kg": random.randint(5, 30)
-        }, indent=2)
-    return "{}"
-
-massive_data = [
-    # --- MACRO: CITY & GU LEVEL ---
-    {"region": [], "name": "대구광역시청 데이터허브", "industry": "공공", "insight": "[2026 대구 스마트시티 총괄 지표]\n- 1분기 GDP 성장률: 2.1%\n- 스마트팜 밸리 조성율: 85%\n- 스마트팜단지 스마트팩토리 전환율: 42%\n(공공데이터포털 연동 API 요약)"},
-    {"region": ["북구"], "name": "북구청 산업지원과", "industry": "공공", "insight": "북구 연암로 스마트팜 밸리 일대 전력망 확충 공사 완료. 추가 15개 농가 입주 대기 중. 지역 화폐 결제액 전월 대비 12% 상승."},
-    {"region": ["군위군"], "name": "군위군 농업정책과", "industry": "공공", "insight": "스마트 농업 지원 프로젝트 1단계 완료. 도입 농가 생산성 15% 증가. 고부가가치 작물 매출액 30% 증가."},
-    {"region": ["달서구"], "name": "대구 스마트팜 관리센터", "industry": "공공", "insight": "스마트팜단지 입주기업 3,000개사 전력 피크타임 모니터링 결과, 오후 2~4시 스마트팜 가동률 92% 달성. 탄소 배출 저감 캠페인으로 월 500톤 절감."},
-]
-
-# --- MICRO: SMART FARMS (북구 & 달성군) ---
-farm_names = ["지니스팜", "에그리테크", "초록잎", "수성수산", "달성 딸기", "금호강 토마토", "팔공산 메론", "연암 파프리카"]
-for i, name in enumerate(farm_names):
-    massive_data.append({
-        "region": ["북구", "산격동", "연암로 스마트팜 밸리"] if i < 4 else ["달성군", "현풍읍", "테크노폴리스 외곽"],
-        "name": f"{name} 제{random.randint(1,5)}농장",
-        "industry": "스마트팜",
-        "insight": generate_sensor_json("smartfarm")
-    })
-
-# --- MICRO: F&B / RETAIL -> DATA HUB / RESEARCH (중구 동성로 & 달서구 상인동) ---
-fnb_names = ["MDGA 데이터허브", "동성로 AI연구소", "기후변화 대응센터", "스마트팜 기술원", "농업 빅데이터 센터", "농산물 품질관리소", "농업기술실용화재단", "사과 연구 센터"]
-for i, name in enumerate(fnb_names):
-    massive_data.append({
-        "region": ["중구", "삼덕동", "동성로"] if i < 5 else ["달서구", "상인동", "상인역 번화가"],
-        "name": f"{name} {random.choice(['본점', '동성로분원', '상인분원'])}",
-        "industry": random.choice(["연구기관 (AI 데이터 허브)", "공공/기타"]),
-        "insight": generate_sensor_json("soil_sensor")
-    })
-
-# --- MICRO: MANUFACTURING & LOGISTICS (달서구 스마트팜단지) ---
-ind_names = ["AI 비전로보틱스", "스마트농기계 대구센터", "미래 농업드론", "정밀기계 스마트팜(주)", "자율주행 트랙터(주)", "에코 비료패키징", "농산물 로지스틱스", "스마트온실(주)"]
-for i, name in enumerate(ind_names):
-    massive_data.append({
-        "region": ["달서구", "성서동", "성서산업단지"],
-        "name": name,
-        "industry": random.choice(["기업 (농기계/스마트팜)", "애그테크 (스마트 농기계)"]),
-        "insight": generate_sensor_json("weather_station")
-    })
-
+massive_data = get_massive_data()
 print(f"Generated {len(massive_data)} realistic B2B/Public entries.")
 
 print("\n[3/3] Ingesting Data into Supabase & Google Drive Data Lake...")
 success_count = 0
 for idx, item in enumerate(massive_data):
+    state = item.get("state", "대구광역시")
     if len(item["region"]) == 0:
-        path_str = f"대구광역시/{item['name']}"
+        path_str = f"{state}/{item['name']}"
     else:
-        path_str = "대구광역시/" + "/".join(item["region"]) + "/" + item["name"]
-    
+        path_str = f"{state}/" + "/".join(item["region"]) + "/" + item["name"]
+
     industry = item["industry"]
-    
+    sensor_json = generate_sensor_json(item.get("type", "smartfarm"))
+    full_insight = (
+        f"{item['insight']}\n\n[실시간 센서 및 공공데이터 오버레이]\n{sensor_json}"
+    )
+
     try:
         # Pre-create context
-        requests.post(f"{API_URL}/api/v1/user/context", json={
-            'role': 'farm', 'industry': industry, 'location': path_str.split('/')
-        }, headers=HEADERS, verify=False)
+        requests.post(
+            f"{API_URL}/api/v1/user/context",
+            json={
+                "role": "farm",
+                "industry": industry,
+                "location": path_str.split("/"),
+            },
+            headers=HEADERS,
+            verify=False,
+        )
     except Exception:
         pass
 
-    with open(dummy_img_path, 'rb') as f:
-        files = {'file': (f"evidence_{idx}.png", f, 'image/png')}
+    with open(dummy_img_path, "rb") as f:
+        files = {"file": (f"evidence_{idx}.png", f, "image/png")}
         data = {
-            "raw_text": item["insight"],
+            "raw_text": full_insight,
             "location": path_str,
             "industry": industry,
-            "is_guest": "false"
+            "is_guest": "false",
         }
         try:
-            res = requests.post(f"{API_URL}/api/v1/ingest", data=data, files=files, headers=HEADERS, verify=False)
+            res = requests.post(
+                f"{API_URL}/api/v1/ingest",
+                data=data,
+                files=files,
+                headers=HEADERS,
+                verify=False,
+            )
             if res.status_code == 200:
-                print(f"  [{idx+1}/{len(massive_data)}] ✅ {path_str}")
+                print(f"  [{idx + 1}/{len(massive_data)}] ✅ {path_str}")
                 success_count += 1
             else:
-                print(f"  [{idx+1}/{len(massive_data)}] ❌ Failed: {item['name']} ({res.text})")
+                print(
+                    f"  [{idx + 1}/{len(massive_data)}] ❌ Failed: {item['name']} ({res.text})"
+                )
         except Exception as e:
-            print(f"  [{idx+1}/{len(massive_data)}] ❌ Error: {item['name']} ({e})")
-            
-    time.sleep(0.5) # Slight delay to avoid massive rate limits if any
+            print(f"  [{idx + 1}/{len(massive_data)}] ❌ Error: {item['name']} ({e})")
+
+    time.sleep(0.5)  # Slight delay to avoid massive rate limits if any
 
 if os.path.exists(dummy_img_path):
     os.remove(dummy_img_path)

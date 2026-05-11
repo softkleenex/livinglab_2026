@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@jackyzha0/quartz": "file:../../../../../../../../Users/isangjae/Library/Mobile Documents/iCloud~md~obsidian/Documents/coding_training"
+  },
+  "_npx": {
+    "packages": [
+      "/Users/isangjae/Library/Mobile Documents/iCloud~md~obsidian/Documents/coding_training"
+    ]
+  }
+}

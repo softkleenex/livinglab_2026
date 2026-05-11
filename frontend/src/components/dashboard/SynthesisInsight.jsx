@@ -9,6 +9,8 @@ export default function SynthesisInsight({ userContext }) {
   const [alertData, setAlertData] = useState(null);
   const [yieldData, setYieldData] = useState(null);
   const [resourceData, setResourceData] = useState(null);
+  const [cropSimData, setCropSimData] = useState(null);
+  const [oversupplyData, setOversupplyData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +43,22 @@ export default function SynthesisInsight({ userContext }) {
 
         if (resourceRes.data?.status === 'success') {
           setResourceData(resourceRes.data.data);
+        }
+
+        // Fetch Crop Simulator
+        const cropSimRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/crop-simulator`, {
+          params: { region, crop: '사과' }
+        });
+        if (cropSimRes.data?.status === 'success') {
+          setCropSimData(cropSimRes.data.data);
+        }
+
+        // Fetch Oversupply Risk
+        const oversupplyRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/oversupply-risk`, {
+          params: { crop: '사과' }
+        });
+        if (oversupplyRes.data?.status === 'success') {
+          setOversupplyData(oversupplyRes.data.data);
         }
 
       } catch (err) {
@@ -161,9 +179,25 @@ export default function SynthesisInsight({ userContext }) {
           </div>
           <div className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/50 flex flex-col justify-center">
             <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <CloudRain size={12} /> 위기경보 ({yieldData?.oversupply_risk_level})
+              <CloudRain size={12} /> 수급위기경보 ({oversupplyData?.risk_level || yieldData?.oversupply_risk_level})
             </div>
-            <div className="text-[10px] text-white truncate max-w-full" title={yieldData?.actionable_insight}>{yieldData ? yieldData.actionable_insight : '분석 중...'}</div>
+            <div className="text-[10px] text-white truncate max-w-full" title={oversupplyData?.actionable_insight || yieldData?.actionable_insight}>
+              {oversupplyData ? oversupplyData.actionable_insight : yieldData ? yieldData.actionable_insight : '분석 중...'}
+            </div>
+          </div>
+          <div className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/50 flex flex-col justify-center col-span-2">
+            <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Cpu size={12} /> 기후 적응형 작물 시뮬레이션
+            </div>
+            <div className="text-[11px] text-slate-300 leading-relaxed mb-2">
+              {cropSimData ? cropSimData.actionable_insight : '계산 중...'}
+            </div>
+            {cropSimData && (
+              <div className="flex gap-2 text-[10px]">
+                <span className="bg-slate-900 px-2 py-1 rounded text-slate-400">10년 뒤 생존율: <span className="text-white font-bold">{cropSimData.survival_rate_10yr}%</span></span>
+                <span className="bg-slate-900 px-2 py-1 rounded text-slate-400">대체작물: <span className="text-emerald-400 font-bold">{cropSimData.recommended_alternative_crop}</span></span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,9 +1,7 @@
-import google.generativeai as genai
+from google import genai
 from app.core.config import settings
 
 api_key = settings.GEMINI_API_KEY
-if api_key:
-    genai.configure(api_key=api_key)
+client = genai.Client(api_key=api_key) if api_key else None
 
 model_name = settings.GEMINI_MODEL
-model = genai.GenerativeModel(model_name)

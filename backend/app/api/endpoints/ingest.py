@@ -1,9 +1,17 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, BackgroundTasks
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    Depends,
+    BackgroundTasks,
+)
 from sqlalchemy.orm import Session
 from app.core.database import get_db, DataEntry, Farm, Region, Wallet, Transaction
 from app.core.engine import engine
 from app.core.websocket import manager
-from app.services.gemini_ai import model
+from app.services.gemini_ai import client, model_name
 from app.services.google_drive import get_drive_service, get_or_create_drive_folder
 from app.api.deps import verify_token
 from PIL import Image
@@ -16,11 +24,12 @@ import asyncio
 import time
 from googleapiclient.http import MediaIoBaseUpload
 
-router = APIRouter()
-
 from app.core.config import settings
+
 FOLDER_ID = settings.GOOGLE_DRIVE_FOLDER_ID
 api_key = settings.GEMINI_API_KEY
+
+router = APIRouter()
 
 
 def with_retries(func):
@@ -31,46 +40,102 @@ def with_retries(func):
                 return func(*args, **kwargs)
             except Exception as e:
                 last_exception = e
-                print(f"Drive Task failed on attempt {attempt+1}: {e}")
+                print(f"Drive Task failed on attempt {attempt + 1}: {e}")
                 time.sleep(2)
         print(f"Drive Task definitively failed after 3 attempts: {last_exception}")
         return None
+
     return wrapper
 
+
 @with_retries
-def sync_drive_upload(path_list, short_hash, file_data, file_content_type, file_filename, raw_text, insights, entry_id=None):
+def sync_drive_upload(
+    path_list,
+    short_hash,
+    file_data,
+    file_content_type,
+    file_filename,
+    raw_text,
+    insights,
+    entry_id=None,
+):
     drive_link = None
     try:
         drive_service = get_drive_service()
         if drive_service:
             current_folder_id = FOLDER_ID
             for p in path_list:
-                current_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, p)
+                current_folder_id = get_or_create_drive_folder(
+                    drive_service, current_folder_id, p
+                )
 
-            origin_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "origin")
-            generated_folder_id = get_or_create_drive_folder(drive_service, current_folder_id, "generated")
+            origin_folder_id = get_or_create_drive_folder(
+                drive_service, current_folder_id, "origin"
+            )
+            generated_folder_id = get_or_create_drive_folder(
+                drive_service, current_folder_id, "generated"
+            )
 
-            now_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            now_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
             if file_data:
-                file_metadata = {'name': f"Ingest_{now_str}_{short_hash}_{file_filename}", 'parents': [origin_folder_id]}
-                media = MediaIoBaseUpload(io.BytesIO(file_data), mimetype=file_content_type, resumable=True)
-                uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink', supportsAllDrives=True).execute()
-                drive_link = uploaded_file.get('webViewLink')
-            
+                file_metadata = {
+                    "name": f"Ingest_{now_str}_{short_hash}_{file_filename}",
+                    "parents": [origin_folder_id],
+                }
+                media = MediaIoBaseUpload(
+                    io.BytesIO(file_data), mimetype=file_content_type, resumable=True
+                )
+                uploaded_file = (
+                    drive_service.files()
+                    .create(
+                        body=file_metadata,
+                        media_body=media,
+                        fields="id, webViewLink",
+                        supportsAllDrives=True,
+                    )
+                    .execute()
+                )
+                drive_link = uploaded_file.get("webViewLink")
+
             if raw_text:
-                txt_metadata = {'name': f"RawText_{now_str}_{short_hash}.txt", 'parents': [origin_folder_id]}
-                txt_media = MediaIoBaseUpload(io.BytesIO(raw_text.encode('utf-8')), mimetype='text/plain', resumable=True)
-                drive_service.files().create(body=txt_metadata, media_body=txt_media, fields='id', supportsAllDrives=True).execute()
+                txt_metadata = {
+                    "name": f"RawText_{now_str}_{short_hash}.txt",
+                    "parents": [origin_folder_id],
+                }
+                txt_media = MediaIoBaseUpload(
+                    io.BytesIO(raw_text.encode("utf-8")),
+                    mimetype="text/plain",
+                    resumable=True,
+                )
+                drive_service.files().create(
+                    body=txt_metadata,
+                    media_body=txt_media,
+                    fields="id",
+                    supportsAllDrives=True,
+                ).execute()
 
             if insights:
-                insight_metadata = {'name': f"AI_Insight_{now_str}_{short_hash}.txt", 'parents': [generated_folder_id]}
-                insight_media = MediaIoBaseUpload(io.BytesIO(insights.encode('utf-8')), mimetype='text/plain', resumable=True)
-                drive_service.files().create(body=insight_metadata, media_body=insight_media, fields='id', supportsAllDrives=True).execute()
-                    
+                insight_metadata = {
+                    "name": f"AI_Insight_{now_str}_{short_hash}.txt",
+                    "parents": [generated_folder_id],
+                }
+                insight_media = MediaIoBaseUpload(
+                    io.BytesIO(insights.encode("utf-8")),
+                    mimetype="text/plain",
+                    resumable=True,
+                )
+                drive_service.files().create(
+                    body=insight_metadata,
+                    media_body=insight_media,
+                    fields="id",
+                    supportsAllDrives=True,
+                ).execute()
+
     except Exception as e:
         print("Drive Error:", e)
     return drive_link
+
 
 @with_retries
 def sync_drive_delete(short_hash, drive_link=None):
@@ -78,26 +143,38 @@ def sync_drive_delete(short_hash, drive_link=None):
         drive_service = get_drive_service()
         if drive_service:
             query = f"name contains '_{short_hash}' and trashed=false"
-            results = drive_service.files().list(q=query, fields="files(id, name)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
+            results = (
+                drive_service.files()
+                .list(
+                    q=query,
+                    fields="files(id, name)",
+                    supportsAllDrives=True,
+                    includeItemsFromAllDrives=True,
+                )
+                .execute()
+            )
             items = results.get("files", [])
-            
+
             if drive_link and "drive.google.com/file/d/" in drive_link:
                 import re
-                match = re.search(r'/file/d/([a-zA-Z0-9_-]+)/', drive_link)
+
+                match = re.search(r"/file/d/([a-zA-Z0-9_-]+)/", drive_link)
                 if match:
                     legacy_id = match.group(1)
-                    if not any(i['id'] == legacy_id for i in items):
-                        items.append({'id': legacy_id, 'name': 'Legacy Upload'})
+                    if not any(i["id"] == legacy_id for i in items):
+                        items.append({"id": legacy_id, "name": "Legacy Upload"})
 
             for item in items:
-                drive_service.files().delete(fileId=item['id']).execute()
+                drive_service.files().delete(fileId=item["id"]).execute()
                 print(f"Deleted from Drive: {item['name']}")
     except Exception as drive_err:
         print(f"Failed to delete files from Google Drive: {drive_err}")
 
+
 def sync_drive_delete_batch(short_hashes):
     for h in short_hashes:
         sync_drive_delete(h)
+
 
 @with_retries
 def sync_drive_modify(short_hash, new_text):
@@ -105,30 +182,46 @@ def sync_drive_modify(short_hash, new_text):
         drive_service = get_drive_service()
         if drive_service:
             query = f"name contains 'RawText_' and name contains '_{short_hash}.txt' and trashed=false"
-            results = drive_service.files().list(q=query, fields="files(id, name)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
+            results = (
+                drive_service.files()
+                .list(
+                    q=query,
+                    fields="files(id, name)",
+                    supportsAllDrives=True,
+                    includeItemsFromAllDrives=True,
+                )
+                .execute()
+            )
             items = results.get("files", [])
             for item in items:
-                txt_media = MediaIoBaseUpload(io.BytesIO(new_text.encode('utf-8')), mimetype='text/plain', resumable=True)
-                drive_service.files().update(fileId=item['id'], media_body=txt_media, supportsAllDrives=True).execute()
+                txt_media = MediaIoBaseUpload(
+                    io.BytesIO(new_text.encode("utf-8")),
+                    mimetype="text/plain",
+                    resumable=True,
+                )
+                drive_service.files().update(
+                    fileId=item["id"], media_body=txt_media, supportsAllDrives=True
+                ).execute()
                 print(f"Updated Drive File: {item['name']}")
     except Exception as e:
         print("Failed to update drive:", e)
 
+
 @router.post("")
 async def ingest(
-    raw_text: str = Form(None), 
+    raw_text: str = Form(None),
     file: UploadFile = File(None),
     location: str = Form(...),
     is_guest: str = Form("false"),
     industry: str = Form("공공"),
     db: Session = Depends(get_db),
-    user: dict = Depends(verify_token)
+    user: dict = Depends(verify_token),
 ):
     try:
         content = raw_text if raw_text else ""
         path_list = [p for p in location.split("/") if p]
         is_guest_bool = is_guest.lower() == "true" or user["role"] == "guest"
-        
+
         file_data = None
         file_content_type = None
         file_filename = None
@@ -139,7 +232,9 @@ async def ingest(
             file_filename = file.filename
 
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
-        existing_entry = db.query(DataEntry).filter(DataEntry.hash_val == trust_hash).first()
+        existing_entry = (
+            db.query(DataEntry).filter(DataEntry.hash_val == trust_hash).first()
+        )
         if existing_entry:
             return {
                 "status": "success",
@@ -151,24 +246,37 @@ async def ingest(
                     "insights": existing_entry.insights,
                     "trust_index": existing_entry.trust_index,
                     "raw_text": existing_entry.raw_text,
-                    "effective_value": existing_entry.effective_value
+                    "effective_value": existing_entry.effective_value,
                 },
-                "value_added": 0
+                "value_added": 0,
             }
 
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
-            target_obj = engine.create_or_get_path(db, path_list, ["City", "District", "Village", "Farm"])
+            target_obj = engine.create_or_get_path(
+                db, path_list, ["City", "District", "Village", "Farm"]
+            )
 
         prompt_parts = [
             f"당신은 '{industry}' 산업군 및 농업 데이터 분석가(AI-Ready 데이터 변환기)입니다.",
             f"다음은 '{location}'에 위치한 농가/스마트팜에서 방금 업로드한 현장 수기 영농일지/데이터입니다.",
             f"데이터 내용: {content}",
-            "위 데이터를 심도 있게 분석하여 다음 두 가지를 수행하세요:",
-            "1. 즉시 실행 가능한(Actionable) 인사이트를 2~3문장으로 제시 (이모지 사용).",
-            "2. 입력된 비정형 데이터(사진, 텍스트)를 AI 허브 라벨링 규칙에 맞춘 정형 데이터(JSON) 형태의 'AI-Ready Data' 텍스트 블록으로 변환하여 하단에 첨부하세요."
+            "위 데이터를 심도 있게 분석하여 JSON 형식으로 응답하세요.",
+            "JSON 응답은 다음 구조를 따라야 합니다:",
+            """
+            {
+              "type": "object",
+              "properties": {
+                "crop_type": { "type": "string", "description": "언급된 작물 이름 (예: 딸기, 토마토)" },
+                "temperature": { "type": "number", "description": "텍스트에서 언급된 온도 수치" },
+                "growth_stage": { "type": "string", "enum": ["파종", "육묘", "개화", "결실", "수확", "알수없음"] },
+                "pest_disease_detected": { "type": "boolean", "description": "텍스트 또는 이미지에서 병해충, 시듦 현상이 보이면 true" }
+              },
+              "required": ["pest_disease_detected"]
+            }
+            """
         ]
-        if file and file_content_type and file_content_type.startswith('image/'):
+        if file and file_content_type and file_content_type.startswith("image/"):
             try:
                 img = Image.open(io.BytesIO(file_data))
                 prompt_parts.append(img)
@@ -176,64 +284,110 @@ async def ingest(
                 print(f"Warning: Failed to parse image file: {e}")
 
         try:
-            if not api_key: raise Exception("API Key missing")
+            if not api_key:
+                raise Exception("API Key missing")
+            
+            import json
+            from google import genai
+            from pydantic import BaseModel, Field
+            from typing import Optional, Literal
+            
+            class AIReadyData(BaseModel):
+                crop_type: Optional[str] = Field(None, description="언급된 작물 이름")
+                temperature: Optional[float] = Field(None, description="텍스트에서 언급된 온도 수치")
+                growth_stage: Optional[Literal["파종", "육묘", "개화", "결실", "수확", "알수없음"]] = Field(None)
+                pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
+
             # Unblock the event loop for LLM inference
-            res = await asyncio.to_thread(model.generate_content, prompt_parts)
-            insights = res.text
+            res = await asyncio.to_thread(
+                client.models.generate_content, 
+                model=model_name, 
+                contents=prompt_parts,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIReadyData,
+                )
+            )
+            
+            try:
+                res_json = json.loads(res.text)
+                ai_ready_data = res_json
+                insight_text = f"작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 생육: {ai_ready_data.get('growth_stage', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
+                insights = f"{insight_text}\n\n```json\n{json.dumps(ai_ready_data, ensure_ascii=False, indent=2)}\n```"
+            except json.JSONDecodeError:
+                insights = res.text
+                
         except Exception:
             traceback.print_exc()
-            if file and file_content_type and file_content_type.startswith('image/'):
+            if file and file_content_type and file_content_type.startswith("image/"):
                 insights = "가상 지능 분석 (비전): 업로드하신 현장/데이터 이미지가 성공적으로 스캔되었습니다. 현재 보이는 레이아웃이나 패턴에서 개선할 수 있는 인사이트를 추출 중입니다."
             else:
                 insights = "가상 지능 분석: 제공해주신 데이터가 농장/필지 자산으로 성공적으로 변환되었습니다. 꾸준한 데이터 피딩은 더 정교한 기후/생육 분석을 가능하게 합니다."
 
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
         short_hash = trust_hash[:8]
-        
+
         # Unblock the event loop for Drive Uploads
         drive_link = await asyncio.to_thread(
-            sync_drive_upload, 
-            path_list, short_hash, file_data, file_content_type, file_filename, raw_text, insights
+            sync_drive_upload,
+            path_list,
+            short_hash,
+            file_data,
+            file_content_type,
+            file_filename,
+            raw_text,
+            insights,
         )
-        if not drive_link and file: drive_link = "Storage Error"
-        
+        if not drive_link and file:
+            drive_link = "Storage Error"
+
         scope = "store_specific" if len(path_list) >= 4 else "regional_general"
-        
+
         if is_guest_bool:
             base_trust = 40.0 if file else 30.0
             insights = "[⚠️ 게스트 모드] " + insights
         else:
             base_trust = 85.0 if file else 75.0
-            
+
         trust_index = round(base_trust + random.uniform(0.0, 14.9), 1)
-        
+
         entry = {
-            "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), 
-            "insights": insights, 
-            "hash": trust_hash, 
+            "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")),
+            "insights": insights,
+            "hash": trust_hash,
             "drive_link": drive_link,
             "scope": scope,
             "trust_index": trust_index,
-            "raw_text": content
+            "raw_text": content,
         }
-        
+
         base_value = random.randint(50000, 200000)
         effective_value = int(base_value * (trust_index / 100.0))
         entry["effective_value"] = effective_value
-        
+
         engine.add_value_bottom_up(db, path_list, effective_value)
-        
+
         parent_id = None
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
-            if r: parent_id = r.id
-            else: break
-        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
-        
+            r = (
+                db.query(Region)
+                .filter(Region.name == p, Region.parent_id == parent_id)
+                .first()
+            )
+            if r:
+                parent_id = r.id
+            else:
+                break
+        farm = (
+            db.query(Farm)
+            .filter(Farm.name == path_list[-1], Farm.region_id == parent_id)
+            .first()
+        )
+
         if farm and not farm.owner_id and not is_guest_bool:
             farm.owner_id = user["user_id"]
             db.add(farm)
-        
+
         new_entry = DataEntry(
             location_path=location,
             farm_id=farm.id if farm else None,
@@ -244,74 +398,124 @@ async def ingest(
             insights=insights,
             trust_index=trust_index,
             effective_value=effective_value,
-            hash_val=trust_hash
+            hash_val=trust_hash,
         )
         db.add(new_entry)
-        
+
         # Reward User with $MDGA tokens (scaled to prevent hyperinflation) only if not guest
         if not is_guest_bool:
             reward_amount = int(effective_value / 100)
-            user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).with_for_update().first()
+            user_wallet = (
+                db.query(Wallet)
+                .filter(Wallet.user_id == user["user_id"])
+                .with_for_update()
+                .first()
+            )
             if user_wallet:
                 user_wallet.balance += reward_amount
                 db.add(user_wallet)
-                
+
                 tx = Transaction(
                     wallet_id=user_wallet.id,
                     amount=reward_amount,
                     tx_type="EARN",
-                    description=f"Data Assetization Reward (Hash: {short_hash})"
+                    description=f"Data Assetization Reward (Hash: {short_hash})",
                 )
                 db.add(tx)
-            
+
         db.commit()
-        
+
         target_obj = engine.get_object(db, path_list)
-        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": effective_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
-        
-        return {"status": "success", "assigned_path": path_list, "entry": entry, "value_added": effective_value}
+        asyncio.create_task(
+            manager.broadcast(
+                {
+                    "type": "update",
+                    "path": path_list,
+                    "value_added": effective_value,
+                    "pulse_rate": target_obj["metadata"]["pulse_rate"],
+                }
+            )
+        )
+
+        return {
+            "status": "success",
+            "assigned_path": path_list,
+            "entry": entry,
+            "value_added": effective_value,
+        }
     except HTTPException as he:
         raise he
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/farm")
-async def delete_farm(path: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+async def delete_farm(
+    path: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user: dict = Depends(verify_token),
+):
     try:
         path_list = [p for p in path.split("/") if p]
-        
+
         target_obj = engine.get_object(db, path_list)
         if not target_obj:
             raise HTTPException(status_code=404, detail="Farm not found")
 
         parent_id = None
         for i, p in enumerate(path_list[:-1]):
-            r = db.query(Region).filter(Region.name == p, Region.parent_id == parent_id).first()
-            if r: parent_id = r.id
-            else: break
-        farm = db.query(Farm).filter(Farm.name == path_list[-1], Farm.region_id == parent_id).first()
+            r = (
+                db.query(Region)
+                .filter(Region.name == p, Region.parent_id == parent_id)
+                .first()
+            )
+            if r:
+                parent_id = r.id
+            else:
+                break
+        farm = (
+            db.query(Farm)
+            .filter(Farm.name == path_list[-1], Farm.region_id == parent_id)
+            .first()
+        )
 
-        if farm and (farm.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
-            raise HTTPException(status_code=403, detail="Not authorized to delete this farm")
+        if (
+            farm
+            and (farm.owner_id != user["user_id"] or user["role"] == "guest")
+            and user["role"] != "admin"
+        ):
+            raise HTTPException(
+                status_code=403, detail="Not authorized to delete this farm"
+            )
 
-        entries = target_obj.get("data_entries", [])        
+        entries = target_obj.get("data_entries", [])
         short_hashes = []
         for entry in entries:
             short_hash = entry.get("hash", "")[:8]
             if short_hash:
                 short_hashes.append(short_hash)
-                
+
         if short_hashes:
             background_tasks.add_task(sync_drive_delete_batch, short_hashes)
-                        
+
         success = engine.delete_path(db, path_list)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to remove from tree")
-            
+
         db.commit()
-        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list[:-1], "value_added": 0, "pulse_rate": 0}))
-        
+        asyncio.create_task(
+            manager.broadcast(
+                {
+                    "type": "update",
+                    "path": path_list[:-1],
+                    "value_added": 0,
+                    "pulse_rate": 0,
+                }
+            )
+        )
+
         return {"status": "success", "message": "Farm and all associated data deleted."}
     except HTTPException as he:
         raise he
@@ -319,8 +523,15 @@ async def delete_farm(path: str, background_tasks: BackgroundTasks, db: Session 
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/delete")
-async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+async def delete_entry(
+    path: str,
+    hash_val: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user: dict = Depends(verify_token),
+):
     try:
         path_list = [p for p in path.split("/") if p]
         target_obj = engine.get_object(db, path_list)
@@ -334,27 +545,48 @@ async def delete_entry(path: str, hash_val: str, background_tasks: BackgroundTas
         if not target_entry:
             raise HTTPException(status_code=404, detail="Entry not found")
 
-        entry_to_del = db.query(DataEntry).filter(DataEntry.hash_val == hash_val).first()
+        entry_to_del = (
+            db.query(DataEntry).filter(DataEntry.hash_val == hash_val).first()
+        )
         if not entry_to_del:
             raise HTTPException(status_code=404, detail="Entry not found in DB")
-            
-        if entry_to_del.farm and (entry_to_del.farm.owner_id != user["user_id"] or user["role"] == "guest") and user["role"] != "admin":
-            raise HTTPException(status_code=403, detail="Not authorized to delete this entry")
+
+        if (
+            entry_to_del.farm
+            and (
+                entry_to_del.farm.owner_id != user["user_id"] or user["role"] == "guest"
+            )
+            and user["role"] != "admin"
+        ):
+            raise HTTPException(
+                status_code=403, detail="Not authorized to delete this entry"
+            )
 
         db.delete(entry_to_del)
 
         # Delegate Drive deletion to BackgroundTask
         short_hash = hash_val[:8]
-        background_tasks.add_task(sync_drive_delete, short_hash, target_entry.get("drive_link"))
+        background_tasks.add_task(
+            sync_drive_delete, short_hash, target_entry.get("drive_link")
+        )
 
         # Roll-down value based on the entry's effective value
         penalty_value = -target_entry.get("effective_value", 50000)
         engine.add_value_bottom_up(db, path_list, penalty_value)
         db.commit()
-        
+
         target_obj = engine.get_object(db, path_list)
-        asyncio.create_task(manager.broadcast({"type": "update", "path": path_list, "value_added": penalty_value, "pulse_rate": target_obj["metadata"]["pulse_rate"]}))
-        
+        asyncio.create_task(
+            manager.broadcast(
+                {
+                    "type": "update",
+                    "path": path_list,
+                    "value_added": penalty_value,
+                    "pulse_rate": target_obj["metadata"]["pulse_rate"],
+                }
+            )
+        )
+
         return {"status": "success", "message": "Data deleted and values rolled back."}
     except HTTPException as he:
         raise he

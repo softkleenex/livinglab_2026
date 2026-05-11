@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: mdga-api
+    env: python
+    region: singapore
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        sync: false # Set this value manually in the Render Dashboard (Supabase Connection String)
+      - key: GEMINI_API_KEY
+        sync: false # Set this value manually in the Render Dashboard
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://mdga-2026.pages.dev,http://localhost:5173"

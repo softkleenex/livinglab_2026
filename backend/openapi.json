@@ -1,0 +1,1609 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MDGA Enterprise B2B SaaS",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/hierarchy/user/context": {
+      "post": {
+        "tags": [
+          "Hierarchy v1"
+        ],
+        "summary": "Set User Context",
+        "operationId": "set_user_context_api_v1_hierarchy_user_context_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hierarchy/explore": {
+      "get": {
+        "tags": [
+          "Hierarchy v1"
+        ],
+        "summary": "Explore",
+        "operationId": "explore_api_v1_hierarchy_explore_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hierarchy/farms/all": {
+      "get": {
+        "tags": [
+          "Hierarchy v1"
+        ],
+        "summary": "Get All Farms",
+        "operationId": "get_all_farms_api_v1_hierarchy_farms_all_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/personal": {
+      "get": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Get Personal Dashboard",
+        "operationId": "get_personal_dashboard_api_v1_dashboard_personal_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Personal Dashboard Api V1 Dashboard Personal Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/wallet/transactions": {
+      "get": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Get Wallet Transactions",
+        "operationId": "get_wallet_transactions_api_v1_dashboard_wallet_transactions_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/report": {
+      "get": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Generate Weekly Report",
+        "operationId": "generate_weekly_report_api_v1_dashboard_report_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "\uacf5\uacf5",
+              "title": "Industry"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Generate Weekly Report Api V1 Dashboard Report Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/market/buy": {
+      "post": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Buy Market Data",
+        "operationId": "buy_market_data_api_v1_dashboard_market_buy_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/wallet/withdraw": {
+      "post": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Withdraw Funds",
+        "operationId": "withdraw_funds_api_v1_dashboard_wallet_withdraw_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/export": {
+      "get": {
+        "tags": [
+          "Dashboard v1"
+        ],
+        "summary": "Export Csv",
+        "operationId": "export_csv_api_v1_dashboard_export_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "\uacf5\uacf5",
+              "title": "Industry"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingest": {
+      "post": {
+        "tags": [
+          "Ingest v1"
+        ],
+        "summary": "Ingest",
+        "operationId": "ingest_api_v1_ingest_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_api_v1_ingest_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingest/farm": {
+      "delete": {
+        "tags": [
+          "Ingest v1"
+        ],
+        "summary": "Delete Farm",
+        "operationId": "delete_farm_api_v1_ingest_farm_delete",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingest/delete": {
+      "delete": {
+        "tags": [
+          "Ingest v1"
+        ],
+        "summary": "Delete Entry",
+        "operationId": "delete_entry_api_v1_ingest_delete_delete",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "hash_val",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Hash Val"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat": {
+      "post": {
+        "tags": [
+          "Chat v1"
+        ],
+        "summary": "Chat With Copilot",
+        "operationId": "chat_with_copilot_api_v1_chat_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agora/feed": {
+      "get": {
+        "tags": [
+          "Agora v1"
+        ],
+        "summary": "Get Agora Feed",
+        "operationId": "get_agora_feed_api_v1_agora_feed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clear_db": {
+      "delete": {
+        "tags": [
+          "Admin v1"
+        ],
+        "summary": "Clear Db",
+        "operationId": "clear_db_api_v1_clear_db_delete",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reset_schema": {
+      "post": {
+        "tags": [
+          "Admin v1"
+        ],
+        "summary": "Reset Schema",
+        "operationId": "reset_schema_api_v1_reset_schema_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/inject": {
+      "post": {
+        "tags": [
+          "Admin v1"
+        ],
+        "summary": "Demo Inject",
+        "operationId": "demo_inject_api_v1_demo_inject_post",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulate/governance": {
+      "post": {
+        "tags": [
+          "Admin v1"
+        ],
+        "summary": "Simulate Governance",
+        "operationId": "simulate_governance_api_v1_simulate_governance_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_simulate_governance_api_v1_simulate_governance_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/yield-prediction": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Yield Prediction",
+        "operationId": "get_yield_prediction_api_v1_ax_data_yield_prediction_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target region (e.g. \ub300\uad6c\uad11\uc5ed\uc2dc \ubd81\uad6c)",
+              "title": "Region"
+            },
+            "description": "Target region (e.g. \ub300\uad6c\uad11\uc5ed\uc2dc \ubd81\uad6c)"
+          },
+          {
+            "name": "crop",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target crop (e.g. \uc0ac\uacfc)",
+              "title": "Crop"
+            },
+            "description": "Target crop (e.g. \uc0ac\uacfc)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/crop-simulator": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Crop Simulator",
+        "operationId": "get_crop_simulator_api_v1_ax_data_crop_simulator_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target region",
+              "title": "Region"
+            },
+            "description": "Target region"
+          },
+          {
+            "name": "crop",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target crop",
+              "title": "Crop"
+            },
+            "description": "Target crop"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/oversupply-risk": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Oversupply Risk",
+        "operationId": "get_oversupply_risk_api_v1_ax_data_oversupply_risk_get",
+        "parameters": [
+          {
+            "name": "crop",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target crop",
+              "title": "Crop"
+            },
+            "description": "Target crop"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/livestock-alert": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Livestock Alert",
+        "operationId": "get_livestock_alert_api_v1_ax_data_livestock_alert_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target region",
+              "title": "Region"
+            },
+            "description": "Target region"
+          },
+          {
+            "name": "livestock_type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Livestock type (e.g. \ud55c\uc6b0, \ub3fc\uc9c0)",
+              "title": "Livestock Type"
+            },
+            "description": "Livestock type (e.g. \ud55c\uc6b0, \ub3fc\uc9c0)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/resource-efficiency": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Resource Efficiency",
+        "operationId": "get_resource_efficiency_api_v1_ax_data_resource_efficiency_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target region",
+              "title": "Region"
+            },
+            "description": "Target region"
+          },
+          {
+            "name": "crop",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target crop",
+              "title": "Crop"
+            },
+            "description": "Target crop"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ax-data/history": {
+      "get": {
+        "tags": [
+          "AX Synthetic Data v1"
+        ],
+        "summary": "Get Synthetic Data History",
+        "description": "Fetch cached synthetic data from the DB",
+        "operationId": "get_synthetic_data_history_api_v1_ax_data_history_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "data_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Data Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/b2b-market/products": {
+      "post": {
+        "tags": [
+          "Synthetic Data Market v1"
+        ],
+        "summary": "Create Product",
+        "operationId": "create_product_api_v1_b2b_market_products_post",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Title"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Category"
+            }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Description"
+            }
+          },
+          {
+            "name": "price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Price"
+            }
+          },
+          {
+            "name": "stock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Stock"
+            }
+          },
+          {
+            "name": "region_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Region Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Synthetic Data Market v1"
+        ],
+        "summary": "List Products",
+        "operationId": "list_products_api_v1_b2b_market_products_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/b2b-market/matchings": {
+      "post": {
+        "tags": [
+          "Synthetic Data Market v1"
+        ],
+        "summary": "Create Matching",
+        "operationId": "create_matching_api_v1_b2b_market_matchings_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Quantity"
+            }
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Message"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-marketplace/export/synthetic-yield": {
+      "get": {
+        "tags": [
+          "Phase 4 Commercial Data Hub v1"
+        ],
+        "summary": "Export Synthetic Yield Data",
+        "description": "[Phase 4 Commercial Data Hub Integration]\nExport generated Synthetic Data (Yield, Climate) as a CSV feed for external Data Marketplaces.",
+        "operationId": "export_synthetic_yield_data_api_v1_data_marketplace_export_synthetic_yield_get",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Filter by region prefix",
+              "title": "Region"
+            },
+            "description": "Filter by region prefix"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Max rows to return",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Max rows to return"
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-marketplace/export/ai-ready-vision": {
+      "get": {
+        "tags": [
+          "Phase 4 Commercial Data Hub v1"
+        ],
+        "summary": "Export Ai Ready Vision Data",
+        "description": "[Phase 4 Commercial Data Hub Integration]\nExport AI-Ready processed vision/text JSON logs (e.g. for AI Hub Labeling).",
+        "operationId": "export_ai_ready_vision_data_api_v1_data_marketplace_export_ai_ready_vision_get",
+        "parameters": [
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Filter by industry",
+              "title": "Industry"
+            },
+            "description": "Filter by industry"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_ingest_api_v1_ingest_post": {
+        "properties": {
+          "raw_text": {
+            "type": "string",
+            "title": "Raw Text"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location"
+          },
+          "is_guest": {
+            "type": "string",
+            "title": "Is Guest",
+            "default": "false"
+          },
+          "industry": {
+            "type": "string",
+            "title": "Industry",
+            "default": "\uacf5\uacf5"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "title": "Body_ingest_api_v1_ingest_post"
+      },
+      "Body_simulate_governance_api_v1_simulate_governance_post": {
+        "properties": {
+          "budget": {
+            "type": "integer",
+            "title": "Budget"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "budget",
+          "region"
+        ],
+        "title": "Body_simulate_governance_api_v1_simulate_governance_post"
+      },
+      "ChatPayload": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "industry": {
+            "type": "string",
+            "title": "Industry"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "selected_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Hashes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "industry",
+          "message"
+        ],
+        "title": "ChatPayload"
+      },
+      "ContextPayload": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "industry": {
+            "type": "string",
+            "title": "Industry"
+          },
+          "location": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Location"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "industry",
+          "location"
+        ],
+        "title": "ContextPayload"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

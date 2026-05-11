@@ -7,12 +7,13 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def test_smartfarm_context_and_report():
     # 1. Setup context as a Smart Farm
     payload = {
         "role": "farm",
         "industry": "스마트팜",
-        "location": ["대구광역시", "북구", "산격동", "지니스팜"]
+        "location": ["대구광역시", "북구", "산격동", "지니스팜"],
     }
     response = client.post("/api/v1/user/context", json=payload)
     assert response.status_code == 200
@@ -25,7 +26,9 @@ def test_smartfarm_context_and_report():
     # 3. Request report specifying the industry
     # We expect the AI to return a report tailored to smart farms.
     # Since it depends on external LLM, we just check if it returns 200 and has 'report'
-    report_res = client.get(f"/api/v1/dashboard/report?path={path_str}&industry=스마트팜")
+    report_res = client.get(
+        f"/api/v1/dashboard/report?path={path_str}&industry=스마트팜"
+    )
     assert report_res.status_code == 200
     data = report_res.json()
     assert "report" in data

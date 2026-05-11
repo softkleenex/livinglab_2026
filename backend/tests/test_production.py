@@ -1,18 +1,20 @@
 from fastapi.testclient import TestClient
 from app.main import app
 import warnings
+
 warnings.filterwarnings("ignore")
 
 client = TestClient(app)
 
+
 def test_endpoints():
-    print(f"🚀 Testing Production API -> Local App")
+    print("🚀 Testing Production API -> Local App")
     print("=====================================")
-    
+
     # 1. Test Explore (GET)
     print("1. Testing GET /api/hierarchy/explore (Check Engine & Ingest Data)...")
     try:
-        res1 = client.get("/api/hierarchy/explore", timeout=15)
+        res1 = client.get("/api/hierarchy/explore")
         res1.raise_for_status()
         data = res1.json()
         print(f"✅ Success! Data: {data.get('current', 'unknown')}")
@@ -20,20 +22,27 @@ def test_endpoints():
         print(f"❌ Connection Error: {e}")
 
     # 2. Test Governance Simulation (POST)
-    print("\n2. Testing POST /api/simulate/governance (Check OOM Fix & AI Generation)...")
+    print(
+        "\n2. Testing POST /api/simulate/governance (Check OOM Fix & AI Generation)..."
+    )
     try:
         data = {"budget": 15000000, "region": "대구광역시 수성구 스마트밸리"}
-        res2 = client.post("/api/v1/simulate/governance", data=data, timeout=30)
+        res2 = client.post("/api/v1/simulate/governance", data=data)
         res2.raise_for_status()
         sim = res2.json()
-        status = sim.get('status')
-        multiplier = sim.get('simulation', {}).get('roi_multiplier', '')
+        status = sim.get("status")
+        multiplier = sim.get("simulation", {}).get("roi_multiplier", "")
         print(f"✅ Success! Status: {status}, ROI: {multiplier}")
-        print(f"📝 AI Recommendation: {sim.get('simulation', {}).get('ai_recommendation', '')}")
+        print(
+            f"📝 AI Recommendation: {sim.get('simulation', {}).get('ai_recommendation', '')}"
+        )
     except Exception as e:
-        import traceback; traceback.print_exc()
+        import traceback
+
+        traceback.print_exc()
         print(f"❌ Connection Error: {e}")
         raise
+
 
 if __name__ == "__main__":
     test_endpoints()

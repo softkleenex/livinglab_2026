@@ -1,5 +1,6 @@
 import os
 
+
 def run_checks():
     print("🔍 MDGA System Integrity Check Starting...")
     errors = 0
@@ -10,7 +11,7 @@ def run_checks():
         "requirements.txt",
         "docs/LIVING_LAB_PROPOSAL.md",
         "docs/KNOWLEDGE_BASE.txt",
-        "README.md"
+        "README.md",
     ]
     for f in required_files:
         if os.path.exists(f):
@@ -27,14 +28,16 @@ def run_checks():
 
     # 3. 환경 변수 체크
     if not os.path.exists(".env"):
-        print("⚠️ Warning: .env file not found. AI features will require GEMINI_API_KEY.")
+        print(
+            "⚠️ Warning: .env file not found. AI features will require GEMINI_API_KEY."
+        )
     else:
         print("✅ Found: .env configuration")
 
     # 4. 앱 진입점 무결성 검사
     with open("app/main.py", "r", encoding="utf-8") as f:
         content = f.read()
-        essential_keywords = ["streamlit", "google.generativeai", "community_data", "users"]
+        essential_keywords = ["streamlit", "google.genai", "community_data", "users"]
         for kw in essential_keywords:
             if kw in content:
                 print(f"✅ App Module Check: '{kw}' logic present")
@@ -47,6 +50,7 @@ def run_checks():
         print("🚀 ALL SYSTEMS CLEAR. The Masterpiece is ready for the showcase.")
     else:
         print(f"⚠️ FOUND {errors} ISSUES. Please check the logs above.")
+
 
 if __name__ == "__main__":
     run_checks()

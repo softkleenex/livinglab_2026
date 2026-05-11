@@ -9,6 +9,32 @@ export default function B2BMarket({ addToast }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('synthetic_data'); // 'synthetic_data' or 'raw_data'
+  const [apiKey, setApiKey] = useState('');
+  const [generatingKey, setGeneratingKey] = useState(false);
+
+  const generateApiKey = async () => {
+    setGeneratingKey(true);
+    try {
+      const token = localStorage.getItem('token') || 'dummy_token';
+      const res = await axios.post(`${API_BASE_URL}/api/v1/b2b-market/apikeys`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data?.status === 'success') {
+        setApiKey(res.data.api_key);
+        addToast("API Key가 생성되었습니다.", "success");
+      }
+    } catch (err) {
+      console.error(err);
+      addToast("API Key 생성에 실패했습니다.", "error");
+    } finally {
+      setGeneratingKey(false);
+    }
+  };
+
+  const copyApiKey = () => {
+    navigator.clipboard.writeText(apiKey);
+    addToast("클립보드에 복사되었습니다.", "success");
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -112,6 +138,32 @@ export default function B2BMarket({ addToast }) {
         >
           <MapPin size={14} /> 농기계/생육 Raw Data
         </button>
+      </div>
+
+      {/* API Key Generation Section */}
+      <div className="bg-[#0A0F1A]/80 border border-slate-800/80 rounded-2xl p-4 shadow-lg mb-2 flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            🔑 Data API Key
+          </h2>
+          <button 
+            onClick={generateApiKey}
+            disabled={generatingKey}
+            className="text-[10px] px-3 py-1.5 rounded-lg font-bold bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors disabled:opacity-50"
+          >
+            {generatingKey ? '생성 중...' : '새 API Key 발급'}
+          </button>
+        </div>
+        {apiKey && (
+          <div className="flex items-center gap-2 mt-2">
+            <code className="flex-1 bg-black/50 text-indigo-300 px-3 py-2 rounded text-xs break-all border border-indigo-500/30">
+              {apiKey}
+            </code>
+            <button onClick={copyApiKey} className="text-xs px-3 py-2 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">
+              복사
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="bg-[#0A0F1A]/80 border border-slate-800/80 rounded-2xl p-4 shadow-lg">

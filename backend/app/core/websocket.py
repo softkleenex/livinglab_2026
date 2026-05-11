@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -19,8 +20,9 @@ class ConnectionManager:
                 await connection.send_json(message)
             except Exception:
                 dead_connections.append(connection)
-                
+
         for connection in dead_connections:
             self.disconnect(connection)
+
 
 manager = ConnectionManager()

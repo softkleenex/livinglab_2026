@@ -1,65 +1,22 @@
 # MDGA (Universal Data Engine) 🚀
-**A Next-Generation B2B Data Assetization & Governance SaaS Platform**
+
+**차세대 농림/스마트팜 특화 데이터 파이프라인 및 합성 데이터 SaaS 플랫폼**
+
+MDGA는 파편화된 농기계 데이터, 수기 영농일지, 작물 생육 데이터를 수집 및 결합하여 고품질의 **'합성 데이터(Synthetic Data)'를 생성하고 유통하는 B2B SaaS 플랫폼**입니다. 단순 데이터 저장 및 챗봇을 넘어, 공공데이터(기상청, 농진청)와 실측 데이터를 융합해 생산자(농가/스마트팜) 및 연구기관에 필수적인 비즈니스 인사이트를 제공합니다.
 
 ![MDGA App](docs/screenshots/01_login.png)
 
-MDGA is a comprehensive B2B SaaS platform designed to transform raw field data (text, images, logs) into verified, valuable digital assets. It features a real-time dynamic hierarchy map, AI-driven business insights, and a seamless integration with Google Drive as a Data Lake. 
+## 📚 상세 문서 (Documentation)
+자세한 아키텍처, 기능 명세 및 프로젝트 기획은 `docs/` 폴더를 참조하세요:
+- [📖 상세 프로젝트 명세 및 단일 통합 문서 (Single Source of Truth)](docs/README.md)
+- [🛠️ 기획 및 작업 명세 (Task Specification)](docs/PROJECT_SPEC_AND_PLAN.md)
+- [💼 포트폴리오 가이드](docs/PORTFOLIO_GUIDE.md)
 
-## ✨ Core Features & Highlights
+## 🏗️ 시스템 구성 (System Architecture)
+- **[Frontend (React/Vite)](frontend/README.md)**: Twin Map 지역 계층 엔진, 합성 데이터 거래소, AI 대시보드 UI.
+- **[Backend (FastAPI/Python)](backend/README.md)**: 데이터 파이프라인, AI 파싱(Gemini), 공공데이터 연동 및 RDBMS 기반의 3NF 구조 서버.
 
-1. **Dynamic Regional Hierarchy Engine (Twin Map)**
-   - Automatically rolls up assets and activity levels (Pulse) from individual farms/nodes to upper geographical layers (City -> District -> Neighborhood -> Street).
-   - Real-time rendering of a data-driven Twin Map reflecting local economic health.
-   - ![Twin Map](docs/screenshots/07_twinmap.png)
-
-2. **Data Assetization & RAG Pipeline**
-   - **Multi-modal Ingestion:** Users can feed raw text or images (e.g., daily sales, smart farm metrics).
-   - **Google Drive Data Lake:** Raw files are securely persisted in a dynamically created folder structure (e.g., `[대구광역시]/[북구]/[산격동]...`).
-   - **AI Copilot Insights:** Gemini 2.5 Pro Vision analyzes the data (even rejecting invalid/blank images) and instantly returns actionable, industry-specific business insights.
-   - ![Dashboard](docs/screenshots/06_dashboard.png)
-
-3. **Enterprise-Grade AI Copilot (Function Calling)**
-   - Context-aware chatbot that knows your farm's total value, industry, and previous data entries.
-   - **System Execution via Two-Step Parsing:** The AI doesn't just talk; it modifies the system. Through an advanced parser, the Copilot securely processes commands to `DELETE`, `CREATE`, or `MODIFY` data entries on behalf of the user, keeping the DB and Drive synchronized in real-time.
-
-4. **Automated Weekly Dashboards & Governance Simulators**
-   - Automatically cross-validates your farm's metrics against regional averages and real-time weather APIs to output professional, markdown-formatted reports.
-   - City planners can run a "Governance Simulator" to predict the ROI and Job Creation of macro-investments in specific regions.
-
----
-
-## 🏗️ Technical Architecture & Refactoring Journey
-
-### 1. Database Normalization & Stateless Scaling
-*   **Challenge:** The MVP relied on a monolithic `DataEntry` table and kept the entire hierarchical tree state in the server's RAM (`engine.py`). This prevented horizontal scaling (Scale-out) as multiple server instances would hold different states. Furthermore, there was no way to permanently delete a "Farm" entity.
-*   **Overcome:** 
-    *   Migrated from an append-only JSON-like DB to a **fully normalized Relational Database Model (RDBMS)**.
-    *   Separated into `Region`, `Farm`, and `DataEntry` tables with rigid Foreign Keys.
-    *   Implemented `ON DELETE CASCADE`: Deleting a Farm now safely triggers a transactional rollback—destroying all child `DataEntry` records, recalculating upstream `Total Value` for all parent regions, and orchestrating the deletion of corresponding files in Google Drive.
-    *   The `HierarchyEngine` is now 100% **Stateless**, querying the DB dynamically on every request.
-
-### 2. Bypassing AI "Safety Alignment" for System Control
-*   **Challenge:** We wanted the user to simply say "Delete the data I just uploaded" to the AI Copilot. However, Gemini's built-in safety alignment consistently refused the request, responding with *"I am just an assistant and do not have permission to delete database records."*
-*   **Overcome (Two-Step AI Parsing):** 
-    *   Instead of relying on a single Chat prompt, we separated the logic into a **System Intent Parser** and a **Conversational Persona**.
-    *   The Parser is fed a strict `response_schema` (JSON) and instructed to be an emotionless machine that simply maps user intents to `action_type: "DELETE"` and extracts the `target_hash`.
-    *   The Python backend interprets this JSON, safely executes the SQLAlchemy delete transactions, and only then is the Conversational Persona invoked to politely confirm the deletion to the user.
-
-### 3. Securing Google Drive Uploads (OAuth Scope)
-*   **Challenge:** When attempting to wipe the entire Drive folder during a system reset, the Google Drive API returned a `403 Forbidden` error (`appNotAuthorizedToChild`), even though the Service Account owned the root folder.
-*   **Overcome:** Diagnosed that the OAuth scope was limited to `auth/drive.file` (can only manage files created by the app). Instead of dangerously escalating the scope to full drive access, we encapsulated the exact file IDs (derived from DB `hash_val`) created by the app, allowing surgically precise `delete` commands exclusively on MDGA-generated assets without touching the user's personal files.
-
----
-
-## 🛠 Tech Stack
-
-- **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide Icons.
-- **Backend:** Python 3.12, FastAPI, SQLAlchemy (PostgreSQL / SQLite), Uvicorn.
-- **AI & Data Sources:** Google Gemini 2.5 Pro (Generative AI), Hugging Face Datasets API (Real-time agricultural QA & yield data), Korea Meteorological Administration (기상청), Google Drive API.
-- **Media & Assets:** Realistic B2B Market assets integrated via Unsplash, Twin Map features dynamic tracking.
-- **Deployment:** Cloudflare Pages (Frontend), Render (Backend).
-
-## 🚀 Setup & Installation
+## 🚀 Setup & Installation (빠른 시작)
 
 ### Environment Variables (`backend/.env`)
 ```env

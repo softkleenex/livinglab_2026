@@ -42,7 +42,18 @@ from app.api.endpoints.ax_data import router as ax_data_router  # noqa: E402
 from app.api.endpoints.b2b_market import router as b2b_market_router  # noqa: E402
 from app.api.endpoints.data_marketplace import router as data_marketplace_router  # noqa: E402
 
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.ENV == "production" and "sqlite" in settings.DATABASE_URL:
+        logger.critical(
+            "🚨 CRITICAL: Running in PRODUCTION environment with a local SQLITE database! "
+            "Supabase connection is missing or failed. Data will NOT be persistent."
+        )
+    yield
+
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
 
 # Setup Rate Limiter to prevent API abuse
 limiter = Limiter(key_func=get_remote_address)

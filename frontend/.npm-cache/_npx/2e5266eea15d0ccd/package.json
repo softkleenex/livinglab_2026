@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@notionhq/notion-mcp-server": "^2.2.1"
+  },
+  "_npx": {
+    "packages": [
+      "@notionhq/notion-mcp-server"
+    ]
+  }
+}
