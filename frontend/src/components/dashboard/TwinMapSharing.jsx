@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Map as MapIcon, ShieldAlert, AlertTriangle, Wind, ThermometerSun } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 

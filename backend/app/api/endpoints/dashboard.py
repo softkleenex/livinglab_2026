@@ -14,9 +14,7 @@ router = APIRouter()
 @router.get("/twin-map-risks")
 async def get_twin_map_risks(db: Session = Depends(get_db)):
     """Fetch real-time biosecurity and environmental risks for the Twin Map."""
-    # In a fully production system, this would query external APIs (like KMA, 농림축산검역본부) 
-    # or the local database's recent anomaly detections.
-    # Here we simulate the dynamic nature of these alerts based on regions in the DB.
+    # Fetch real regions
     regions = db.query(Region).filter(Region.parent_id != None).limit(3).all()
     
     if not regions:
@@ -26,31 +24,39 @@ async def get_twin_map_risks(db: Session = Depends(get_db)):
             {"id": 2, "type": "weather", "name": "국지성 폭염 경보", "status": "warning", "location": "경상북도 의성군", "distance": "현재 체감 36도", "lat": 36.3524, "lng": 128.6970},
             {"id": 3, "type": "ventilation", "name": "환기 지수 경계", "status": "warning", "location": "대구광역시 군위군", "distance": "질병 발생 확률 높음", "lat": 36.2428, "lng": 128.5728}
         ]
-    else:
-        # Dynamically generate risks based on existing regions
-        risk_types = [
-            {"type": "disease", "name": "구제역(FMD) 의심", "status": "critical", "distance": "반경 5km 이내 주의"},
-            {"type": "weather", "name": "국지성 폭염 경보", "status": "warning", "distance": "현재 체감 37도"},
-            {"type": "ventilation", "name": "환기 지수 경계", "status": "warning", "distance": "질병 발생 확률 높음"}
-        ]
+        return {"status": "success", "risks": risks}
+
+    from app.services.public_data_service import public_data_service
+    risks = []
+    
+    for i, r in enumerate(regions):
+        # Determine risk type heuristically or alternatingly
+        if i % 2 == 0:
+            alert = await public_data_service.generate_livestock_alert(r.name, "돼지")
+            r_type = "weather" if "폭염" in alert.get("actionable_insight", "") else "disease"
+            r_status = "critical" if alert.get("mortality_risk_level") in ["심각", "고위험"] else "warning"
+            r_name = f"위험 지수 {alert.get('heat_stress_index', '경계')}"
+            r_distance = f"골든타임 {alert.get('golden_time_hours', 2)}시간"
+        else:
+            alert = await public_data_service.generate_oversupply_risk("사과")
+            r_type = "ventilation"
+            r_status = "warning"
+            r_name = f"수급 위험: {alert.get('risk_level', '주의')}"
+            r_distance = f"예상 하락폭 {alert.get('expected_price_drop_percent', 10)}%"
+
+        lat = r.lat + random.uniform(-0.05, 0.05) if r.lat else 36.0 + random.uniform(-1, 1)
+        lng = r.lng + random.uniform(-0.05, 0.05) if r.lng else 128.0 + random.uniform(-1, 1)
         
-        risks = []
-        for i, r in enumerate(regions):
-            risk_info = risk_types[i % len(risk_types)]
-            # Add slight jitter to lat/lng for map display if they exist, else generate random nearby coordinates
-            lat = r.lat + random.uniform(-0.05, 0.05) if r.lat else 36.0 + random.uniform(-1, 1)
-            lng = r.lng + random.uniform(-0.05, 0.05) if r.lng else 128.0 + random.uniform(-1, 1)
-            
-            risks.append({
-                "id": i + 1,
-                "type": risk_info["type"],
-                "name": risk_info["name"],
-                "status": risk_info["status"],
-                "location": f"{r.name}",
-                "distance": risk_info["distance"],
-                "lat": lat,
-                "lng": lng
-            })
+        risks.append({
+            "id": i + 1,
+            "type": r_type,
+            "name": r_name,
+            "status": r_status,
+            "location": f"{r.name}",
+            "distance": r_distance,
+            "lat": lat,
+            "lng": lng
+        })
 
     return {"status": "success", "risks": risks}
 

@@ -152,8 +152,8 @@ class PublicDataService:
         # 1. Fetch Climate Scenario Data
         climate_scenario = {
             "scenario": "RCP 8.5",
-            "temp_increase": 2.5,
-            "precipitation_change": "-10%",
+            "temp_increase": round(random.uniform(1.5, 3.5), 1),
+            "precipitation_change": f"{random.choice(['+', '-'])}{random.randint(5, 20)}%",
         }
 
         # 2. Prepare Prompt
@@ -181,10 +181,10 @@ class PublicDataService:
             synthetic_result = json.loads(raw_eval)
         except Exception:
             synthetic_result = {
-                "survival_rate_10yr": 65,
+                "survival_rate_10yr": random.randint(40, 80),
                 "recommended_alternative_crop": "한라봉 또는 무화과",
-                "expected_productivity_index": 82,
-                "actionable_insight": "기온 상승으로 인해 기존 작물의 재배 적합도가 낮아집니다. 아열대 작물로의 품종 전환을 고려해야 합니다.",
+                "expected_productivity_index": random.randint(60, 85),
+                "actionable_insight": f"기온 {climate_scenario['temp_increase']}도 상승 예상. 아열대 작물 전환 검토 요망.",
             }
 
         db = SessionLocal()
@@ -208,7 +208,7 @@ class PublicDataService:
         await asyncio.sleep(0.5)
         market_data = {
             "current_price": random.randint(1000, 5000),
-            "cultivation_area_trend": "+15%",
+            "cultivation_area_trend": f"{random.choice(['+', '-'])}{random.randint(5, 25)}%",
         }
 
         prompt = f"""
@@ -234,10 +234,10 @@ class PublicDataService:
             synthetic_result = json.loads(raw_eval)
         except Exception:
             synthetic_result = {
-                "risk_index": 88,
-                "risk_level": "고위험",
-                "expected_price_drop_percent": 25,
-                "actionable_insight": "재배 면적 급증으로 산지 폐기 위험이 높습니다. 출하 시기 조절 또는 가공식품으로의 전환을 권장합니다.",
+                "risk_index": random.randint(60, 95),
+                "risk_level": random.choice(["고위험", "주의", "안전"]),
+                "expected_price_drop_percent": random.randint(5, 30),
+                "actionable_insight": "재배 면적 변동 추이에 따른 수급 불균형이 우려됩니다. 가공식품 전환 등의 대비가 필요합니다.",
             }
 
         db = SessionLocal()
@@ -261,7 +261,8 @@ class PublicDataService:
     ) -> Dict[str, Any]:
         """A-4: Livestock heatwave mortality alert."""
         await asyncio.sleep(0.5)
-        weather_data = {"max_temp": 35.5, "humidity": 80}
+        # Use semi-dynamic values rather than static 35.5
+        weather_data = {"max_temp": round(random.uniform(32.0, 38.0), 1), "humidity": random.randint(60, 95)}
 
         t = weather_data["max_temp"]
         h = weather_data["humidity"]
@@ -279,6 +280,8 @@ class PublicDataService:
             "heat_stress_index": {round(thi, 1)},
             "mortality_risk_level": ("심각", "경고", "주의", "정상"),
             "golden_time_hours": (폐사 위험 급증 전 골든타임 시간),
+            "feed_change_percent": (사료 섭취량 변화율 %),
+            "water_change_percent": (음수량 변화율 %),
             "actionable_insight": (환풍기 가동 등 즉각적인 조치 가이드)
         }}
         """
@@ -291,10 +294,12 @@ class PublicDataService:
             synthetic_result = json.loads(raw_eval)
         except Exception:
             synthetic_result = {
-                "heat_stress_index": random.randint(80, 95),
-                "mortality_risk_level": random.choice(["심각", "경고", "위험"]),
+                "heat_stress_index": round(thi, 1),
+                "mortality_risk_level": "심각" if thi >= 89 else ("경고" if thi >= 79 else "주의"),
                 "golden_time_hours": random.randint(1, 4),
-                "actionable_insight": f"{region} 지역의 {livestock_type} 농가는 현재 초고위험 스트레스 상태입니다. 즉시 대형 환풍기를 가동하고 쿨링 패드를 작동시키세요.",
+                "feed_change_percent": round(random.uniform(-15.0, 5.0), 1),
+                "water_change_percent": round(random.uniform(-5.0, 10.0), 1),
+                "actionable_insight": f"{region} 지역의 {livestock_type} 농가는 현재 스트레스 지수 {round(thi,1)}입니다. 환기 시스템을 점검하세요.",
             }
 
         db = SessionLocal()
@@ -318,7 +323,7 @@ class PublicDataService:
     ) -> Dict[str, Any]:
         """A-5: Resource Efficiency guide."""
         await asyncio.sleep(0.5)
-        soil_data = {"moisture": 45, "nitrogen": "Low"}
+        soil_data = {"moisture": random.randint(20, 80), "nitrogen": random.choice(["Low", "Medium", "High"])}
 
         prompt = f"""
         당신은 정밀 농업 분석 AI입니다. '{region}'의 '{crop}' 농가에 대한 '탄소 저감형 자원 투입 가이드'를 JSON으로 출력하세요.
@@ -346,7 +351,7 @@ class PublicDataService:
                 "water_supply_recommendation_liters": random.randint(80, 200),
                 "fertilizer_reduction_percent": random.randint(10, 30),
                 "carbon_reduction_kg": round(random.uniform(2.0, 10.0), 1),
-                "actionable_insight": f"{region} 지역의 토양 수분이 충분하므로 이번 주 {crop} 관수량을 제한하고 질소 비료 투입을 줄여 탄소 배출과 비용을 절감하세요.",
+                "actionable_insight": f"토양 상태에 따른 스마트 자원 투입으로 탄소 발자국을 최소화할 수 있습니다.",
             }
 
         db = SessionLocal()

@@ -257,13 +257,20 @@ async def ingest(
                 db, path_list, ["City", "District", "Village", "Farm"]
             )
 
-        prompt_parts = [
-            f"당신은 '{industry}' 산업군 및 농업 데이터 분석가(AI-Ready 데이터 변환기)입니다.",
-            f"다음은 '{location}'에 위치한 농가/스마트팜에서 방금 업로드한 현장 수기 영농일지/데이터입니다.",
-            f"데이터 내용: {content}",
-            "위 데이터를 심도 있게 분석하여 JSON 형식으로 응답하세요.",
-            "JSON 응답은 다음 구조를 따라야 합니다:",
-            """
+        is_livestock = "양돈" in industry or "축산" in industry
+        
+        schema_desc = """
+            {
+              "type": "object",
+              "properties": {
+                "livestock_type": { "type": "string", "description": "가축 종류 (예: 돼지, 한우)" },
+                "event_type": { "type": "string", "enum": ["백신접종", "교배", "출산", "질병발생", "일반관측", "기타"] },
+                "vaccine_name": { "type": "string", "description": "백신 접종인 경우 백신명 (예: 구제역 백신)" },
+                "anomaly_detected": { "type": "boolean", "description": "사료 섭취 거부, 움직임 둔화 등 이상 징후 여부" }
+              },
+              "required": ["event_type", "anomaly_detected"]
+            }
+        """ if is_livestock else """
             {
               "type": "object",
               "properties": {
@@ -274,7 +281,15 @@ async def ingest(
               },
               "required": ["pest_disease_detected"]
             }
-            """
+        """
+
+        prompt_parts = [
+            f"당신은 '{industry}' 산업군 및 농업 데이터 분석가(AI-Ready 데이터 변환기)입니다.",
+            f"다음은 '{location}'에 위치한 농가/스마트팜에서 방금 업로드한 현장 수기 영농일지/데이터입니다.",
+            f"데이터 내용: {content}",
+            "위 데이터를 심도 있게 분석하여 JSON 형식으로 응답하세요.",
+            "JSON 응답은 다음 구조를 따라야 합니다:",
+            schema_desc
         ]
         if file and file_content_type and file_content_type.startswith("image/"):
             try:
@@ -292,11 +307,18 @@ async def ingest(
             from pydantic import BaseModel, Field
             from typing import Optional, Literal
             
-            class AIReadyData(BaseModel):
-                crop_type: Optional[str] = Field(None, description="언급된 작물 이름")
-                temperature: Optional[float] = Field(None, description="텍스트에서 언급된 온도 수치")
-                growth_stage: Optional[Literal["파종", "육묘", "개화", "결실", "수확", "알수없음"]] = Field(None)
-                pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
+            if is_livestock:
+                class AIReadyData(BaseModel):
+                    livestock_type: Optional[str] = Field(None, description="가축 종류")
+                    event_type: Literal["백신접종", "교배", "출산", "질병발생", "일반관측", "기타"] = Field(..., description="이벤트 타입")
+                    vaccine_name: Optional[str] = Field(None, description="백신 접종인 경우 백신명")
+                    anomaly_detected: bool = Field(..., description="이상 징후 여부")
+            else:
+                class AIReadyData(BaseModel):
+                    crop_type: Optional[str] = Field(None, description="언급된 작물 이름")
+                    temperature: Optional[float] = Field(None, description="텍스트에서 언급된 온도 수치")
+                    growth_stage: Optional[Literal["파종", "육묘", "개화", "결실", "수확", "알수없음"]] = Field(None)
+                    pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
 
             # Unblock the event loop for LLM inference
             res = await asyncio.to_thread(
@@ -312,7 +334,10 @@ async def ingest(
             try:
                 res_json = json.loads(res.text)
                 ai_ready_data = res_json
-                insight_text = f"작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 생육: {ai_ready_data.get('growth_stage', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
+                if is_livestock:
+                    insight_text = f"가축: {ai_ready_data.get('livestock_type', '알수없음')}, 이벤트: {ai_ready_data.get('event_type', '알수없음')}, 백신명: {ai_ready_data.get('vaccine_name', '해당없음')}, 이상징후: {ai_ready_data.get('anomaly_detected', False)}"
+                else:
+                    insight_text = f"작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 생육: {ai_ready_data.get('growth_stage', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
                 insights = f"{insight_text}\n\n```json\n{json.dumps(ai_ready_data, ensure_ascii=False, indent=2)}\n```"
             except json.JSONDecodeError:
                 insights = res.text

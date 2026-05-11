@@ -93,7 +93,17 @@ export default function DataConverter({ userContext, openIngest, openVoice }) {
                   {entry.raw_text}
                 </div>
                 <div className="bg-[#05080F] p-3 rounded-lg border border-slate-800 font-mono text-[10px] text-indigo-300/80 overflow-x-auto whitespace-pre-wrap">
-                  {JSON.stringify(entry.structured_data, null, 2)}
+                  {(() => {
+                    if (entry.insights && entry.insights.includes('```json')) {
+                      try {
+                        const jsonStr = entry.insights.split('```json')[1].split('```')[0].trim();
+                        return JSON.stringify(JSON.parse(jsonStr), null, 2);
+                      } catch (e) {
+                        return entry.insights;
+                      }
+                    }
+                    return entry.insights;
+                  })()}
                 </div>
               </div>
             ))}

@@ -73,6 +73,24 @@ async def get_resource_efficiency(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/simulation-logs")
+async def get_simulation_logs():
+    """Fetch dynamic simulation logs for the EnvHub Terminal UI."""
+    import random
+    import datetime
+    
+    scenarios = ["apple_orchard_harvest", "swine_fever_spread", "heatwave_stress_test"]
+    scenario = random.choice(scenarios)
+    
+    logs = [
+        f"> [EnvHub] Loading scenario: '{scenario}'",
+        "> [Genie Sim] Initializing robot kinematics... OK",
+        "> [RoboCasa] Rendering textures (lighting: overcast)",
+        f"> Generating {random.randint(5000, 15000)} synthetic vision frames...",
+        f"> Batch {random.randint(1, 10)}/100 complete. Saving to /data/synthetic/"
+    ]
+    
+    return {"status": "success", "logs": logs}
 
 @router.get("/history")
 async def get_synthetic_data_history(

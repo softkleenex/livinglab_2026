@@ -10,6 +10,7 @@ export default function SynthesisInsight({ userContext }) {
   const [yieldData, setYieldData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [cropSimData, setCropSimData] = useState(null);
+  const [simLogs, setSimLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Mocking data for the specific personas (Pig Farm / Lettuce Smart Farm)
@@ -46,6 +47,12 @@ export default function SynthesisInsight({ userContext }) {
         
         if (salesRes.data?.status === 'success') {
           setSalesData(salesRes.data.data);
+        }
+
+        // Fetch Dynamic Simulation Logs
+        const logsRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/simulation-logs`);
+        if (logsRes.data?.status === 'success') {
+          setSimLogs(logsRes.data.logs);
         }
 
       } catch (err) {
@@ -86,11 +93,15 @@ export default function SynthesisInsight({ userContext }) {
             <div className="flex justify-between items-center text-sm font-mono text-slate-200">
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-500">일평균 음수량</span>
-                <span className="text-emerald-400">정상 (변화율 -1.2%)</span>
+                <span className={alertData?.water_change_percent < -5 ? 'text-yellow-400' : 'text-emerald-400'}>
+                  {alertData?.water_change_percent < -5 ? '주의' : '정상'} (변화율 {alertData?.water_change_percent > 0 ? '+' : ''}{alertData?.water_change_percent || 0}%)
+                </span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-500">사료 섭취량</span>
-                <span className="text-yellow-400">주의 (변화율 -8.5%)</span>
+                <span className={alertData?.feed_change_percent < -10 ? 'text-rose-400' : (alertData?.feed_change_percent < -5 ? 'text-yellow-400' : 'text-emerald-400')}>
+                  {alertData?.feed_change_percent < -10 ? '심각' : (alertData?.feed_change_percent < -5 ? '주의' : '정상')} (변화율 {alertData?.feed_change_percent > 0 ? '+' : ''}{alertData?.feed_change_percent || 0}%)
+                </span>
               </div>
             </div>
           </div>
@@ -129,10 +140,14 @@ export default function SynthesisInsight({ userContext }) {
             </span>
           </div>
           <div className="font-mono text-[10px] text-emerald-500/80 space-y-1 h-20 overflow-hidden relative">
-            <p>{`> [EnvHub] Loading scenario: 'apple_orchard_harvest'`}</p>
-            <p>{`> [Genie Sim] Initializing robot kinematics... OK`}</p>
-            <p>{`> [RoboCasa] Rendering textures (lighting: overcast)`}</p>
-            <p>{`> Generating 10,000 synthetic vision frames...`}</p>
+            {simLogs.length > 0 ? simLogs.map((log, i) => (
+              <p key={i}>{log}</p>
+            )) : (
+              <>
+                <p>{`> [EnvHub] Connecting to cluster...`}</p>
+                <p>{`> [Genie Sim] Waiting for initialization...`}</p>
+              </>
+            )}
             <p className="animate-pulse">{`> Processing...`}</p>
             <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent"></div>
           </div>
