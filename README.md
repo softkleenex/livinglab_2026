@@ -1,45 +1,44 @@
 # MDGA (Universal Data Engine) 🚀
 
-**차세대 농림/스마트팜 특화 데이터 파이프라인 및 합성 데이터 SaaS 플랫폼**
+**차세대 농림/스마트팜 특화 데이터 파이프라인 및 B2B 마켓플레이스**
 
-MDGA는 파편화된 농기계 데이터, 수기 영농일지, 작물 생육 데이터를 수집 및 결합하여 고품질의 **'합성 데이터(Synthetic Data)'를 생성하고 유통하는 B2B SaaS 플랫폼**입니다. 단순 데이터 저장 및 챗봇을 넘어, 공공데이터(기상청, 농진청)와 실측 데이터를 융합해 생산자(농가/스마트팜) 및 연구기관에 필수적인 비즈니스 인사이트를 제공합니다.
+MDGA는 농가의 수기 일지, 생육 데이터, 외부 공공 기상 데이터를 결합하여 **고품질 합성 데이터를 생성하고 농업 AX(Agricultural AX) 인사이트를 제공하는 플랫폼**입니다. 양돈 농가를 위한 방역 및 폐사 위험 모니터링부터, 스마트팜을 위한 매출 기반 AI 재배량 추천, 그리고 B급 농산물 소상공인 직거래 매칭까지 지원합니다.
 
-![MDGA App](docs/screenshots/01_login.png)
+## 🌟 핵심 4대 기능 (Core Features)
+
+1. **AI 데이터 원터치 변환기 (Data One-Touch Converter)**
+   - 수기 영농일지, 백신 접종 내역, 현장 사진을 촬영/음성 입력 시 정부 표준(HACCP 등) JSON 데이터로 자동 변환 및 적재.
+2. **Twin Map 기반 방역/환경 위험 모니터링 (Twin Map Risk Insight)**
+   - 주변의 아프리카돼지열병(ASF), 구제역 등 전염병 발생 현황 및 폭염/환기 지수 경계를 실시간 지도로 시각화.
+3. **B급 농산물 B2B 직거래 플랫폼 (B-grade Produce Market)**
+   - 상품성이 낮은 '못난이 농작물'을 가공용(베이커리, 주스바 등)으로 지역 소상공인과 매칭하는 직거래 채널.
+4. **AI 위기 관리 및 오픈소스 기반 합성 데이터 (Synthesis Insight)**
+   - **농가용:** 축사 폭염 폐사 골든타임 알람, 생육 환경 모니터링 및 통합 매출 분석 기반 AI 재배량 추천.
+   - **엔터프라이즈용:** AgiBot, EnvHub, RoboCasa 오픈소스를 활용한 비전/자율주행용 합성 데이터 생성 및 거래.
 
 ## 📚 상세 문서 (Documentation)
-자세한 아키텍처, 기능 명세 및 프로젝트 기획은 `docs/` 폴더를 참조하세요:
-- [📖 상세 프로젝트 명세 및 단일 통합 문서 (Single Source of Truth)](docs/README.md)
-- [🛠️ 기획 및 작업 명세 (Task Specification)](docs/PROJECT_SPEC_AND_PLAN.md)
-- [💼 포트폴리오 가이드](docs/PORTFOLIO_GUIDE.md)
+자세한 아키텍처 및 기획, API 명세는 `docs/` 폴더를 참조하세요.
+- 👉 **[MDGA 통합 문서 인덱스 보기 (docs/README.md)](docs/README.md)**
 
 ## 🏗️ 시스템 구성 (System Architecture)
-- **[Frontend (React/Vite)](frontend/README.md)**: Twin Map 지역 계층 엔진, 합성 데이터 거래소, AI 대시보드 UI.
-- **[Backend (FastAPI/Python)](backend/README.md)**: 데이터 파이프라인, AI 파싱(Gemini), 공공데이터 연동 및 RDBMS 기반의 3NF 구조 서버.
+- **Frontend**: React 19, Vite, Tailwind CSS, Framer Motion (Cloudflare Pages 배포)
+- **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (Render.com 배포)
+- **Database**: PostgreSQL (Supabase)
+- **AI / Data**: Gemini 2.5 Pro (멀티모달 파싱 및 분석)
 
-## 🚀 Setup & Installation (빠른 시작)
+## 🚀 빠른 시작 (Getting Started)
 
-### Environment Variables (`backend/.env`)
+### 환경 변수 설정 (`backend/.env`)
 ```env
-DATABASE_URL=postgresql://user:pass@localhost:5432/mdga
+DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.5-pro
-GOOGLE_OAUTH_CLIENT_ID=your_oauth_client
-GOOGLE_OAUTH_CLIENT_SECRET=your_oauth_secret
-GOOGLE_DRIVE_FOLDER_ID=your_target_folder_id
 ```
 
-### Running Locally
+### 로컬 서버 실행
 ```bash
-# Start Backend
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# Start Frontend
-cd frontend
-npm install
-npm run dev
+# 통합 실행 스크립트 (백엔드 8080포트, 프론트엔드 5173포트 동시 실행)
+./dev.sh
 ```
 
 ---
-*Built with passion for the ultimate Data Assetization experience.* 🌍
+*MDGA - Empowering the Future of Agricultural Transformation.* 🌾
