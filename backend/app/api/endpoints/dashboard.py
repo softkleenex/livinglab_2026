@@ -18,13 +18,7 @@ async def get_twin_map_risks(db: Session = Depends(get_db)):
     regions = db.query(Region).filter(Region.parent_id != None).limit(3).all()
     
     if not regions:
-        # Fallback if DB is empty
-        risks = [
-            {"id": 1, "type": "disease", "name": "아프리카돼지열병(ASF) 발생", "status": "critical", "location": "경상북도 안동시", "distance": "반경 10km 이내", "lat": 36.5684, "lng": 128.7296},
-            {"id": 2, "type": "weather", "name": "국지성 폭염 경보", "status": "warning", "location": "경상북도 의성군", "distance": "현재 체감 36도", "lat": 36.3524, "lng": 128.6970},
-            {"id": 3, "type": "ventilation", "name": "환기 지수 경계", "status": "warning", "location": "대구광역시 군위군", "distance": "질병 발생 확률 높음", "lat": 36.2428, "lng": 128.5728}
-        ]
-        return {"status": "success", "risks": risks}
+        return {"status": "success", "risks": []}
 
     from app.services.public_data_service import public_data_service
     risks = []

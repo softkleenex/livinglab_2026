@@ -15,9 +15,10 @@ export default function B2BMarket({ addToast }) {
   const generateApiKey = async () => {
     setGeneratingKey(true);
     try {
-      const token = localStorage.getItem('token') || 'dummy_token';
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await axios.post(`${API_BASE_URL}/api/v1/b2b-market/apikeys`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       if (res.data?.status === 'success') {
         setApiKey(res.data.api_key);
@@ -38,10 +39,11 @@ export default function B2BMarket({ addToast }) {
 
   const handleBuyRequest = async (productId) => {
     try {
-      const token = localStorage.getItem('token') || 'dummy_token';
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await axios.post(`${API_BASE_URL}/api/v1/b2b-market/matchings`, null, {
         params: { product_id: productId, quantity: 1, message: "구매 요청합니다." },
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       if (res.data?.status === 'success') {
         addToast("구매 요청이 성공적으로 전송되었습니다.", "success");

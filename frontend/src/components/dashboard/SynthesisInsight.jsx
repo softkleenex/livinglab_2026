@@ -20,10 +20,12 @@ export default function SynthesisInsight({ userContext }) {
     const fetchData = async () => {
       try {
         const region = userContext?.location ? userContext.location.join(' ') : '대구광역시';
-        
+        const targetLivestock = userContext?.industry?.includes('양돈') ? '돼지' : (userContext?.industry?.includes('한우') ? '한우' : '가축');
+        const targetCrop = userContext?.crop || '상추';
+
         // Fetch Livestock Alert (for Pigs)
         const alertRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/livestock-alert`, {
-          params: { region, livestock_type: '돼지' }
+          params: { region, livestock_type: targetLivestock }
         });
         
         if (alertRes.data?.status === 'success') {
@@ -32,7 +34,7 @@ export default function SynthesisInsight({ userContext }) {
 
         // Fetch Yield Prediction (For Lettuce/Crops)
         const yieldRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/yield-prediction`, {
-          params: { region, crop: '상추' }
+          params: { region, crop: targetCrop }
         });
 
         if (yieldRes.data?.status === 'success') {
