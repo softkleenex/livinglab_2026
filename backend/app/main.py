@@ -130,6 +130,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 from sqlalchemy import text
 from app.core.database import SessionLocal
 
+@app.get("/", tags=["System"])
+def read_root():
+    """Root endpoint for health checks and welcome message."""
+    return {"status": "ok", "message": "MDGA Enterprise B2B SaaS API is running."}
+
 @app.get("/health", tags=["System"])
 def health_check():
     """Check system and database health."""
