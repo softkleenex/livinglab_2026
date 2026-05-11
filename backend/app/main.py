@@ -22,25 +22,25 @@ from slowapi.errors import RateLimitExceeded
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("mdga_enterprise")
 
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"), override=True)
 
-from app.core.websocket import manager
-from app.core.config import settings
+from app.core.websocket import manager  # noqa: E402
+from app.core.config import settings  # noqa: E402
 
-from app.api.endpoints.hierarchy import router as hierarchy_router
-from app.api.endpoints.dashboard import router as dashboard_router
-from app.api.endpoints.ingest import router as ingest_router
-from app.api.endpoints.chat import router as chat_router
-from app.api.endpoints.agora import router as agora_router
-from app.api.endpoints.admin import router as admin_router
-from app.api.endpoints.ax_data import router as ax_data_router
-from app.api.endpoints.b2b_market import router as b2b_market_router
-from app.api.endpoints.data_marketplace import router as data_marketplace_router
+from app.api.endpoints.hierarchy import router as hierarchy_router  # noqa: E402
+from app.api.endpoints.dashboard import router as dashboard_router  # noqa: E402
+from app.api.endpoints.ingest import router as ingest_router  # noqa: E402
+from app.api.endpoints.chat import router as chat_router  # noqa: E402
+from app.api.endpoints.agora import router as agora_router  # noqa: E402
+from app.api.endpoints.admin import router as admin_router  # noqa: E402
+from app.api.endpoints.ax_data import router as ax_data_router  # noqa: E402
+from app.api.endpoints.b2b_market import router as b2b_market_router  # noqa: E402
+from app.api.endpoints.data_marketplace import router as data_marketplace_router  # noqa: E402
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
@@ -57,26 +57,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # --- Global Error Handlers (B2B Standard) ---
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handles standard HTTP exceptions and formats them into a consistent JSON response."""
-    logger.error(f"HTTP Exception: {exc.status_code} - {exc.detail} on {request.url.path}")
+    logger.error(
+        f"HTTP Exception: {exc.status_code} - {exc.detail} on {request.url.path}"
+    )
     return JSONResponse(
         status_code=exc.status_code,
-        content={"status": "error", "code": exc.status_code, "message": exc.detail, "path": request.url.path},
+        content={
+            "status": "error",
+            "code": exc.status_code,
+            "message": exc.detail,
+            "path": request.url.path,
+        },
     )
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Catches all unhandled exceptions to prevent server crashes and hides stack traces from clients."""
-    logger.critical(f"Unhandled Exception on {request.url.path}: {str(exc)}", exc_info=True)
+    logger.critical(
+        f"Unhandled Exception on {request.url.path}: {str(exc)}", exc_info=True
+    )
     # Security: Do not expose internal details (str(exc)) in production.
-    detail_msg = "Internal Server Error" if os.getenv("ENV") == "production" else str(exc)
+    detail_msg = (
+        "Internal Server Error" if os.getenv("ENV") == "production" else str(exc)
+    )
     return JSONResponse(
         status_code=500,
-        content={"status": "error", "code": 500, "message": "Internal Server Error", "details": detail_msg, "path": request.url.path},
+        content={
+            "status": "error",
+            "code": 500,
+            "message": "Internal Server Error",
+            "details": detail_msg,
+            "path": request.url.path,
+        },
     )
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -84,9 +104,41 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.warning(f"Validation Error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=422,
-        content={"status": "error", "code": 422, "message": "Validation Error", "details": exc.errors(), "path": request.url.path},
+        content={
+            "status": "error",
+            "code": 422,
+            "message": "Validation Error",
+            "details": exc.errors(),
+            "path": request.url.path,
+        },
     )
+
+
 # --------------------------------------------
+
+from sqlalchemy import text
+from app.core.database import SessionLocal
+
+@app.get("/health", tags=["System"])
+def health_check():
+    """Check system and database health."""
+    db_status = "unknown"
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_status = "disconnected"
+    finally:
+        db.close()
+        
+    return {
+        "status": "ok",
+        "database": db_status,
+        "environment": settings.ENV,
+        "database_url_configured": settings.DATABASE_URL != "sqlite:///./test.db"
+    }
 
 # WebSocket Route
 @app.websocket("/ws/v1/updates")
@@ -95,27 +147,58 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
+            await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+
 # Routers - API Versioning (v1)
 app.include_router(hierarchy_router, prefix="/api/v1/hierarchy", tags=["Hierarchy v1"])
-app.include_router(hierarchy_router, prefix="/api/v1", tags=["Legacy Mobile v1"], include_in_schema=False)
+app.include_router(
+    hierarchy_router,
+    prefix="/api/v1",
+    tags=["Legacy Mobile v1"],
+    include_in_schema=False,
+)
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Dashboard v1"])
 app.include_router(ingest_router, prefix="/api/v1/ingest", tags=["Ingest v1"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["Agora v1"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin v1"])
-app.include_router(ax_data_router, prefix="/api/v1/ax-data", tags=["AX Synthetic Data v1"])
-app.include_router(b2b_market_router, prefix="/api/v1/b2b-market", tags=["Synthetic Data Market v1"])
-app.include_router(data_marketplace_router, prefix="/api/v1/data-marketplace", tags=["Phase 4 Commercial Data Hub v1"])
+app.include_router(
+    ax_data_router, prefix="/api/v1/ax-data", tags=["AX Synthetic Data v1"]
+)
+app.include_router(
+    b2b_market_router, prefix="/api/v1/b2b-market", tags=["Synthetic Data Market v1"]
+)
+app.include_router(
+    data_marketplace_router,
+    prefix="/api/v1/data-marketplace",
+    tags=["Phase 4 Commercial Data Hub v1"],
+)
 
 # Legacy routers mapped to root /api to avoid breaking old cached mobile clients
-app.include_router(hierarchy_router, prefix="/api/hierarchy", tags=["Legacy v0"], include_in_schema=False)
-app.include_router(hierarchy_router, prefix="/api", tags=["Legacy v0 Root"], include_in_schema=False)
-app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Legacy v0"], include_in_schema=False)
-app.include_router(ingest_router, prefix="/api/ingest", tags=["Legacy v0"], include_in_schema=False)
-app.include_router(chat_router, prefix="/api/chat", tags=["Legacy v0"], include_in_schema=False)
-app.include_router(agora_router, prefix="/api/agora", tags=["Legacy v0"], include_in_schema=False)
-
+app.include_router(
+    hierarchy_router,
+    prefix="/api/hierarchy",
+    tags=["Legacy v0"],
+    include_in_schema=False,
+)
+app.include_router(
+    hierarchy_router, prefix="/api", tags=["Legacy v0 Root"], include_in_schema=False
+)
+app.include_router(
+    dashboard_router,
+    prefix="/api/dashboard",
+    tags=["Legacy v0"],
+    include_in_schema=False,
+)
+app.include_router(
+    ingest_router, prefix="/api/ingest", tags=["Legacy v0"], include_in_schema=False
+)
+app.include_router(
+    chat_router, prefix="/api/chat", tags=["Legacy v0"], include_in_schema=False
+)
+app.include_router(
+    agora_router, prefix="/api/agora", tags=["Legacy v0"], include_in_schema=False
+)
