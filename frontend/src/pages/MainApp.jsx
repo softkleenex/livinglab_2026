@@ -52,6 +52,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
   const [showReport, setShowReport] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   const addToast = (message, type = 'info') => {
     const newNotif = { id: Date.now(), message, type };
@@ -73,6 +74,41 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
     return () => axios.interceptors.request.eject(reqInterceptor);
   }, [googleUser]);
 
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/wallet/transactions`);
+        if (res.data?.status === 'success') {
+          setWalletBalance(res.data.balance);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (!googleUser?.isGuest) {
+      fetchWallet();
+    }
+  }, [googleUser]);
+
+  const handleExport = async () => {
+    try {
+      const pathStr = userContext?.location ? userContext.location.join('/') : '';
+      const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/export`, {
+        params: { path: pathStr, industry: userContext?.industry },
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `mdga_export.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch(e) {
+      addToast("데이터 추출에 실패했습니다.", "error");
+    }
+  };
+
   return (
     <div className="flex h-[100dvh] w-full bg-[#05080F] text-slate-200 overflow-hidden font-sans antialiased justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[480px] bg-[#0A0F1A] h-full flex flex-col relative border-x border-slate-800/60 shadow-2xl">
@@ -85,6 +121,12 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            {!googleUser?.isGuest && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30 text-[10px] font-bold cursor-pointer hover:bg-indigo-500/30 transition-colors" title="My MDGA Tokens">
+                <span className="text-indigo-400">🪙</span>
+                <span>{walletBalance.toLocaleString()}</span>
+              </div>
+            )}
             {googleUser?.isGuest ? (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full border border-orange-500/30 text-[10px] font-bold">
                 <span>Guest</span>
@@ -92,8 +134,11 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
             ) : googleUser?.picture ? (
               <img src={googleUser.picture} alt="profile" className="w-6 h-6 rounded-full border border-emerald-500/50 shadow-sm shadow-emerald-500/20" />
             ) : null}
-            <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
-              Logout
+            <button onClick={onLogout} className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800/50 hover:bg-slate-700 px-2 py-1.5 rounded-lg border border-slate-700 transition-colors">
+              Out
+            </button>
+            <button onClick={handleExport} className="text-[10px] font-bold text-emerald-400 uppercase bg-emerald-900/30 hover:bg-emerald-800/50 px-2 py-1.5 rounded-lg border border-emerald-700/50 transition-colors" title="Export CSV">
+              Export
             </button>
           </div>
         </header>

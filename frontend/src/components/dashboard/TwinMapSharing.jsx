@@ -15,9 +15,18 @@ const createIcon = (color) => new L.DivIcon({
   iconAnchor: [7, 7]
 });
 
-export default function TwinMapSharing() {
+export default function TwinMapSharing({ userContext }) {
   const [risks, setRisks] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Derive coordinates based on user location if possible, else default
+  const getMapCenter = () => {
+    if (userContext?.location?.includes('대구광역시')) return [35.8714, 128.6014];
+    if (userContext?.location?.includes('서울특별시')) return [37.5665, 126.9780];
+    return [36.4, 128.65]; // Default center
+  };
+
+  const center = getMapCenter();
 
   useEffect(() => {
     const fetchRisks = async () => {
@@ -53,7 +62,7 @@ export default function TwinMapSharing() {
 
         {/* Real Map View */}
         <div className="relative w-full h-48 bg-slate-900 rounded-xl overflow-hidden border border-slate-700/50 mb-4 z-0">
-          <MapContainer center={[36.4, 128.65]} zoom={9} style={{ height: '100%', width: '100%' }} zoomControl={false} attributionControl={false}>
+          <MapContainer center={center} zoom={9} style={{ height: '100%', width: '100%' }} zoomControl={false} attributionControl={false}>
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
