@@ -121,13 +121,13 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
 
         {/* Bottom Navigation */}
         <nav className="flex items-center justify-around bg-[#0E1420]/95 backdrop-blur-lg border-t border-slate-800/80 h-16 shrink-0 pb-safe z-50 absolute bottom-0 left-0 right-0 w-full">
-          <BottomNavLink icon={<FileJson size={20}/>} label="데이터변환" active={activeTab === 'converter'} onClick={() => setActiveTab('converter')} />
-          <BottomNavLink icon={<Map size={20}/>} label="트윈 맵" active={activeTab === 'map'} onClick={() => setActiveTab('map')} />
+          <BottomNavLink icon={<FileJson size={20}/>} label="일지자동화" active={activeTab === 'converter'} onClick={() => setActiveTab('converter')} />
+          <BottomNavLink icon={<Map size={20}/>} label="위험지도" active={activeTab === 'map'} onClick={() => setActiveTab('map')} />
           
           <BottomNavLink icon={<Camera size={20}/>} label="기록" special active={showIngest} onClick={() => setShowIngest(true)} />
           
-          <BottomNavLink icon={<ShoppingCart size={20}/>} label="합성데이터 마켓" active={activeTab === 'b2b'} onClick={() => setActiveTab('b2b')} />
-          <BottomNavLink icon={<CloudRain size={20}/>} label="농업AX" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
+          <BottomNavLink icon={<ShoppingCart size={20}/>} label="마켓" active={activeTab === 'b2b'} onClick={() => setActiveTab('b2b')} />
+          <BottomNavLink icon={<CloudRain size={20}/>} label="AI분석" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
         </nav>
 
         {/* Modals */}

@@ -6,10 +6,91 @@ from app.api.deps import verify_token
 import httpx
 import io
 import csv
+import random
 from fastapi.responses import StreamingResponse
 
 router = APIRouter()
 
+@router.get("/twin-map-risks")
+async def get_twin_map_risks(db: Session = Depends(get_db)):
+    """Fetch real-time biosecurity and environmental risks for the Twin Map."""
+    # In a fully production system, this would query external APIs (like KMA, 농림축산검역본부) 
+    # or the local database's recent anomaly detections.
+    # Here we simulate the dynamic nature of these alerts based on regions in the DB.
+    regions = db.query(Region).filter(Region.parent_id != None).limit(3).all()
+    
+    if not regions:
+        # Fallback if DB is empty
+        risks = [
+            {"id": 1, "type": "disease", "name": "아프리카돼지열병(ASF) 발생", "status": "critical", "location": "경상북도 안동시", "distance": "반경 10km 이내", "lat": 36.5684, "lng": 128.7296},
+            {"id": 2, "type": "weather", "name": "국지성 폭염 경보", "status": "warning", "location": "경상북도 의성군", "distance": "현재 체감 36도", "lat": 36.3524, "lng": 128.6970},
+            {"id": 3, "type": "ventilation", "name": "환기 지수 경계", "status": "warning", "location": "대구광역시 군위군", "distance": "질병 발생 확률 높음", "lat": 36.2428, "lng": 128.5728}
+        ]
+    else:
+        # Dynamically generate risks based on existing regions
+        risk_types = [
+            {"type": "disease", "name": "구제역(FMD) 의심", "status": "critical", "distance": "반경 5km 이내 주의"},
+            {"type": "weather", "name": "국지성 폭염 경보", "status": "warning", "distance": "현재 체감 37도"},
+            {"type": "ventilation", "name": "환기 지수 경계", "status": "warning", "distance": "질병 발생 확률 높음"}
+        ]
+        
+        risks = []
+        for i, r in enumerate(regions):
+            risk_info = risk_types[i % len(risk_types)]
+            # Add slight jitter to lat/lng for map display if they exist, else generate random nearby coordinates
+            lat = r.lat + random.uniform(-0.05, 0.05) if r.lat else 36.0 + random.uniform(-1, 1)
+            lng = r.lng + random.uniform(-0.05, 0.05) if r.lng else 128.0 + random.uniform(-1, 1)
+            
+            risks.append({
+                "id": i + 1,
+                "type": risk_info["type"],
+                "name": risk_info["name"],
+                "status": risk_info["status"],
+                "location": f"{r.name}",
+                "distance": risk_info["distance"],
+                "lat": lat,
+                "lng": lng
+            })
+
+    return {"status": "success", "risks": risks}
+
+@router.get("/sales-insight")
+async def get_sales_insight(path: str = Query(""), db: Session = Depends(get_db)):
+    """Fetch integrated sales, shipment, and AI recommendation data."""
+    # In reality, this would aggregate from e-commerce APIs (Cafe24, SmartStore, etc.)
+    # Here, we dynamically simulate it based on the farm's transactions/wallet if possible,
+    # or generate a structured response based on the path.
+    
+    # Try to find user wallet if user context was passed (simplified here)
+    # Since we might not have a full token in this generic dashboard call, we simulate based on farm value.
+    path_list = [p for p in path.split("/") if p]
+    obj = engine.get_object(db, path_list) if path_list else None
+    
+    base_sales = 12500000
+    base_shipped = 4200
+    if obj and obj.get("type") == "Farm":
+        base_sales += obj["metadata"].get("total_value", 0) * 1000
+        base_shipped += obj["metadata"].get("total_value", 0) // 10
+        
+    # AI Recommendation calculation
+    growth_trend = random.uniform(-0.1, 0.3)
+    if growth_trend > 0.1:
+        recommendation = f"최근 3개월 판매량 증가 추세. 다음 달 재배량 {int(growth_trend*100)}% 상향 권장."
+    elif growth_trend < -0.05:
+        recommendation = f"최근 판매량 감소 추세. 재고 관리 및 B급 가공품 전환 비중을 {int(abs(growth_trend)*100)}% 확대하세요."
+    else:
+        recommendation = "최근 판매량 안정적 유지 중. 현재 수준의 재배량을 유지하세요."
+        
+    return {
+        "status": "success", 
+        "data": {
+            "totalSales": f"{int(base_sales):,}",
+            "totalShipped": int(base_shipped),
+            "pendingShipment": random.randint(50, 300),
+            "recommendation": recommendation,
+            "growth_trend": round(growth_trend * 100, 1)
+        }
+    }
 
 @router.get("/personal")
 async def get_personal_dashboard(

@@ -41,8 +41,9 @@
 *   `DELETE`: "방금 올린 일지 잘못올림 지워줘" -> 데이터 삭제 의도 (안전망 처리 필요).
 
 ### 2.2 Entity Extraction (정보 추출 규격)
-`DATA_ENTRY`로 판별된 경우, 모델은 아래의 **JSON Schema**를 엄격히 준수하여 응답해야 합니다. `google-genai` SDK의 `response_schema` 파라미터를 강제합니다.
+`DATA_ENTRY`로 판별된 경우, 모델은 농가 유형에 따라 다음의 **JSON Schema** 중 하나를 엄격히 준수하여 응답해야 합니다. `google-genai` SDK의 `response_schema` 파라미터를 강제합니다.
 
+**A. 스마트팜/작물 재배용 Schema:**
 ```json
 {
   "type": "object",
@@ -56,31 +57,45 @@
 }
 ```
 
+**B. 양돈/축산(HACCP/백신)용 Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "livestock_type": { "type": "string", "description": "가축 종류 (예: 돼지, 한우)" },
+    "event_type": { "type": "string", "enum": ["백신접종", "교배", "출산", "질병발생", "일반관측", "기타"] },
+    "vaccine_name": { "type": "string", "description": "백신 접종인 경우 백신명 (예: 구제역 백신)" },
+    "anomaly_detected": { "type": "boolean", "description": "사료 섭취 거부, 움직임 둔화 등 이상 징후 여부" }
+  },
+  "required": ["event_type", "anomaly_detected"]
+}
+```
+
 ---
 
-## 3. 작황 시뮬레이션 및 THI 산출 규칙 (Simulator Engine)
+## 3. 작황 시뮬레이션 및 AI 인사이트 엔진 (Insight Engine)
 
-데이터 마켓에 판매할 합성 데이터(Synthetic Data)를 생성하는 시뮬레이터의 핵심 산출 공식입니다.
+데이터 마켓에 판매할 합성 데이터(Synthetic Data)를 생성하고, 농가에 실시간 인사이트를 제공하는 핵심 로직입니다.
 
-### 3.1 THI (온습도지수, Temperature-Humidity Index) 공식
-작물이나 가축이 받는 열 스트레스를 정량화합니다.
-*   **공식:** `THI = (0.81 * T) + (0.01 * H * ((0.99 * T) - 14.3)) + 46.3`
-    *   `T`: 섭씨 온도 (℃)
-    *   `H`: 상대 습도 (%)
-*   **경보 등급 분류 (Category):**
-    *   `THI < 72`: 쾌적 (NORMAL)
-    *   `72 <= THI < 79`: 주의 (MILD_STRESS) - 환기 권장
-    *   `79 <= THI < 89`: 경고 (HIGH_STRESS) - 작물 생장 지연 발생 구간
-    *   `THI >= 89`: 위험 (EXTREME_DANGER) - 작물 고사 위험
+### 3.1 양돈 농가: 골든타임 알림 및 이상 징후 감지
+*   **공식:** 사료 섭취량 변화율(%) 및 일평균 음수량 증감을 모니터링하여 임계치 초과 시 알림.
+*   **THI (온습도지수, Temperature-Humidity Index):** 가축이 받는 열 스트레스를 정량화합니다.
+    *   `THI = (0.81 * T) + (0.01 * H * ((0.99 * T) - 14.3)) + 46.3`
+    *   `THI >= 89` (EXTREME_DANGER): 환기 고장, 정전 시 질식사 위험에 대한 골든타임(2시간 전) 경보 발송.
 
-### 3.2 시나리오별 수확량 변동성 (Yield Change) 예측 모델
-미래 기상 예보 시나리오를 바탕으로 작황 감소율을 계산하는 단순화된 시뮬레이션 모델입니다.
+### 3.2 스마트팜 농가: 매출 통합 및 AI 재배량 추천
+*   분산된 쇼핑몰(토글 등)의 판매/출고 데이터를 크롤링 또는 오픈 API로 수집하여 단일 뷰로 롤업합니다.
+*   **AI 재배량 추천 모델:**
+    *   `다음 달 추천 재배량 = 기준 생산량 * (1 + (최근 3개월 판매 성장률 * 0.5))`
+    *   기후 시나리오(폭염 등)가 겹칠 경우 패널티(Climate Stress Factor)를 부여하여 최종 생산량을 예측합니다.
+
+### 3.3 시나리오별 수확량 변동성 (Yield Change) 예측 모델
+미래 기상 예보 시나리오를 바탕으로 작황 감소율을 계산하는 시뮬레이션 모델입니다.
 *   **공식:** `Simulated Yield = Baseline Yield * (1 - Climate Stress Factor)`
 *   **Baseline Yield (기준 수확량):** 최근 3년 해당 월의 평균 수확량 (DB 통계치).
 *   **Climate Stress Factor (기후 스트레스 계수):**
     *   `시나리오(EXTREME_HEAT)` 적용 시: `(예상 평균 최고기온 - 작물별 임계 온도) * 0.05`
     *   *제약:* 스트레스 계수는 0(영향없음) 이상 1(전체 고사) 이하의 값을 가집니다. 임계 온도 미만일 경우 계수는 0으로 처리합니다.
-    *   *예시:* 딸기 임계 온도 28도. 폭염 시나리오로 예상 평균 온도가 31도가 될 경우 -> `(31 - 28) * 0.05 = 0.15` (15% 수확량 감소 예상).
 
 ---
 
