@@ -4,7 +4,6 @@ import { Map, Zap, Tractor, FileJson, Camera, CloudRain, ShoppingCart, MessageSq
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Modals
-import ReportModal from '../components/modals/ReportModal.jsx';
 import IngestModal from '../components/modals/IngestModal.jsx';
 import VoiceRecordModal from '../components/modals/VoiceRecordModal.jsx';
 import WalletModal from '../components/modals/WalletModal.jsx';
