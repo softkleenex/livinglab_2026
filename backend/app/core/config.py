@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ENV: str = "production"
 
     # Database
-    DATABASE_URL: str = "postgresql://postgres.nwtnczpvczppajomtbiy:Xhdtls12!%40%23@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
+    DATABASE_URL: str = "sqlite:///./test.db"
 
     # Google OAuth
     GOOGLE_OAUTH_CLIENT_ID: str = ""
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = (
         "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev"
     )
-    B2B_API_KEYS: str = "mdga-b2b-snowflake-key,mdga-b2b-aihub-key"
+    B2B_API_KEYS: str = "dummy-key"
 
     @property
     def cors_origins_list(self) -> List[str]:

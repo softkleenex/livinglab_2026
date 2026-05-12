@@ -15,6 +15,13 @@ export default function B2BMarket({ addToast }) {
   const [uploadData, setUploadData] = useState({ title: '', description: '', price: 0 });
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const objectUrlsRef = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      objectUrlsRef.current.forEach(URL.revokeObjectURL);
+    };
+  }, []);
 
   const handleUploadSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +43,13 @@ export default function B2BMarket({ addToast }) {
       if (res.data?.status === 'success') {
         addToast("상품이 성공적으로 등록되었습니다.", "success");
         setShowUploadModal(false);
+        
+        let localImageUrl = 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop';
+        if (uploadFile) {
+          localImageUrl = URL.createObjectURL(uploadFile);
+          objectUrlsRef.current.push(localImageUrl);
+        }
+
         // Refresh products
         setItems(prev => [{
           id: res.data.product_id,
@@ -45,7 +59,7 @@ export default function B2BMarket({ addToast }) {
           price: uploadData.price === 0 ? '협의' : `${Number(uploadData.price).toLocaleString()}원`,
           match: res.data.ai_recommendation || 'AI 분석 완료',
           status: 'available',
-          imageUrl: uploadFile ? URL.createObjectURL(uploadFile) : 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop'
+          imageUrl: localImageUrl
         }, ...prev]);
       }
     } catch (err) {

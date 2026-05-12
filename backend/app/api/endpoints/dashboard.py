@@ -238,7 +238,7 @@ async def get_wallet_transactions(
 
 @router.get("/report")
 async def generate_weekly_report(
-    path: str, industry: str = "공공", db: Session = Depends(get_db)
+    path: str, industry: str = "공공", db: Session = Depends(get_db), user: dict = Depends(verify_token)
 ) -> dict:
     path_list = [p for p in path.split("/") if p]
     obj = engine.get_object(db, path_list)

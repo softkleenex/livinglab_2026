@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Upload, X, ShieldCheck, RefreshCw, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -14,13 +14,23 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
   
   const [selectedPath, setSelectedPath] = useState(locationPath);
 
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
     if (selectedFile && selectedFile.type.startsWith('image/')) {
+      if (preview) URL.revokeObjectURL(preview);
       const url = URL.createObjectURL(selectedFile);
       setPreview(url);
     } else {
+      if (preview) URL.revokeObjectURL(preview);
       setPreview(null);
     }
   };
@@ -36,7 +46,8 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
     try {
       const response = await axios.post(`${API_BASE_URL}/api/v1/ingest`, formData);
       setRes(response.data);
-      setTimeout(() => onSuccess(response.data.value_added), 2500);
+      const timer = setTimeout(() => onSuccess(response.data.value_added), 2500);
+      return () => clearTimeout(timer);
     } catch (err) { 
       console.error(err);
       addToast("업로드에 실패했습니다. 사진 용량이나 네트워크를 확인해주세요.", "error"); 

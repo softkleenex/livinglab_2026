@@ -7,6 +7,7 @@ import hashlib
 import json
 from pydantic import BaseModel
 from app.services.public_data_service import public_data_service
+from app.api.deps import verify_token
 
 router = APIRouter()
 

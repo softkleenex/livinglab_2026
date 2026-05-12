@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Mic, X, RefreshCw, AudioLines, StopCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [timer, setTimer] = useState(0);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     let interval;
@@ -21,6 +22,12 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
     return () => clearInterval(interval);
   }, [recording]);
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   const handleToggleRecord = () => {
     if (!recording) {
       setRecording(true);
@@ -30,7 +37,7 @@ export default function VoiceRecordModal({ isGuest, onClose, onSuccess, location
       setRecording(false);
       // Simulate STT processing time
       setLoading(true);
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setTranscript('AI가 백그라운드에서 주변 소음과 현장 음성을 텍스트로 변환했습니다. "오전 10시, 토마토 모종 500개 추가 입고 완료. 어제보다 일조량이 좋아서 환풍기 2단으로 가동함."');
         setLoading(false);
       }, 1500);

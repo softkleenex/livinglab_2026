@@ -49,17 +49,24 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
   const [activeTab, setActiveTab] = useState('converter');
   const [showIngest, setShowIngest] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
-  const [showReport, setShowReport] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const timeoutRefs = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      timeoutRefs.current.forEach(clearTimeout);
+    };
+  }, []);
 
   const addToast = (message, type = 'info') => {
     const newNotif = { id: Date.now(), message, type };
     setNotifications(prev => [newNotif, ...prev].slice(0, 3));
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
     }, 4000);
+    timeoutRefs.current.push(timer);
   };
 
   useEffect(() => {

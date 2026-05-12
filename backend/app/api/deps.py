@@ -4,6 +4,7 @@ from app.core.database import get_db, User, Wallet
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from app.core.config import settings
+import os
 
 GOOGLE_CLIENT_ID = settings.GOOGLE_OAUTH_CLIENT_ID
 DEBUG = settings.DEBUG
@@ -14,8 +15,9 @@ def verify_token(authorization: str = Header(None), db: Session = Depends(get_db
         return {"user_id": 0, "email": "guest@mdga.io", "role": "guest"}
 
     token = authorization.split(" ")[1]
+    admin_seed_token = os.environ.get("ADMIN_SEED_TOKEN")
 
-    if token == "mdga-admin-seed-2026":
+    if admin_seed_token and token == admin_seed_token:
         email = "test@mdga.io"
         name = "Seed Admin"
         picture = None

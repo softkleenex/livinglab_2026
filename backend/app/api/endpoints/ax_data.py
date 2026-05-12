@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.core.database import get_db, SyntheticData
 from app.services.public_data_service import public_data_service
+from app.api.deps import verify_token
 import traceback
 
 router = APIRouter()
-
 
 @router.get("/yield-prediction")
 async def get_yield_prediction(
     region: str = Query(..., description="Target region (e.g. 대구광역시 북구)"),
     crop: str = Query(..., description="Target crop (e.g. 사과)"),
+    user: dict = Depends(verify_token),
 ):
     try:
         # Generate new synthetic prediction
@@ -22,11 +23,11 @@ async def get_yield_prediction(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/crop-simulator")
 async def get_crop_simulator(
     region: str = Query(..., description="Target region"),
     crop: str = Query(..., description="Target crop"),
+    user: dict = Depends(verify_token),
 ):
     try:
         result = await public_data_service.generate_crop_simulator(region, crop)
@@ -35,9 +36,8 @@ async def get_crop_simulator(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/oversupply-risk")
-async def get_oversupply_risk(crop: str = Query(..., description="Target crop")):
+async def get_oversupply_risk(crop: str = Query(..., description="Target crop"), user: dict = Depends(verify_token)):
     try:
         result = await public_data_service.generate_oversupply_risk(crop)
         return {"status": "success", "data": result}
@@ -45,11 +45,11 @@ async def get_oversupply_risk(crop: str = Query(..., description="Target crop"))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/livestock-alert")
 async def get_livestock_alert(
     region: str = Query(..., description="Target region"),
     livestock_type: str = Query(..., description="Livestock type (e.g. 한우, 돼지)"),
+    user: dict = Depends(verify_token),
 ):
     try:
         result = await public_data_service.generate_livestock_alert(
@@ -60,11 +60,11 @@ async def get_livestock_alert(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/resource-efficiency")
 async def get_resource_efficiency(
     region: str = Query(..., description="Target region"),
     crop: str = Query(..., description="Target crop"),
+    user: dict = Depends(verify_token),
 ):
     try:
         result = await public_data_service.generate_resource_efficiency(region, crop)
@@ -74,7 +74,7 @@ async def get_resource_efficiency(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/simulation-logs")
-async def get_simulation_logs(db: Session = Depends(get_db)):
+async def get_simulation_logs(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     """Fetch dynamic simulation logs for the EnvHub Terminal UI based on actual DB stats."""
     import random
     from app.core.database import Product, DataEntry
@@ -100,6 +100,7 @@ async def get_synthetic_data_history(
     region: str = Query(None),
     data_type: str = Query(None),
     db: Session = Depends(get_db),
+    user: dict = Depends(verify_token),
 ):
     """Fetch cached synthetic data from the DB"""
     query = db.query(SyntheticData)
