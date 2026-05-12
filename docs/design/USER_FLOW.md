@@ -2,6 +2,35 @@
 
 본 문서는 MDGA 시스템의 핵심 사용자(양돈 농가, 스마트팜 농가, B2B 클라이언트, 관리자)별 시나리오를 정의합니다. 최근 인터뷰 피드백을 반영하여 농업 AX(Agricultural AX)에 특화된 플로우로 재구성되었습니다.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Onboarding: 로그인 및 접속
+    Onboarding --> PigFarmer: 양돈 농가 선택
+    Onboarding --> SmartFarm: 스마트팜 선택
+    Onboarding --> B2BBuyer: B2B 구매자 선택
+    
+    state PigFarmer {
+        [*] --> HACCP_Log: 사진/음성 일지
+        HACCP_Log --> TwinMap: 방역 위험 지도
+        TwinMap --> Alert: 폐사/질병 알림
+    }
+    
+    state SmartFarm {
+        [*] --> Environment: 생육 모니터링
+        Environment --> SalesDash: 매출/출고 대시보드
+        SalesDash --> AI_Recommend: AI 재배량 추천
+    }
+    
+    state B2BBuyer {
+        [*] --> OpenSourceSim: EnvHub 시뮬레이터
+        OpenSourceSim --> B2BMarket: B급 농산물 & 합성데이터
+    }
+    
+    PigFarmer --> Wallet: 보상 지급 (MDGA Token)
+    SmartFarm --> Wallet: 보상 지급 (MDGA Token)
+    B2BMarket --> Wallet: 구매 결제 / 판매 수익
+```
+
 ## 1. 양돈 농가 플로우 (Livestock/Pig Farmer)
 
 양돈 농가는 차단 방역을 최우선으로 하며, 번거로운 행정 서류 작업을 최소화하고 질병 징후를 조기에 발견하는 데 목적이 있습니다. (장비 공유 기능은 방역 문제로 배제됨)

@@ -26,6 +26,21 @@ MDGA는 농가의 수기 일지, 생육 데이터, 외부 공공 기상 데이�
 - **Database**: PostgreSQL (Supabase)
 - **AI / Data**: Gemini 2.5 Pro (멀티모달 파싱 및 분석)
 
+```mermaid
+graph TD
+    A[농가/스마트팜 User] -->|영농일지, 사진| B(React Frontend)
+    C[B2B 기업 User] -->|데이터 구매/구독| B
+    B <-->|REST API| D[FastAPI Backend]
+    
+    D -->|멀티모달 파싱| E[Gemini 2.5 Pro]
+    D <-->|CRUD & Tokenomics| F[(Supabase PostgreSQL)]
+    D -->|공공 API| G[기상청 / 농진청]
+    D -->|Hugging Face| H[오픈소스 데이터셋 Seeding]
+    
+    E -.->|JSON 구조화| D
+    F -.->|AI 분석 및 위험 지도| B
+```
+
 ## 🚀 빠른 시작 (Getting Started)
 
 ### 환경 변수 설정 (`backend/.env`)
