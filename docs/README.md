@@ -4,6 +4,7 @@ Welcome to the documentation for MDGA (Universal Data Engine). This directory co
 
 ## 📖 Main Specification
 - **[Service Logic & Planning (service_logic/CORE_LOGIC_AND_PLANNING.md)](./service_logic/CORE_LOGIC_AND_PLANNING.md)**: Deep dive into the core logic, target personas, and constraints of the Agricultural AX pivot.
+- **[Competitor Analysis & Differentiation (service_logic/COMPETITOR_ANALYSIS.md)](./service_logic/COMPETITOR_ANALYSIS.md)**: Analysis of existing platforms like FarmMorning and MDGA's B2B differentiation strategy.
 - **[Project Spec and Plan (PROJECT_SPEC_AND_PLAN.md)](./PROJECT_SPEC_AND_PLAN.md)**: The single source of truth for the project's vision, core features (Data Converter, Twin Map, B2B Market, Synthesis Insight), and milestones.
 
 ## 🏛️ Architecture & Database
