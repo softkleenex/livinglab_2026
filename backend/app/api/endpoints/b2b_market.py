@@ -136,7 +136,7 @@ async def create_product(
 async def list_products(category: str = Query(None), db: Session = Depends(get_db)):
     try:
         from app.core.database import User, Region
-        query = db.query(Product, User.username, Region.name).outerjoin(User, Product.seller_id == User.id).outerjoin(Region, Product.region_id == Region.id).filter(Product.status == "available")
+        query = db.query(Product, User.name, Region.name).outerjoin(User, Product.seller_id == User.id).outerjoin(Region, Product.region_id == Region.id).filter(Product.status == "available")
         if category:
             query = query.filter(Product.category == category)
 
@@ -153,8 +153,8 @@ async def list_products(category: str = Query(None), db: Session = Depends(get_d
                     "ai_grade": p.Product.ai_grade,
                     "ai_recommendation": p.Product.ai_recommendation,
                     "image_url": p.Product.image_url,
-                    "seller": p.username or "지역 농가 및 MDGA",
-                    "location": p.name or "대구/경북 일대"
+                    "seller": p.name or "지역 농가 및 MDGA",
+                    "location": getattr(p, 'name_1', p.name) or "대구/경북 일대" # Handle overlapping 'name' attribute from User and Region
                 }
                 for p in results
             ],

@@ -14,7 +14,7 @@ def test_data_flow():
 
     # 1. Test Ingest Flow
     print(
-        "\n1. Testing Ingest Flow (POST /api/v1/ingest => GET /api/hierarchy/explore)..."
+        "\n1. Testing Ingest Flow (POST /api/v1/ingest => GET /api/v1/hierarchy/explore)..."
     )
     try:
         files = {
@@ -30,7 +30,7 @@ def test_data_flow():
             "is_guest": "false",
             "industry": "스마트팜",
         }
-        res = client.post("/api/v1/ingest", data=data, files=files)
+        res = client.post("/api/v1/ingest", data=data, files=files, headers={"Authorization": "Bearer mdga-admin-seed-2026"})
         res.raise_for_status()
         body = res.json()
         print(f"  👉 Ingest Status: {body.get('status', 'OK')}")
@@ -44,7 +44,7 @@ def test_data_flow():
 
         print(f"  🔍 Verifying via Explore... Path: {path}")
         path_query = urllib.parse.quote("/".join(path))
-        res2 = client.get(f"/api/hierarchy/explore?path={path_query}")
+        res2 = client.get(f"/api/v1/hierarchy/explore?path={path_query}")
         res2.raise_for_status()
         obj_data = res2.json()
         entries = obj_data.get("data_entries", [])
@@ -59,7 +59,7 @@ def test_data_flow():
         print(f"  ❌ Ingest flow error: {e}")
 
     # 2. Test User Context Flow
-    print("\n2. Testing User Context Flow (POST /api/v1/user/context)...")
+    print("\n2. Testing User Context Flow (POST /api/v1/hierarchy/user/context)...")
     try:
         data = {
             "role": "farm",
@@ -72,7 +72,7 @@ def test_data_flow():
                 "지니스팜 제1농장",
             ],
         }
-        res = client.post("/api/v1/user/context", json=data)
+        res = client.post("/api/v1/hierarchy/user/context", json=data)
         res.raise_for_status()
         body = res.json()
         print(f"  👉 User Context Status: {body['status']}")
