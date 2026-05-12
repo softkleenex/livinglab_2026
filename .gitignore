@@ -43,3 +43,4 @@ Icon
 app/data/*.json
 chrome/
 .gemini/
+.coverage

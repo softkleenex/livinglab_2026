@@ -178,12 +178,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Routers - API Versioning (v1)
 app.include_router(hierarchy_router, prefix="/api/v1/hierarchy", tags=["Hierarchy v1"])
-app.include_router(
-    hierarchy_router,
-    prefix="/api/v1",
-    tags=["Legacy Mobile v1"],
-    include_in_schema=False,
-)
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Dashboard v1"])
 app.include_router(ingest_router, prefix="/api/v1/ingest", tags=["Ingest v1"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])
@@ -199,30 +193,4 @@ app.include_router(
     data_marketplace_router,
     prefix="/api/v1/data-marketplace",
     tags=["Phase 4 Commercial Data Hub v1"],
-)
-
-# Legacy routers mapped to root /api to avoid breaking old cached mobile clients
-app.include_router(
-    hierarchy_router,
-    prefix="/api/hierarchy",
-    tags=["Legacy v0"],
-    include_in_schema=False,
-)
-app.include_router(
-    hierarchy_router, prefix="/api", tags=["Legacy v0 Root"], include_in_schema=False
-)
-app.include_router(
-    dashboard_router,
-    prefix="/api/dashboard",
-    tags=["Legacy v0"],
-    include_in_schema=False,
-)
-app.include_router(
-    ingest_router, prefix="/api/ingest", tags=["Legacy v0"], include_in_schema=False
-)
-app.include_router(
-    chat_router, prefix="/api/chat", tags=["Legacy v0"], include_in_schema=False
-)
-app.include_router(
-    agora_router, prefix="/api/agora", tags=["Legacy v0"], include_in_schema=False
 )
