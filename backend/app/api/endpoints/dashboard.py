@@ -144,6 +144,22 @@ async def get_personal_dashboard(
         else 50.0
     )
 
+    sample_entries = []
+    if not entries:
+        # Fetch real dataset samples if the user has no data yet
+        sample_farm = db.query(Farm).filter(Farm.name == "Real Dataset Farm (Kaggle/HF)").first()
+        if sample_farm:
+            from app.core.database import DataEntry
+            samples = db.query(DataEntry).filter(DataEntry.farm_id == sample_farm.id).limit(10).all()
+            sample_entries = [
+                {
+                    "timestamp": s.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    "raw_text": s.raw_text,
+                    "insights": s.insights,
+                    "structured_data": {} # Fallback
+                } for s in samples
+            ]
+
     user_wallet = db.query(Wallet).filter(Wallet.user_id == user["user_id"]).first()
     balance = int(user_wallet.balance) if user_wallet else 0
 
@@ -155,6 +171,7 @@ async def get_personal_dashboard(
             "trust_index": round(avg_trust, 1),
             "history": obj["metadata"].get("history", []),
             "entries": entries,
+            "sample_entries": sample_entries,
             "wallet_balance": balance,
         },
         "parent": {
