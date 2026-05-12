@@ -95,6 +95,28 @@ async def get_simulation_logs(db: Session = Depends(get_db), user: dict = Depend
     
     return {"status": "success", "logs": logs}
 
+@router.get("/news")
+async def get_agricultural_news(user: dict = Depends(verify_token)):
+    """Fetch recent agricultural news headlines."""
+    # In a real production scenario, this would integrate with Naver News API or an RSS feed.
+    # For this MVP, we return a curated list of dynamic, highly relevant simulated news.
+    import random
+    
+    news_pool = [
+        {"title": "[특징주] 폭염에 채솟값 급등... 농업/스마트팜 관련주 강세", "source": "한국경제", "time": "1시간 전"},
+        {"title": "경북지역 사과 화상병 비상... 방역 당국 '골든타임 사수' 총력", "source": "매일농수산", "time": "3시간 전"},
+        {"title": "정부, 'B급 농산물' 가공식품 활용 지원 확대... 소상공인 매칭 가속화", "source": "농민신문", "time": "5시간 전"},
+        {"title": "AI 기반 농업 데이터 플랫폼 'MDGA', 지자체 시범 도입 논의", "source": "테크크런치 코리아", "time": "어제"},
+        {"title": "자율주행 트랙터 상용화 성큼... 오픈소스 합성 데이터 활용도 높아져", "source": "AI타임스", "time": "어제"},
+        {"title": "양돈 농가 사료값 부담 가중... '데이터 기반 정밀 사양'이 해답", "source": "축산신문", "time": "2일 전"},
+        {"title": "스마트팜 수출액 3억 달러 돌파... 중동 지역 기후 맞춤형 데이터 각광", "source": "연합뉴스", "time": "2일 전"}
+    ]
+    
+    # Shuffle to simulate a live feed updating
+    selected_news = random.sample(news_pool, 4)
+    
+    return {"status": "success", "news": selected_news}
+
 @router.get("/history")
 async def get_synthetic_data_history(
     region: str = Query(None),

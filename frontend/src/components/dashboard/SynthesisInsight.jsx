@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CloudRain, Cpu, Database, Activity, AlertTriangle, Droplets, TrendingUp, Package, Leaf } from 'lucide-react';
+import { CloudRain, Cpu, Database, Activity, AlertTriangle, Droplets, TrendingUp, Package, Leaf, Newspaper, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -12,6 +12,7 @@ export default function SynthesisInsight({ userContext }) {
   const [resourceData, setResourceData] = useState(null);
   const [cropSimData, setCropSimData] = useState(null);
   const [simLogs, setSimLogs] = useState([]);
+  const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const isPigFarm = userContext?.industry?.includes('양돈') || userContext?.industry?.includes('축산');
@@ -66,6 +67,12 @@ export default function SynthesisInsight({ userContext }) {
           if (logsRes.data?.status === 'success') {
             setSimLogs(logsRes.data.logs);
           }
+        }
+        
+        // Fetch Agricultural News
+        const newsRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/news`);
+        if (newsRes.data?.status === 'success') {
+          setNewsData(newsRes.data.news);
         }
 
       } catch (err) {
@@ -232,6 +239,33 @@ export default function SynthesisInsight({ userContext }) {
                   <p className="animate-pulse">{`> Processing...`}</p>
                   <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent"></div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Agricultural News Widget */}
+          {newsData.length > 0 && (
+            <div className="bg-[#0A0F1A]/80 border border-slate-800/80 rounded-2xl p-4 shadow-lg mb-4">
+              <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <Newspaper className="text-indigo-400" size={18} />
+                농업 동향 뉴스
+              </h2>
+              <div className="space-y-3">
+                {newsData.map((news, idx) => (
+                  <div key={idx} className="bg-[#05080F] border border-slate-800 rounded-xl p-3 hover:border-indigo-500/50 transition-colors cursor-pointer group flex items-start gap-2">
+                    <div className="flex-1">
+                      <h4 className="text-[11px] font-bold text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-2 leading-relaxed">
+                        {news.title}
+                      </h4>
+                      <div className="text-[9px] text-slate-500 mt-1 flex items-center gap-2">
+                        <span>{news.source}</span>
+                        <span>•</span>
+                        <span>{news.time}</span>
+                      </div>
+                    </div>
+                    <ExternalLink size={12} className="text-slate-600 group-hover:text-indigo-400 shrink-0 mt-1" />
+                  </div>
+                ))}
               </div>
             </div>
           )}
