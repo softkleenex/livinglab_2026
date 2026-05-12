@@ -74,20 +74,23 @@ async def get_resource_efficiency(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/simulation-logs")
-async def get_simulation_logs():
-    """Fetch dynamic simulation logs for the EnvHub Terminal UI."""
+async def get_simulation_logs(db: Session = Depends(get_db)):
+    """Fetch dynamic simulation logs for the EnvHub Terminal UI based on actual DB stats."""
     import random
-    import datetime
+    from app.core.database import Product, DataEntry
     
     scenarios = ["apple_orchard_harvest", "swine_fever_spread", "heatwave_stress_test"]
     scenario = random.choice(scenarios)
     
+    product_count = db.query(Product).count()
+    entry_count = db.query(DataEntry).count()
+    
     logs = [
-        f"> [EnvHub] Loading scenario: '{scenario}'",
-        "> [Genie Sim] Initializing robot kinematics... OK",
-        "> [RoboCasa] Rendering textures (lighting: overcast)",
+        f"> [EnvHub] Connected to cluster (Active Models: {product_count})",
+        f"> [Genie Sim] Initializing scenario: '{scenario}'",
+        f"> [RoboCasa] Rendering textures using {entry_count} real-world datapoints...",
         f"> Generating {random.randint(5000, 15000)} synthetic vision frames...",
-        f"> Batch {random.randint(1, 10)}/100 complete. Saving to /data/synthetic/"
+        f"> Batch {random.randint(1, 10)}/100 complete. Saving to Storage."
     ]
     
     return {"status": "success", "logs": logs}

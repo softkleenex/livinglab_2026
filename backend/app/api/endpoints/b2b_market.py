@@ -63,10 +63,22 @@ async def create_product(
         image_url = None
 
         if file and file.content_type and file.content_type.startswith("image/"):
-            # Mock image url for the sake of the MVP UI (real impl would upload to S3/Drive)
-            image_url = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop"
+            import uuid
+            import os
+            # Save file locally in a static directory
+            os.makedirs("static/uploads", exist_ok=True)
+            unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
+            file_path = f"static/uploads/{unique_filename}"
+            
+            file_data = await file.read()
+            with open(file_path, "wb") as f:
+                f.write(file_data)
+            
+            # Use relative URL or full server URL depending on proxy setup
+            # We'll serve the static folder from main.py
+            image_url = f"/static/uploads/{unique_filename}"
+            
             try:
-                file_data = await file.read()
                 img = Image.open(io.BytesIO(file_data))
                 prompt_parts = [
                     "당신은 B급 농산물 품질 감별 및 매칭 AI입니다.",
@@ -123,27 +135,32 @@ async def create_product(
 @router.get("/products")
 async def list_products(category: str = Query(None), db: Session = Depends(get_db)):
     try:
-        query = db.query(Product).filter(Product.status == "available")
+        from app.core.database import User, Region
+        query = db.query(Product, User.username, Region.name).outerjoin(User, Product.seller_id == User.id).outerjoin(Region, Product.region_id == Region.id).filter(Product.status == "available")
         if category:
             query = query.filter(Product.category == category)
 
-        products = query.order_by(Product.created_at.desc()).all()
+        results = query.order_by(Product.created_at.desc()).all()
         return {
             "status": "success",
             "products": [
                 {
-                    "id": p.id,
-                    "category": p.category,
-                    "title": p.title,
-                    "price": p.price,
-                    "stock": p.stock,
-                    "ai_grade": p.ai_grade,
-                    "ai_recommendation": p.ai_recommendation,
+                    "id": p.Product.id,
+                    "category": p.Product.category,
+                    "title": p.Product.title,
+                    "price": p.Product.price,
+                    "stock": p.Product.stock,
+                    "ai_grade": p.Product.ai_grade,
+                    "ai_recommendation": p.Product.ai_recommendation,
+                    "image_url": p.Product.image_url,
+                    "seller": p.username or "지역 농가 및 MDGA",
+                    "location": p.name or "대구/경북 일대"
                 }
-                for p in products
+                for p in results
             ],
         }
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
