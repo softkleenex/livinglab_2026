@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CloudRain, Cpu, Database, Activity, AlertTriangle, Droplets, TrendingUp, Package } from 'lucide-react';
+import { CloudRain, Cpu, Database, Activity, AlertTriangle, Droplets, TrendingUp, Package, Leaf } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -9,6 +9,7 @@ export default function SynthesisInsight({ userContext }) {
   const [alertData, setAlertData] = useState(null);
   const [yieldData, setYieldData] = useState(null);
   const [salesData, setSalesData] = useState(null);
+  const [resourceData, setResourceData] = useState(null);
   const [cropSimData, setCropSimData] = useState(null);
   const [simLogs, setSimLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function SynthesisInsight({ userContext }) {
         }
 
         // Fetch Yield Prediction and Sales Data (For Smart Farms)
-        if (isSmartFarm || !userContext?.industry) {
+        if (isSmartFarm || (!isPigFarm && !isB2B)) {
           const yieldRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/yield-prediction`, {
             params: { region, crop: targetCrop }
           });
@@ -49,6 +50,13 @@ export default function SynthesisInsight({ userContext }) {
           });
           if (salesRes.data?.status === 'success') {
             setSalesData(salesRes.data.data);
+          }
+          
+          const resourceRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/resource-efficiency`, {
+            params: { region, crop: targetCrop }
+          });
+          if (resourceRes.data?.status === 'success') {
+            setResourceData(resourceRes.data.data);
           }
         }
 
@@ -118,14 +126,29 @@ export default function SynthesisInsight({ userContext }) {
           {/* Smart Farm Views */}
           {(isSmartFarm || (!isPigFarm && !isB2B)) && (
             <>
-              <div className="border rounded-2xl p-4 shadow-lg bg-emerald-500/10 border-emerald-500/30 flex items-start gap-3">
-                <Activity className="text-emerald-500 shrink-0 mt-0.5" size={20} />
-                <div>
-                  <h3 className="text-sm font-bold mb-1 text-emerald-400">농장 생육 환경 모니터링 (정상)</h3>
-                  <p className="text-[11px] leading-relaxed text-emerald-200/80">
-                    현재 온/습도가 작물 생육에 최적화되어 있습니다.
-                  </p>
+              <div className="border rounded-2xl p-4 shadow-lg bg-emerald-500/10 border-emerald-500/30 flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  <Activity className="text-emerald-500 shrink-0 mt-0.5" size={20} />
+                  <div>
+                    <h3 className="text-sm font-bold mb-1 text-emerald-400">농장 생육 환경 모니터링 (정상)</h3>
+                    <p className="text-[11px] leading-relaxed text-emerald-200/80">
+                      현재 온/습도가 작물 생육에 최적화되어 있습니다.
+                    </p>
+                  </div>
                 </div>
+                
+                {resourceData && (
+                  <div className="bg-[#0A0F1A]/60 rounded-xl p-3 border border-emerald-500/20 flex justify-between items-center mt-1">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-slate-400 uppercase tracking-widest flex items-center gap-1"><CloudRain size={10}/> 권장 관수량</span>
+                      <span className="text-xs font-bold text-blue-400 mt-1">{resourceData.water_supply_recommendation_liters} L</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] text-slate-400 uppercase tracking-widest flex items-center gap-1"><Leaf size={10}/> 예상 탄소 저감</span>
+                      <span className="text-xs font-bold text-emerald-400 mt-1">{resourceData.carbon_reduction_kg} kg</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Integrated Sales & Shipment Dashboard */}

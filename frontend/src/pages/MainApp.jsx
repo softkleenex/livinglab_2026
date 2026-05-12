@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReportModal from '../components/modals/ReportModal.jsx';
 import IngestModal from '../components/modals/IngestModal.jsx';
 import VoiceRecordModal from '../components/modals/VoiceRecordModal.jsx';
+import WalletModal from '../components/modals/WalletModal.jsx';
 
 // Dashboards (4 Core Features)
 import TwinMapSharing from '../components/dashboard/TwinMapSharing.jsx';
@@ -33,22 +34,11 @@ const BottomNavLink = React.memo(({ icon, label, active, onClick, special }) => 
   );
 });
 
-/**
- * MainApp Component
- *
- * Acts as the primary layout and routing container for the MDGA platform.
- * It manages bottom navigation, modals, and the global notification system.
- *
- * @param {Object} props
- * @param {Object} props.userContext - The current user's context (e.g., location, industry).
- * @param {Object} props.googleUser - The authenticated Google user object or guest user details.
- * @param {Function} props.onLogout - Callback to handle user logout.
- * @returns {React.ReactElement} The MainApp interface.
- */
 export default function MainApp({ userContext, googleUser, onLogout }) {
   const [activeTab, setActiveTab] = useState('converter');
   const [showIngest, setShowIngest] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+  const [showWallet, setShowWallet] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -129,7 +119,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
           </div>
           <div className="flex items-center gap-3">
             {!googleUser?.isGuest && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30 text-[10px] font-bold cursor-pointer hover:bg-indigo-500/30 transition-colors" title="My MDGA Tokens">
+              <div 
+                onClick={() => setShowWallet(true)}
+                className="flex items-center gap-1.5 px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30 text-[10px] font-bold cursor-pointer hover:bg-indigo-500/30 transition-colors" title="My MDGA Tokens">
                 <span className="text-indigo-400">🪙</span>
                 <span>{walletBalance.toLocaleString()}</span>
               </div>
@@ -188,8 +180,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
             <IngestModal
               isGuest={googleUser?.isGuest}
               onClose={() => setShowIngest(false)}
-              onSuccess={() => {
+              onSuccess={(val) => {
                 setShowIngest(false);
+                if (val) setWalletBalance(prev => prev + val);
                 addToast("성공적으로 데이터가 기록되었습니다.", "success");
               }}
               locationPath={userContext.location.join('/')}
@@ -206,6 +199,12 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
               }}
               locationPath={userContext.location.join('/')}
               addToast={addToast}
+            />
+          )}
+          {showWallet && (
+            <WalletModal
+              balance={walletBalance}
+              onClose={() => setShowWallet(false)}
             />
           )}
         </AnimatePresence>
