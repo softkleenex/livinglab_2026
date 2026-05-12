@@ -52,6 +52,13 @@
 * **문제:** 제한된 인력과 시간 내에 멀티모달 분석부터 DB 트랜잭션, 대시보드 시각화까지 방대한 작업을 처리해야 함.
 * **해결:** GitHub Actions를 활용한 CI/CD 파이프라인 자동화와 Cloudflare Pages, Render 등의 PaaS를 적극 활용하여 배포 프로세스를 간소화하고, AI 코파일럿(Gemini 2.5 Pro) API를 결합하여 소규모 팀으로도 도입 비용을 70% 절감하는 아키텍처 구축.
 
+### 🚀 5. Mockup에서 Production-Ready MVP로의 진화 (End-to-End Workflow)
+* **문제:** 초기 프로토타입은 UI 화면 시연(Mockup)에 의존하여 실제 데이터베이스 연동과 사용자 워크플로우(흐름)가 단절되어 있었음.
+* **해결 및 구현:**
+  * **Real Data Seeding:** 가짜(Random) 데이터를 버리고, Hugging Face의 실제 글로벌 오픈 농업 데이터셋(`aksahaha_crop-recommendation`)을 파이프라인으로 당겨와 DB를 초기화(Seeding)하여 신뢰도 확보.
+  * **B2B Market 실시간 AI 감별:** 농가가 'B급 농산물' 이미지를 업로드하면 백엔드에서 실제로 파일을 저장하고, Gemini AI 비전 모델이 품질 등급(A/B/C)과 매칭 대상을 실시간으로 판별하여 DB에 등록.
+  * **End-to-End 파이프라인 완성:** 하드코딩된 대시보드를 걷어내고, 사용자의 지갑(Wallet) 토큰 잔액 조회, 실제 지역 기반의 Twin Map 위험(방역) 지도 센터링, 그리고 데이터 추출(CSV Export) 기능까지 실제 백엔드 API와 100% 연동하여 완벽한 사용자 시나리오 구축 완료.
+
 ---
 
 ## 5. 면접 예상 질문 & 답변 가이드

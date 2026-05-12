@@ -75,7 +75,10 @@
     *   데이터 구매용 API Key 발급 시스템 구현 완료 (`DataAPIKey` 테이블 연동 및 프론트엔드 UI 통합).
 *   **Sprint 5: 배포 환경 E2E 테스트 및 최적화**
     *   **[필수]** 전체 플로우(업로드 -> Google Drive -> Gemini 파싱 -> Supabase 적재 -> 시각화)를 Render 실서버에서 통합 테스트. `test_live.py` 스크립트를 통한 라이브 E2E 테스트 검증 완료.
-    *   DB 쿼리 인덱스 튜닝 및 프론트엔드 캐싱 최적화.
+    *   Render.com 무료 티어의 한계(Sleep)를 극복하기 위해 **Starter ($7)** 요금제로 무중단 운영 환경 적용.
+*   **Sprint 6: Mockup 제거 및 실데이터(Real Data) 파이프라인 완성 (현재 완료 상태)**
+    *   가짜(Random) 시드 데이터 대신, **Hugging Face (`jason1966/aksahaha_crop-recommendation`)** 오픈 데이터셋을 다운로드 및 정제하여 실제 DB 초기 상태(Initial State) 적재.
+    *   프론트엔드 하드코딩(Mockup) 전면 제거. B2B 마켓 이미지 업로드 및 AI 실시간 판별 로직(Gemini 연동), 지갑(Wallet) 잔액 조회, CSV Export 등 사용자 End-to-End 워크플로우 100% 백엔드 API 연동 완료.
 
 ---
 
