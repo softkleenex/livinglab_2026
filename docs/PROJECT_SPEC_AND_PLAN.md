@@ -29,20 +29,10 @@
 ## 2. 상세 기획 및 요구사항 명세 (Detailed Requirements & Spec)
 
 ### 2.1 핵심 비즈니스 시나리오 (MDGA 4대 핵심 기능)
-멘토링 중간점검 피드백을 반영하여 서비스를 4가지 핵심 기능으로 가지치기(선택과 집중) 하였습니다.
+멘토링 피드백을 반영한 농업 AX(Agricultural AX) 피봇팅에 따른 최종 타겟 페르소나 및 핵심 서비스 로직은 분리된 상세 문서를 참조하십시오:
+👉 **[핵심 서비스 기획 및 로직 (docs/service_logic/CORE_LOGIC_AND_PLANNING.md)](./service_logic/CORE_LOGIC_AND_PLANNING.md)**
 
-*(참고: MVP 배포 버전에서는 외부 유료/공공 API 연동의 한계로 인해, '기상청(KMA)', '농진청(RDA)' 및 '쇼핑몰 매출 데이터'는 DB 내 실제 데이터를 기반으로 AI가 동적으로 시뮬레이션(휴리스틱 모의 연산)하여 제공하도록 경계(Boundary)를 설정했습니다. 이는 향후 정식 서비스 전환 시 실제 API 연동으로 즉시 교체 가능한 아키텍처로 구현되었습니다.)*
-
-1.  **AI 데이터 원터치 변환기 (Data One-Touch Converter):**
-    *   **내용:** 멀티모달 AI(Vision)를 활용하여 양돈/스마트팜 농가의 수기 영농일지, 백신 접종 내역, 현장 사진을 정부 표준(HACCP 등)인 JSON 형태의 'AI-Ready' 데이터로 자동 변환 및 적재하여 행정 부담 최소화.
-2.  **Twin Map 기반 방역/환경 위험 모니터링 (Twin Map Risk Insight):**
-    *   **내용:** 기존 장비 공유 기획은 농가의 차단 방역 우려로 폐기하고, 아프리카돼지열병(ASF) 발생 현황, 국지성 폭염 경보, 환기 지수 경계를 실시간 Twin Map에 시각화하여 방역/환경 인사이트를 제공.
-3.  **B급 농산물 B2B 직거래 플랫폼 (B-grade Produce Market):**
-    *   **내용:** AI 비전으로 상품성이 낮은 '못난이 농작물(B급)'의 상태를 분석하여 지역 소상공인(베이커리, 주스바 등)의 가공 원료로 추천 매칭 및 직거래 광고 채널 지원.
-4.  **AI 위기 관리 및 오픈소스 기반 합성 데이터 (Synthesis Insight):**
-    *   **내용:** 
-        *   농가용: 외부 기상 데이터와 사육/재배 데이터를 결합하여 축사 폭염 폐사 골든타임(2시간 전) 알람 및 최적 자원(용수·비료) 투입 가이드 제공.
-        *   엔터프라이즈용: **AgiBot Genie Sim, Hugging Face LeRobot EnvHub, RoboCasa** 등 검증된 무료 오픈소스 시뮬레이션 환경을 활용하여 농기계 자율주행 및 수확 로봇 비전용 고품질 합성 데이터(Synthetic Data)를 생성 및 제공.
+*(참고: MVP 배포 버전에서는 외부 유료/공공 API 연동의 한계로 인해, '기상청(KMA)', '농진청(RDA)' 및 '쇼핑몰 매출 데이터', 'B2B 합성 데이터 엔진' 등은 백엔드 내에서 AI 기반의 동적 시뮬레이션으로 제공하도록 경계를 설정했습니다.)*
 
 ### 2.2 핵심 모듈 정의
 #### A. 데이터 파이프라인 & AI 파서 (Data Pipeline Engine)
@@ -87,19 +77,22 @@
 docs/
 ├── PROJECT_SPEC_AND_PLAN.md    # 현재 문서 (전체 프로젝트 명세 및 계획)
 ├── PORTFOLIO_GUIDE.md          # 포트폴리오 및 면접용 핵심 성과 가이드
+├── README.md                   # 전체 문서 통합 인덱스 (목차)
 ├── architecture/               # 아키텍처 및 시스템 설계
 │   ├── SYSTEM_ARCH.md          # 인프라 구성도, 배포 전략, 시퀀스 다이어그램
 │   └── DB_SCHEMA.md            # ERD 명세 및 테이블 컬럼 상세 정의서
 ├── api/                        # API 연동 규격서
 │   ├── REST_API_DOCS.md        # 백엔드 제공 RESTful API 명세
 │   └── EXTERNAL_API_DOCS.md    # 외부 API 연동 가이드
-├── infrastructure/             # 🛠 인프라스트럭처 명세 (추가됨)
+├── infrastructure/             # 🛠 인프라스트럭처 명세
 │   ├── CURRENT_STATE.md        # 현재 배포 인프라 상세 분석 (Render, Supabase 등)
 │   ├── DEPLOYMENT_GUIDE.md     # 환경 변수, CI/CD, 마이그레이션 등 배포 가이드
 │   ├── SECURITY_COMPLIANCE.md  # 통신, 저장, 권한(OAuth, JWT, RLS) 보안 정책
 │   └── FUTURE_EXPANSION.md     # Redis, PostGIS, Task Queue 등 향후 확장 로드맵
 ├── design/                     # 화면 및 사용자 플로우 설계
 │   └── USER_FLOW.md            # 유저 시나리오 및 플로우 차트 설명
-└── requirements/               # 요구사항 및 정책 명세
-    └── BUSINESS_RULES.md       # 핵심 비즈니스 로직 및 제약사항
+├── requirements/               # 요구사항 및 정책 명세
+│   └── BUSINESS_RULES.md       # 핵심 비즈니스 로직 및 제약사항
+└── service_logic/              # 농업 AX 타겟 페르소나 및 핵심 서비스 로직 상세 정의
+    └── CORE_LOGIC_AND_PLANNING.md
 ```

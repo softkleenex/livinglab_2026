@@ -173,15 +173,38 @@ async def create_matching(
     user: dict = Depends(verify_token),
 ):
     try:
+        from app.core.database import Wallet, Transaction
+        
+        buyer_id = user["user_id"]
         product = db.query(Product).filter(Product.id == product_id).first()
+        
         if not product or product.stock < quantity:
             raise HTTPException(
                 status_code=400, detail="Product unavailable or insufficient stock."
             )
 
+        total_price = product.price * quantity
+
+        # Handle Tokenomics (Wallet Transfer)
+        buyer_wallet = db.query(Wallet).filter(Wallet.user_id == buyer_id).first()
+        seller_wallet = db.query(Wallet).filter(Wallet.user_id == product.seller_id).first()
+
+        if total_price > 0:
+            if not buyer_wallet or buyer_wallet.balance < total_price:
+                raise HTTPException(status_code=400, detail="잔여 토큰(MDGA)이 부족합니다.")
+            
+            # Deduct from buyer
+            buyer_wallet.balance -= total_price
+            db.add(Transaction(wallet_id=buyer_wallet.id, amount=-total_price, tx_type="SPEND", description=f"[{product.title}] 구매"))
+            
+            # Add to seller
+            if seller_wallet:
+                seller_wallet.balance += total_price
+                db.add(Transaction(wallet_id=seller_wallet.id, amount=total_price, tx_type="EARN", description=f"[{product.title}] 판매 대금"))
+
         new_match = Matching(
             product_id=product_id,
-            buyer_id=user["user_id"],
+            buyer_id=buyer_id,
             quantity=quantity,
             message=message,
         )
@@ -194,5 +217,9 @@ async def create_matching(
 
         db.commit()
         return {"status": "success", "matching_id": new_match.id}
+    except HTTPException as he:
+        db.rollback()
+        raise he
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

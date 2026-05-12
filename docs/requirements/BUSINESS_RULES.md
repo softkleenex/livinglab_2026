@@ -41,35 +41,12 @@
 *   `DELETE`: "방금 올린 일지 잘못올림 지워줘" -> 데이터 삭제 의도 (안전망 처리 필요).
 
 ### 2.2 Entity Extraction (정보 추출 규격)
-`DATA_ENTRY`로 판별된 경우, 모델은 농가 유형에 따라 다음의 **JSON Schema** 중 하나를 엄격히 준수하여 응답해야 합니다. `google-genai` SDK의 `response_schema` 파라미터를 강제합니다.
+`DATA_ENTRY`로 판별된 경우, 모델은 농가 유형(양돈 vs 스마트팜)에 따라 동적으로 구성되는 **JSON Schema**를 엄격히 준수하여 응답해야 합니다. `google-genai` SDK의 `response_schema` 파라미터를 강제합니다.
 
-**A. 스마트팜/작물 재배용 Schema:**
-```json
-{
-  "type": "object",
-  "properties": {
-    "crop_type": { "type": "string", "description": "언급된 작물 이름 (예: 딸기, 토마토)" },
-    "temperature": { "type": "number", "description": "텍스트에서 언급된 온도 수치" },
-    "growth_stage": { "type": "string", "enum": ["파종", "육묘", "개화", "결실", "수확", "알수없음"] },
-    "pest_disease_detected": { "type": "boolean", "description": "텍스트 또는 이미지에서 병해충, 시듦 현상이 보이면 true" }
-  },
-  "required": ["pest_disease_detected"]
-}
-```
+*(참고: 구체적인 Pydantic 스키마 정의 및 프롬프트 로직은 `backend/app/api/endpoints/ingest.py` 파일의 `AIReadyData` 클래스를 참조하십시오. 중복 관리를 피하기 위해 문서에는 핵심 속성만 명시합니다.)*
 
-**B. 양돈/축산(HACCP/백신)용 Schema:**
-```json
-{
-  "type": "object",
-  "properties": {
-    "livestock_type": { "type": "string", "description": "가축 종류 (예: 돼지, 한우)" },
-    "event_type": { "type": "string", "enum": ["백신접종", "교배", "출산", "질병발생", "일반관측", "기타"] },
-    "vaccine_name": { "type": "string", "description": "백신 접종인 경우 백신명 (예: 구제역 백신)" },
-    "anomaly_detected": { "type": "boolean", "description": "사료 섭취 거부, 움직임 둔화 등 이상 징후 여부" }
-  },
-  "required": ["event_type", "anomaly_detected"]
-}
-```
+*   **스마트팜/작물 재배용:** `crop_type`, `temperature`, `growth_stage`, `pest_disease_detected`
+*   **양돈/축산(HACCP/백신)용:** `livestock_type`, `event_type`, `vaccine_name`, `anomaly_detected`
 
 ---
 
