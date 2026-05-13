@@ -19,7 +19,7 @@ class ContextPayload(BaseModel):
 
 
 @router.post("/user/context")
-async def set_user_context(payload: ContextPayload, db: Session = Depends(get_db)):
+async def set_user_context(payload: ContextPayload, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     types = ["City", "District", "Village", "Farm"]
     engine.create_or_get_path(db, payload.location, types)
     db.commit()

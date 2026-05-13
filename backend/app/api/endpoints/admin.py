@@ -131,7 +131,7 @@ async def demo_inject(
 
 
 @router.post("/simulate/governance")
-async def simulate_governance(budget: int = Form(...), region: str = Form(...)):
+async def simulate_governance(budget: int = Form(...), region: str = Form(...), user: dict = Depends(verify_token)):
     try:
         prompt = f"""
     우리는 현재 '{region}' 구역(마을/재배지)의 농업 생태계 활성화를 위해 '{budget:,} 원'의 인프라 및 기술 예산을 투입하는 B2B 거버넌스 정책 시뮬레이션을 수행하고 있습니다.

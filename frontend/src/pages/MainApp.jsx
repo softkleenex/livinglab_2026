@@ -14,7 +14,6 @@ import DataConverter from '../components/dashboard/DataConverter.jsx';
 import B2BMarket from '../components/dashboard/B2BMarket.jsx';
 import SynthesisInsight from '../components/dashboard/SynthesisInsight.jsx';
 
-import MDGACopilot from '../components/dashboard/MDGACopilot.jsx';
 import LiveTicker from '../components/dashboard/LiveTicker.jsx';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -207,13 +206,6 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
             />
           )}
         </AnimatePresence>
-
-        {/* AI Copilot */}
-        <MDGACopilot 
-          locationPath={userContext.location.join('/')} 
-          industry={userContext.industry} 
-          entries={[]}
-        />
 
         {/* Toasts */}
         <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none flex flex-col gap-2">

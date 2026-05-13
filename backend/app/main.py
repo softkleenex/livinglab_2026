@@ -40,7 +40,6 @@ from app.core.config import settings  # noqa: E402
 from app.api.endpoints.hierarchy import router as hierarchy_router  # noqa: E402
 from app.api.endpoints.dashboard import router as dashboard_router  # noqa: E402
 from app.api.endpoints.ingest import router as ingest_router  # noqa: E402
-from app.api.endpoints.chat import router as chat_router  # noqa: E402
 from app.api.endpoints.admin import router as admin_router  # noqa: E402
 from app.api.endpoints.ax_data import router as ax_data_router  # noqa: E402
 from app.api.endpoints.b2b_market import router as b2b_market_router  # noqa: E402
@@ -179,7 +178,6 @@ async def websocket_endpoint(websocket: WebSocket):
 app.include_router(hierarchy_router, prefix="/api/v1/hierarchy", tags=["Hierarchy v1"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Dashboard v1"])
 app.include_router(ingest_router, prefix="/api/v1/ingest", tags=["Ingest v1"])
-app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat v1"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin v1"])
 app.include_router(
     ax_data_router, prefix="/api/v1/ax-data", tags=["AX Synthetic Data v1"]
