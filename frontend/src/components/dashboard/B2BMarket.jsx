@@ -239,7 +239,13 @@ export default function B2BMarket({ addToast }) {
                   <input type="file" accept="image/*" onChange={e => setUploadFile(e.target.files[0])} className="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700" />
                   <div className="flex gap-2 mt-2">
                     <button type="button" onClick={() => setShowUploadModal(false)} className="flex-1 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold">취소</button>
-                    <button type="submit" disabled={uploading} className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold disabled:opacity-50">{uploading ? '등록 중...' : '등록'}</button>
+                    <button type="submit" disabled={uploading} className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold disabled:opacity-50 flex justify-center items-center gap-2">
+                      {uploading ? (
+                        <>
+                          <RefreshCw className="animate-spin" size={12}/> AI 분석 중...
+                        </>
+                      ) : '등록'}
+                    </button>
                   </div>
                 </form>
               </motion.div>

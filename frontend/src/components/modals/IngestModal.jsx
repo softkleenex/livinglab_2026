@@ -119,7 +119,12 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
               </label>
 
               <button onClick={handleIngest} disabled={loading || (!rawText && !file)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? <RefreshCw className="animate-spin" size={16}/> : "업로드 및 자산화"}
+                {loading ? (
+                  <>
+                    <RefreshCw className="animate-spin" size={16}/>
+                    <span>AI가 데이터를 분석 중입니다...</span>
+                  </>
+                ) : "업로드 및 자산화"}
               </button>
             </>
           ) : (
