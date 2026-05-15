@@ -119,10 +119,10 @@ export default function B2BMarket({ addToast }) {
           let mappedItems = res.data.products.map(p => ({
             id: p.id,
             title: p.title,
-            seller: '지역 농가 및 MDGA',
-            location: '대구/경북 일대',
-            price: p.price === 0 ? '협의' : `${p.price.toLocaleString()}원`,
-            originalPrice: p.price === 0 ? null : `${(p.price * 1.5).toLocaleString()}원`,
+            seller: p.seller || '지역 농가 및 MDGA',
+            location: p.location || '대구/경북 일대',
+            price: (p.price || 0) === 0 ? '협의' : `${Number(p.price || 0).toLocaleString()}원`,
+            originalPrice: (p.price || 0) === 0 ? null : `${(Number(p.price || 0) * 1.5).toLocaleString()}원`,
             match: p.ai_recommendation || (activeTab === 'synthetic_data' ? '기후/생육 AI 모델 학습용' : '농기계 센서 분석용'),
             status: p.stock > 0 ? 'available' : 'matched',
             imageUrl: p.image_url || 'https://images.unsplash.com/photo-1586771107445-d3afeb0d2ba1?q=80&w=600&auto=format&fit=crop'
