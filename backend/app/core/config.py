@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ENV: str = "production"
 
     # Database
-    DATABASE_URL: str = "sqlite:///./test.db"
+    DATABASE_URL: str
 
     # Google OAuth
     GOOGLE_OAUTH_CLIENT_ID: str = ""
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = (
         "http://localhost:4173,http://localhost:5173,https://mdga-2026.pages.dev"
     )
-    B2B_API_KEYS: str = "dummy-key"
+    B2B_API_KEYS: str = ""
 
     @property
     def cors_origins_list(self) -> List[str]:
