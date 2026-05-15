@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ENV: str = "production"
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "postgresql://postgres.nwtnczpvczppajomtbiy:Xhdtls12!%40%23@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
 
     # Google OAuth
     GOOGLE_OAUTH_CLIENT_ID: str = ""
