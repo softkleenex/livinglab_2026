@@ -27,7 +27,21 @@
 
 *   **슬라이드 목표:** AI 기술을 어떻게 활용하여 해결안을 구상했는지 설명 (알고리즘/프로세스).
 *   **화면 구성 (Visuals):**
-    *   해당 아이디어를 설명하는 구조도 이미지 첨부. (비정형 수기 데이터 $\rightarrow$ AI 원터치 변환 $\rightarrow$ 표준 JSON 자산화 로직)
+    *   해당 아이디어를 설명하는 구조도 이미지 첨부. 아래의 시스템 아키텍처 다이어그램을 활용하여 비정형 데이터가 어떻게 처리되고 유통되는지 시각적으로 보여주세요.
+    ```mermaid
+    graph TD
+        A[농가/스마트팜 User] -->|영농일지, 사진| B(React Frontend)
+        C[B2B 기업 User] -->|데이터 구매/구독| B
+        B <-->|REST API| D[FastAPI Backend]
+        
+        D -->|멀티모달 파싱| E[Gemini 2.5 Pro]
+        D <-->|CRUD & Tokenomics| F[(Supabase PostgreSQL)]
+        D -->|공공 API| G[기상청 / 농진청]
+        D -->|Hugging Face| H[오픈소스 데이터셋 Seeding]
+        
+        E -.->|JSON 구조화| D
+        F -.->|AI 분석 및 위험 지도| B
+    ```
 *   **발표 대본 (Script):**
     > "이를 해결하기 위해 멀티모달 AI를 활용한 '데이터 원터치 변환기' 로직을 구상했습니다. 복잡한 입력 없이 사진만 찍으면 AI가 자동으로 알고리즘을 거쳐 정형 데이터로 변환해 줍니다."
 
