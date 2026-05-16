@@ -18,7 +18,6 @@ const createIcon = (color) => new L.DivIcon({
 
 export default function TwinMapSharing({ userContext }) {
   const [risks, setRisks] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   // Derive coordinates based on user location if possible, else default
   const getMapCenter = () => {
@@ -38,8 +37,6 @@ export default function TwinMapSharing({ userContext }) {
         }
       } catch (err) {
         console.error("Failed to load map risks", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchRisks();

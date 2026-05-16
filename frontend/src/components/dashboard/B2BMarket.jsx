@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, PackageOpen, ArrowRight, MapPin, Database, Sprout } from 'lucide-react';
+import { ShoppingCart, PackageOpen, ArrowRight, MapPin, Database, Sprout, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -18,8 +18,9 @@ export default function B2BMarket({ addToast }) {
   const objectUrlsRef = useRef([]);
 
   useEffect(() => {
+    const urls = objectUrlsRef.current;
     return () => {
-      objectUrlsRef.current.forEach(URL.revokeObjectURL);
+      urls.forEach(URL.revokeObjectURL);
     };
   }, []);
 

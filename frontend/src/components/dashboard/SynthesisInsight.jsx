@@ -10,7 +10,6 @@ export default function SynthesisInsight({ userContext }) {
   const [yieldData, setYieldData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [resourceData, setResourceData] = useState(null);
-  const [cropSimData, setCropSimData] = useState(null);
   const [simLogs, setSimLogs] = useState([]);
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);

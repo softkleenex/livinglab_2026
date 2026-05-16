@@ -43,8 +43,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
   const timeoutRefs = useRef([]);
 
   useEffect(() => {
+    const timers = timeoutRefs.current;
     return () => {
-      timeoutRefs.current.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
@@ -99,7 +100,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-    } catch(e) {
+    } catch {
       addToast("데이터 추출에 실패했습니다.", "error");
     }
   };

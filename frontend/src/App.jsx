@@ -4,14 +4,10 @@ import MainApp from './pages/MainApp.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 
 export default function App() {
-  const [userContext, setUserContext] = useState(null);
-
-  useEffect(() => {
+  const [userContext, setUserContext] = useState(() => {
     const saved = localStorage.getItem('mdga_user_context');
-    if (saved) {
-      setUserContext(JSON.parse(saved));
-    }
-  }, []);
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const handleOnboardComplete = (context) => {
     localStorage.setItem('mdga_user_context', JSON.stringify(context));

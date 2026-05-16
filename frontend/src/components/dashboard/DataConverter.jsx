@@ -106,7 +106,7 @@ export default function DataConverter({ userContext, openIngest, openVoice }) {
                       try {
                         const jsonStr = entry.insights.split('```json')[1].split('```')[0].trim();
                         return JSON.stringify(JSON.parse(jsonStr), null, 2);
-                      } catch (e) {
+                      } catch {
                         return entry.insights;
                       }
                     }
