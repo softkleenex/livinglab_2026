@@ -36,8 +36,10 @@ GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-2.5-pro
 GOOGLE_OAUTH_CLIENT_ID=your_oauth_client
 GOOGLE_OAUTH_CLIENT_SECRET=your_oauth_secret
+GOOGLE_OAUTH_REFRESH_TOKEN=your_oauth_refresh_token
 GOOGLE_DRIVE_FOLDER_ID=your_target_folder_id
 ```
+> **주의:** 구글 드라이브 연동 시 '개인 계정'의 용량을 사용하기 위해서는 서비스 계정(`GOOGLE_SERVICE_ACCOUNT_JSON`)을 사용하지 않고 반드시 **OAuth 2.0 Refresh Token** 방식을 사용해야 합니다. 서비스 계정 변수가 존재할 경우 Quota(용량) 에러가 발생할 수 있습니다.
 
 ### 3. 서버 실행
 ```bash

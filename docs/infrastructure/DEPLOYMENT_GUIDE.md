@@ -10,9 +10,9 @@
 *   `DATABASE_URL`: Supabase PostgreSQL 연결 DSN (`postgresql://user:password@host:port/dbname?sslmode=require`)
 *   `GOOGLE_OAUTH_CLIENT_ID`: Google OAuth Client ID
 *   `GOOGLE_OAUTH_CLIENT_SECRET`: Google OAuth Client Secret
-*   `GOOGLE_OAUTH_REFRESH_TOKEN`: Google OAuth Refresh Token
-*   `GOOGLE_DRIVE_FOLDER_ID`: Google Drive Folder ID
-*   `GOOGLE_SERVICE_ACCOUNT_JSON`: Google Drive Service Account의 JSON Key 값 (문자열 형태로 이스케이프하여 주입).
+*   `GOOGLE_OAUTH_REFRESH_TOKEN`: Google OAuth Refresh Token (개인 계정 드라이브 용량 사용을 위한 필수 값)
+*   `GOOGLE_DRIVE_FOLDER_ID`: 업로드 대상 Google Drive Folder ID
+*   *(주의: `GOOGLE_SERVICE_ACCOUNT_JSON` 값은 구글의 무료 계정 스토리지 정책(Quota Error) 문제로 인해 더 이상 사용하지 않으며, 환경 변수에서 완전히 삭제해야 합니다.)*
 *   `GEMINI_API_KEY`: Google AI Studio에서 발급받은 Gemini 2.5 API Key.
 *   `GEMINI_MODEL`: `gemini-2.5-pro` (사용할 Gemini 모델명).
 *   `ALLOWED_ORIGINS`: `https://mdga-2026.pages.dev,http://localhost:5173,http://localhost:4173` (보안을 위해 허용된 도메인 리스트)

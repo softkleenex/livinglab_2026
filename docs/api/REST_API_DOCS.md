@@ -45,13 +45,15 @@ Base URL: `http://api.domain.com/api/v1`
 
 ## 2. Data Pipeline (영농 데이터 파이프라인)
 
-### POST `/data/ingest`
-농민이 텍스트와 사진으로 영농 일지를 업로드하여 AI 자동 파싱 및 DB 적재 진행. (Auth 토큰 필요)
-*   **Request Headers:** `Authorization: Bearer {token}`, `Content-Type: multipart/form-data`
+### POST `/ingest/`
+농민이 텍스트와 사진으로 영농 일지를 업로드하여 AI 자동 파싱 및 DB 적재 진행. (Auth 토큰 불필요, Guest 모드 지원)
+*   **Request Headers:** `Content-Type: multipart/form-data`
 *   **Request Body (FormData):**
-    *   `farm_id`: UUID (String)
-    *   `text`: "오늘 온도는 30도, 토마토 수확을 시작함" (String)
-    *   `image`: File (jpg, png)
+    *   `location`: "대한민국/서울특별시" (String, 필수)
+    *   `raw_text`: "오늘 온도는 30도, 토마토 수확을 시작함" (String, 선택)
+    *   `image`: File (jpg, png, 선택)
+    *   `is_guest`: "true" 또는 "false" (String)
+    *   `industry`: "공공" 등 (String)
 *   **Response (201 Created):**
     ```json
     {
