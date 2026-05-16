@@ -18,7 +18,7 @@
     *   **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
     *   **Environment Variables:** 데이터베이스 DSN, 각종 API Key(Gemini, 기상청, Google Drive) 주입.
     *   **Auto-Deploy:** GitHub Webhook을 통해 Main 브랜치 업데이트 시 자동 배포.
-    *   **Health Check & E2E Testing:** `/api/v1/health` 엔드포인트를 통해 컨테이너 상태 모니터링. 추가적으로 `test_live.py` E2E 테스트 스크립트를 통해 Render 배포 환경에서의 통합 플로우가 상시 검증되고 있습니다.
+    *   **Health Check & E2E Testing:** `/api/v1/health` 엔드포인트를 통해 컨테이너 상태 모니터링. 추가적으로 `test_production.py` E2E 테스트 스크립트를 통해 Render 배포 환경에서의 통합 플로우가 상시 검증되고 있습니다.
 
 ## 3. Database: Supabase (Managed PostgreSQL)
 *   **유형:** Database as a Service (DBaaS)

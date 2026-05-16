@@ -7,7 +7,7 @@
 
 *   **Role:** MDGA 시스템의 기본 오브젝트 스토리지 (이미지 저장소).
 *   **Endpoint:** `https://www.googleapis.com/drive/v3/files`
-*   **Authentication:** OAuth 2.0 서비스 계정 (Service Account) 또는 Oauth Client ID.
+*   **Authentication:** OAuth 2.0 Client ID 및 Refresh Token. (주의: 기존에 사용하던 서비스 계정(Service Account) 방식은 구글 개인 계정의 스토리지 Quota 정책 에러로 인해 전면 폐기되었습니다. 반드시 사용자 위임이 완료된 Refresh Token을 환경변수 `GOOGLE_OAUTH_REFRESH_TOKEN`에 주입해야 합니다.)
 *   **Security Scope:** `https://www.googleapis.com/auth/drive.file` (최소 권한 원칙)
     *   이 스코프를 사용하면 앱은 앱 자체가 생성한 파일과 폴더만 접근할 수 있어, 사용자의 전체 드라이브 데이터 유출 위험을 원천 차단합니다.
 *   **Workflow:**
