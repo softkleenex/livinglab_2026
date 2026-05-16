@@ -12,8 +12,11 @@ erDiagram
     FARMS ||--o{ DATA_ENTRIES : "records"
     FARMS ||--o{ SYNTHETIC_DATA : "simulated_as"
     REGIONS ||--o{ SYNTHETIC_DATA : "simulated_as"
-    SYNTHETIC_DATA ||--o| MARKET_PRODUCTS : "packaged_into"
     USERS ||--o{ FARMS : "owns"
+    USERS ||--o{ PRODUCTS : "sells"
+    REGIONS ||--o{ PRODUCTS : "located_in"
+    PRODUCTS ||--o{ MATCHINGS : "has_orders"
+    USERS ||--o{ MATCHINGS : "buys"
 ```
 
 ## 2. 테이블 상세 명세 (Table Specifications)
@@ -92,6 +95,15 @@ erDiagram
 *   `description` (Text) - 상세 설명
 *   `price` (Integer) - 가격 (원)
 *   `is_active` (Boolean, Default: True) - 판매 상태
+
+## 3. 주요 제약조건 및 연계 삭제 (Cascading Deletes)
+*   `users` 삭제 시 -> 해당 유저의 `farms` 연쇄 삭제 (`ON DELETE CASCADE`).
+*   `farms` 삭제 시 -> 해당 농장의 `data_entries` 연쇄 삭제 (`ON DELETE CASCADE`).
+*   `regions` 삭제 로직은 시스템 안정성을 위해 가급적 **소프트 삭제(Soft Delete)** 하거나 `RESTRICT`를 걸어 하위 농장이 있을 경우 삭제를 막습니다.
+ -> `users.id`, Index) - 구매자
+*   `quantity` (Integer) - 구매/요청 수량
+*   `status` (String, Default: 'pending') - 'pending', 'accepted', 'rejected', 'completed'
+*   `message` (Text, Nullable) - 요청 메시지
 
 ## 3. 주요 제약조건 및 연계 삭제 (Cascading Deletes)
 *   `users` 삭제 시 -> 해당 유저의 `farms` 연쇄 삭제 (`ON DELETE CASCADE`).

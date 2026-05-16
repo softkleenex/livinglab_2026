@@ -147,20 +147,34 @@ Twin Map(지도)에 렌더링하기 위해 하위 농가의 데이터가 상위 
 
 ---
 
-## 5. Market (마켓플레이스)
+## 5. B2B Market (데이터 및 B급 농산물 마켓플레이스)
 
-### GET `/market/products`
-판매 중인 데이터 상품 목록을 조회합니다.
+### GET `/b2b-market/products`
+판매 중인 데이터 상품 및 B급 농산물 목록을 조회합니다. 카테고리 필터링 지원.
 
-### POST `/market/purchase/{product_id}`
-특정 합성 데이터 패키지를 구매하고 접근용 API Key를 반환합니다.
+### POST `/b2b-market/products`
+새로운 상품(B급 농산물 또는 합성 데이터 패키지)을 마켓에 등록합니다. 사진 업로드 시 AI가 자동으로 등급 및 용도를 추천합니다.
+
+### POST `/b2b-market/matchings`
+특정 상품에 대한 구매(매칭)를 요청합니다.
+*   **Request Body:** `{"product_id": 123, "message": "주스바 원료로 대량 구매 희망합니다."}`
 *   **Response (200 OK):**
     ```json
     {
       "success": true,
       "data": {
-        "transaction_id": "txn_...",
-        "api_key": "mdga_sk_..." // 클라이언트가 이후 데이터를 조회할 때 사용할 Key
+        "matching_id": 456,
+        "status": "pending"
       }
+    }
+    ```
+
+### POST `/b2b-market/apikeys`
+합성 데이터 다운로드를 위한 API Key를 발급합니다.
+*   **Response (200 OK):**
+    ```json
+    {
+      "status": "success",
+      "api_key": "mdga_sk_..."
     }
     ```
