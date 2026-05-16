@@ -19,7 +19,6 @@ class Settings(BaseSettings):
 
     # Google Drive
     GOOGLE_DRIVE_FOLDER_ID: str = ""
-    GOOGLE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Google Gemini
     GEMINI_API_KEY: str = ""

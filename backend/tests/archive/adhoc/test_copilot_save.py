@@ -17,12 +17,20 @@ print("🤖 TESTING COPILOT AI CHAT & DATA LAKE SAVING 🤖")
 print("==================================================")
 
 # Drive setup
+from google.oauth2.credentials import Credentials
+
 FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
-service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-cleaned_info = service_account_info.strip()
-if cleaned_info.startswith("'") and cleaned_info.endswith("'"):
-    cleaned_info = cleaned_info[1:-1]
-creds = service_account.Credentials.from_service_account_info(json.loads(cleaned_info))
+client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+refresh_token = os.environ.get("GOOGLE_OAUTH_REFRESH_TOKEN")
+
+creds = Credentials(
+    token=None,
+    refresh_token=refresh_token,
+    token_uri="https://oauth2.googleapis.com/token",
+    client_id=client_id,
+    client_secret=client_secret,
+)
 drive_service = build("drive", "v3", credentials=creds)
 
 path = "대구광역시/달성군/유가읍/테크노폴리스 외곽/달성 딸기 스마트팜"
