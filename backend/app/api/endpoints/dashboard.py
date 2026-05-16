@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_twin_map_risks(db: Session = Depends(get_db)):
     """Fetch real-time biosecurity and environmental risks for the Twin Map."""
     # Fetch real regions
-    regions = db.query(Region).filter(Region.parent_id != None).limit(3).all()
+    regions = db.query(Region).filter(Region.parent_id.isnot(None)).limit(3).all()
     
     if not regions:
         return {"status": "success", "risks": []}
