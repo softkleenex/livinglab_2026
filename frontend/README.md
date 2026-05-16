@@ -1,5 +1,7 @@
 # MDGA Frontend
 
+[🇰🇷 한국어](README.md) | [🇺🇸 English](README_EN.md)
+
 MDGA(Universal Data Engine) 플랫폼의 프론트엔드 모듈입니다.
 농림/스마트팜 데이터를 시각화하고, B2B 데이터 거래, AI 기반 대시보드 및 Twin Map 서비스를 제공합니다.
 

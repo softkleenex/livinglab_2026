@@ -1,5 +1,7 @@
 # MDGA Backend
 
+[🇰🇷 한국어](README.md) | [🇺🇸 English](README_EN.md)
+
 MDGA(Universal Data Engine) 플랫폼의 코어 백엔드 모듈입니다.
 공공데이터 연동, Gemini 기반 멀티모달 데이터 파이프라인, 그리고 3NF 정규화된 데이터베이스 관리를 담당합니다.
 
