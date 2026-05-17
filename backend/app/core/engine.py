@@ -95,7 +95,7 @@ class HierarchyEngine:
             )
             entry_list = [
                 {
-                    "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
+                    "timestamp": e.created_at.replace(tzinfo=__import__('pytz').utc).astimezone(__import__('pytz').timezone('Asia/Seoul')).strftime("%Y-%m-%d %H:%M"),
                     "insights": e.insights,
                     "hash": e.hash_val,
                     "drive_link": e.drive_link,
@@ -175,7 +175,7 @@ class HierarchyEngine:
 
             entry_list = [
                 {
-                    "timestamp": e.created_at.strftime("%Y-%m-%d %H:%M"),
+                    "timestamp": e.created_at.replace(tzinfo=__import__('pytz').utc).astimezone(__import__('pytz').timezone('Asia/Seoul')).strftime("%Y-%m-%d %H:%M"),
                     "insights": e.insights,
                     "hash": e.hash_val,
                     "drive_link": e.drive_link,
