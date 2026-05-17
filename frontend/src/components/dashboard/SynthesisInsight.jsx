@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CloudRain, Cpu, Database, Activity, AlertTriangle, Droplets, TrendingUp, Package, Leaf, Newspaper, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 
