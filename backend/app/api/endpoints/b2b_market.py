@@ -52,11 +52,33 @@ async def create_product(
     try:
         user_id = user["user_id"]
 
-        # If region_id is not provided, try to get it from the user's first farm
+        # Handle guest users or missing region_id
         if not region_id:
-            user_farm = db.query(Farm).filter(Farm.owner_id == user_id).first()
-            if user_farm:
-                region_id = user_farm.region_id
+            if user_id != 0:
+                user_farm = db.query(Farm).filter(Farm.owner_id == user_id).first()
+                if user_farm:
+                    region_id = user_farm.region_id
+            
+            # Global fallback for MVP/Guest: fetch the very first region
+            if not region_id:
+                from app.core.database import Region
+                first_region = db.query(Region).first()
+                if first_region:
+                    region_id = first_region.id
+                else:
+                    raise HTTPException(status_code=400, detail="시스템에 등록된 지역 정보가 없습니다. (Region ID 누락)")
+
+        # If user is a guest (0), we need to set seller_id to a valid admin or fallback user
+        if user_id == 0:
+            from app.core.database import User
+            fallback_user = db.query(User).filter(User.role == "admin").first()
+            if not fallback_user:
+                fallback_user = db.query(User).first()
+            
+            if fallback_user:
+                user_id = fallback_user.id
+            else:
+                 raise HTTPException(status_code=400, detail="시스템에 등록된 판매자(유저)가 없습니다.")
 
         ai_grade = "A" if category == "synthetic_data" else None
         ai_recommendation = "기후/생육 AI 모델 학습용으로 적합합니다." if category == "synthetic_data" else None
