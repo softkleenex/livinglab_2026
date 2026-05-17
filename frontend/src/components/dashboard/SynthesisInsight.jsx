@@ -11,8 +11,48 @@ export default function SynthesisInsight({ userContext }) {
   const [salesData, setSalesData] = useState(null);
   const [resourceData, setResourceData] = useState(null);
   const [simLogs, setSimLogs] = useState([]);
+  const [displayedLogs, setDisplayedLogs] = useState([]);
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Terminal animation logic
+  useEffect(() => {
+    if (simLogs.length === 0) return;
+    
+    let currentLine = 0;
+    setDisplayedLogs([]); // Reset
+
+    const interval = setInterval(() => {
+      if (currentLine < simLogs.length) {
+        setDisplayedLogs(prev => [...prev, simLogs[currentLine]]);
+        currentLine++;
+      } else {
+        // Optional: Loop or fetch new logs here
+        clearInterval(interval);
+      }
+    }, 800); // Add a new line every 800ms
+
+    return () => clearInterval(interval);
+  }, [simLogs]);
+
+  // Periodic polling for new logs
+  useEffect(() => {
+    if (!isB2B && !!userContext?.industry) return; // Only for B2B/Research
+
+    const fetchLogs = async () => {
+      try {
+        const logsRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/simulation-logs`);
+        if (logsRes.data?.status === 'success') {
+          setSimLogs(logsRes.data.logs);
+        }
+      } catch (err) {
+        console.error("Failed to load logs", err);
+      }
+    };
+
+    const interval = setInterval(fetchLogs, 5000); // Fetch new scenario logs every 5 seconds
+    return () => clearInterval(interval);
+  }, [isB2B, userContext?.industry]);
 
   const isPigFarm = userContext?.industry?.includes('양돈') || userContext?.industry?.includes('축산');
   const isSmartFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
@@ -226,17 +266,21 @@ export default function SynthesisInsight({ userContext }) {
                     <span className="text-[9px] text-emerald-400">Generating</span>
                   </span>
                 </div>
-                <div className="font-mono text-[10px] text-emerald-500/80 space-y-1 h-20 overflow-hidden relative">
-                  {simLogs.length > 0 ? simLogs.map((log, i) => (
-                    <p key={i}>{log}</p>
-                  )) : (
-                    <>
-                      <p>{`> [EnvHub] Connecting to cluster...`}</p>
-                      <p>{`> [Genie Sim] Waiting for initialization...`}</p>
-                    </>
-                  )}
-                  <p className="animate-pulse">{`> Processing...`}</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent"></div>
+                <div className="font-mono text-[10px] text-emerald-500/80 space-y-1 h-20 overflow-hidden relative flex flex-col justify-end">
+                  <AnimatePresence initial={false}>
+                    {displayedLogs.map((log, i) => (
+                      <motion.p 
+                        key={`${log}-${i}`}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="break-all"
+                      >
+                        {log}
+                      </motion.p>
+                    ))}
+                  </AnimatePresence>
+                  <p className="animate-pulse mt-1 inline-block w-2 h-3 bg-emerald-500/50"></p>
+                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent pointer-events-none"></div>
                 </div>
               </div>
             </div>
