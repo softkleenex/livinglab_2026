@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, PackageOpen, ArrowRight, MapPin, Database, Sprout, RefreshCw } from 'lucide-react';
+import { ShoppingCart, PackageOpen, ArrowRight, MapPin, Database, Sprout, RefreshCw, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -15,6 +15,7 @@ export default function B2BMarket({ addToast }) {
   const [uploadData, setUploadData] = useState({ title: '', description: '', price: 0 });
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const objectUrlsRef = useRef([]);
 
   useEffect(() => {
@@ -68,6 +69,24 @@ export default function B2BMarket({ addToast }) {
       addToast(err.response?.data?.detail || "상품 등록에 실패했습니다.", "error");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm("이 상품을 마켓에서 삭제하시겠습니까?")) return;
+    
+    setDeletingId(productId);
+    try {
+      const res = await axios.delete(`${API_BASE_URL}/api/v1/b2b-market/products/${productId}`);
+      if (res.data?.status === 'success') {
+        addToast("상품이 삭제되었습니다.", "success");
+        setItems(prev => prev.filter(item => item.id !== productId));
+      }
+    } catch (err) {
+      console.error(err);
+      addToast(err.response?.data?.detail || "상품 삭제에 실패했습니다.", "error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -266,7 +285,7 @@ export default function B2BMarket({ addToast }) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   key={item.id} 
-                  className="bg-[#05080F] border border-slate-800/60 rounded-xl overflow-hidden flex flex-col"
+                  className="bg-[#05080F] border border-slate-800/60 rounded-xl overflow-hidden flex flex-col group"
                 >
                   <div className="flex h-24">
                     <div className="w-24 shrink-0 relative">
@@ -274,11 +293,21 @@ export default function B2BMarket({ addToast }) {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#05080F]"></div>
                     </div>
                     <div className="p-3 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-white truncate max-w-[200px]">{item.title}</h3>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                          <MapPin size={10} /> {item.seller} · {item.location}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-sm font-bold text-white truncate max-w-[180px]">{item.title}</h3>
+                          <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                            <MapPin size={10} /> {item.seller} · {item.location}
+                          </div>
                         </div>
+                        <button 
+                          onClick={() => handleDeleteProduct(item.id)}
+                          disabled={deletingId === item.id}
+                          className="text-slate-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                          title="상품 삭제"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                       <div className="flex items-end justify-between">
                         <div>
@@ -287,16 +316,17 @@ export default function B2BMarket({ addToast }) {
                       </div>
                     </div>
                   </div>
-                  <div className={`border-t border-slate-800 p-2 flex items-center justify-between ${activeTab === 'synthetic_data' ? 'bg-blue-900/10' : 'bg-orange-900/10'}`}>
-                    <div className="flex items-center gap-2 text-[10px] font-medium text-slate-300">
-                      <PackageOpen size={12} className={activeTab === 'synthetic_data' ? 'text-blue-400' : 'text-orange-400'} /> AI 매칭 추천
-                      <ArrowRight size={10} className="text-slate-500" />
-                      <span className={`${activeTab === 'synthetic_data' ? 'text-blue-300' : 'text-orange-300'} truncate max-w-[120px]`}>{item.match}</span>
+                  <div className={`border-t border-slate-800 p-2 flex items-start justify-between gap-2 ${activeTab === 'synthetic_data' ? 'bg-blue-900/10' : 'bg-orange-900/10'}`}>
+                    <div className="flex items-start gap-2 text-[10px] font-medium text-slate-300 mt-1 flex-1">
+                      <PackageOpen size={12} className={`shrink-0 mt-0.5 ${activeTab === 'synthetic_data' ? 'text-blue-400' : 'text-orange-400'}`} /> 
+                      <span className="shrink-0 mt-0.5">AI 추천</span>
+                      <ArrowRight size={10} className="text-slate-500 shrink-0 mt-1" />
+                      <span title={item.match} className={`leading-relaxed line-clamp-2 ${activeTab === 'synthetic_data' ? 'text-blue-300' : 'text-orange-300'}`}>{item.match}</span>
                     </div>
                     <button 
                       onClick={() => handleBuyRequest(item.id)}
                       disabled={item.status === 'matched'}
-                      className={`text-[10px] px-3 py-1 rounded-md font-bold whitespace-nowrap ${item.status === 'matched' ? 'bg-slate-800 text-slate-500' : (activeTab === 'synthetic_data' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white')}`}
+                      className={`shrink-0 text-[10px] px-3 py-1.5 mt-0.5 rounded-md font-bold whitespace-nowrap ${item.status === 'matched' ? 'bg-slate-800 text-slate-500' : (activeTab === 'synthetic_data' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white')}`}
                     >
                       {item.status === 'matched' ? '요청 완료' : '구매 요청'}
                     </button>

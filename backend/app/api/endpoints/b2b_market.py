@@ -184,6 +184,42 @@ async def list_products(category: str = Query(None), db: Session = Depends(get_d
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/products/{product_id}")
+async def delete_product(
+    product_id: int, 
+    db: Session = Depends(get_db), 
+    user: dict = Depends(verify_token)
+):
+    try:
+        from app.core.database import User
+        user_id = user["user_id"]
+        
+        # Admin or Guest (Demo) bypass
+        if user_id == 0 or user["role"] == "admin":
+            product = db.query(Product).filter(Product.id == product_id).first()
+        else:
+            product = db.query(Product).filter(Product.id == product_id, Product.seller_id == user_id).first()
+            
+        if not product:
+            raise HTTPException(status_code=404, detail="상품을 찾을 수 없거나 삭제 권한이 없습니다.")
+
+        # Optional: Delete associated file from static/uploads if needed
+        # import os
+        # if product.image_url and product.image_url.startswith("/static/uploads/"):
+        #     file_path = product.image_url.lstrip("/")
+        #     if os.path.exists(file_path):
+        #         os.remove(file_path)
+
+        db.delete(product)
+        db.commit()
+        return {"status": "success", "message": "상품이 삭제되었습니다."}
+    except HTTPException as he:
+        db.rollback()
+        raise he
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/matchings")
 async def create_matching(
@@ -194,9 +230,18 @@ async def create_matching(
     user: dict = Depends(verify_token),
 ):
     try:
-        from app.core.database import Wallet, Transaction
+        from app.core.database import Wallet, Transaction, User
         
         buyer_id = user["user_id"]
+        
+        # Fallback for guest users in demo
+        if buyer_id == 0:
+            fallback_user = db.query(User).filter(User.role == "admin").first()
+            if not fallback_user:
+                fallback_user = db.query(User).first()
+            if fallback_user:
+                buyer_id = fallback_user.id
+                
         product = db.query(Product).filter(Product.id == product_id).first()
         
         if not product or product.stock < quantity:
