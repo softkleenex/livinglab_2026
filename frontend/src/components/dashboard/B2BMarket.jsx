@@ -16,6 +16,7 @@ export default function B2BMarket({ addToast }) {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
   const objectUrlsRef = useRef([]);
 
   useEffect(() => {
@@ -321,7 +322,22 @@ export default function B2BMarket({ addToast }) {
                       <PackageOpen size={12} className={`shrink-0 mt-0.5 ${activeTab === 'synthetic_data' ? 'text-blue-400' : 'text-orange-400'}`} /> 
                       <span className="shrink-0 mt-0.5">AI 추천</span>
                       <ArrowRight size={10} className="text-slate-500 shrink-0 mt-1" />
-                      <span title={item.match} className={`leading-relaxed line-clamp-2 ${activeTab === 'synthetic_data' ? 'text-blue-300' : 'text-orange-300'}`}>{item.match}</span>
+                      <div className="flex flex-col flex-1">
+                        <span 
+                          onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                          className={`leading-relaxed cursor-pointer hover:opacity-80 transition-opacity ${expandedId === item.id ? '' : 'line-clamp-2'} ${activeTab === 'synthetic_data' ? 'text-blue-300' : 'text-orange-300'}`}
+                        >
+                          {item.match}
+                        </span>
+                        {item.match && item.match.length > 40 && (
+                          <button 
+                            onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                            className="text-[9px] text-slate-500 hover:text-slate-300 text-left mt-1 w-fit"
+                          >
+                            {expandedId === item.id ? '접기 ▲' : '더보기 ▼'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <button 
                       onClick={() => handleBuyRequest(item.id)}
