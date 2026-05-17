@@ -323,13 +323,12 @@ async def ingest(
                     pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
                     summary: str = Field(..., description="전체 기록에 대한 1~2줄 요약")
 
-            # Unblock the event loop for LLM inference
+            from app.services.gemini_ai import generate_content_with_fallback
             import time
             start_time = time.time()
             print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] 🤖 [Gemini 2.5] Vision AI Parsing Started...")
-            res = await asyncio.to_thread(
-                client.models.generate_content,
-                model=model_name,
+            
+            res = await generate_content_with_fallback(
                 contents=prompt_parts,
                 config=genai.types.GenerateContentConfig(
                     response_mime_type="application/json",
@@ -353,29 +352,10 @@ async def ingest(
                 
         except Exception as e:
             traceback.print_exc()
-            print("⚠️ Gemini API Limit Reached or Error. Falling back to Mock Data for Demo Safety.")
-            # Demo Safe-Mode Fallback
-            if is_livestock:
-                fallback_data = {
-                    "livestock_type": "돼지",
-                    "key_activities": ["사양 관리 및 환경 점검", "방역 소독 실시"],
-                    "vaccine_info": "해당없음",
-                    "anomaly_detected": False,
-                    "summary": "특이사항 없이 일상적인 사양 관리 및 소독이 진행되었습니다."
-                }
-                insight_text = f"💡 요약: {fallback_data['summary']}\n📌 주요 작업: {', '.join(fallback_data['key_activities'])}\n가축: {fallback_data['livestock_type']}, 백신: {fallback_data['vaccine_info']}, 이상징후: {fallback_data['anomaly_detected']}"
+            if file and file_content_type and file_content_type.startswith("image/"):
+                insights = f"⚠️ 가상 지능 분석 오류: 모든 AI API 키의 한도가 초과되었거나 서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. ({str(e)})"
             else:
-                fallback_data = {
-                    "crop_type": "작물",
-                    "key_activities": ["생육 상태 확인", "온실 환경 제어"],
-                    "temperature": 25.5,
-                    "pest_disease_detected": False,
-                    "summary": "적정 온습도가 유지되며 작물 생육 상태가 양호합니다."
-                }
-                insight_text = f"💡 요약: {fallback_data['summary']}\n📌 주요 작업: {', '.join(fallback_data['key_activities'])}\n작물: {fallback_data['crop_type']}, 온도: {fallback_data['temperature']}, 병해충: {fallback_data['pest_disease_detected']}"
-
-            import json
-            insights = f"{insight_text}\n\n```json\n{json.dumps(fallback_data, ensure_ascii=False, indent=2)}\n```"
+                insights = f"⚠️ 가상 지능 분석 오류: 데이터 분석을 완료하지 못했습니다. ({str(e)})"
 
         trust_hash = hashlib.sha256(content.encode()).hexdigest()
         short_hash = trust_hash[:8]

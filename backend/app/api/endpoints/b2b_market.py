@@ -109,6 +109,7 @@ async def create_product(
                 ]
                 prompt_parts.append(img)
                 
+                from app.services.gemini_ai import generate_content_with_fallback
                 from google import genai
                 from pydantic import BaseModel, Field
                 
@@ -116,9 +117,7 @@ async def create_product(
                     ai_grade: str = Field(description="A, B, C 등급")
                     ai_recommendation: str = Field(description="추천 매칭처 및 사유")
                     
-                res = await asyncio.to_thread(
-                    client.models.generate_content, 
-                    model=model_name, 
+                res = await generate_content_with_fallback(
                     contents=prompt_parts,
                     config=genai.types.GenerateContentConfig(
                         response_mime_type="application/json",
