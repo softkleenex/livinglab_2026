@@ -305,20 +305,22 @@ async def ingest(
             import json
             from google import genai
             from pydantic import BaseModel, Field
-            from typing import Optional, Literal
-            
+            from typing import Optional, Literal, List
+
             if is_livestock:
                 class AIReadyData(BaseModel):
                     livestock_type: Optional[str] = Field(None, description="가축 종류")
-                    event_type: Literal["백신접종", "교배", "출산", "질병발생", "일반관측", "기타"] = Field(..., description="이벤트 타입")
-                    vaccine_name: Optional[str] = Field(None, description="백신 접종인 경우 백신명")
+                    key_activities: List[str] = Field(..., description="파악된 주요 작업 내용 목록 (예: 분만실 소독, 예방접종 등)")
+                    vaccine_info: Optional[str] = Field(None, description="언급된 백신 이름 및 내역")
                     anomaly_detected: bool = Field(..., description="이상 징후 여부")
+                    summary: str = Field(..., description="전체 기록에 대한 1~2줄 요약")
             else:
                 class AIReadyData(BaseModel):
                     crop_type: Optional[str] = Field(None, description="언급된 작물 이름")
+                    key_activities: List[str] = Field(..., description="파악된 주요 작업 내용 목록")
                     temperature: Optional[float] = Field(None, description="텍스트에서 언급된 온도 수치")
-                    growth_stage: Optional[Literal["파종", "육묘", "개화", "결실", "수확", "알수없음"]] = Field(None)
                     pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
+                    summary: str = Field(..., description="전체 기록에 대한 1~2줄 요약")
 
             # Unblock the event loop for LLM inference
             import time
@@ -339,10 +341,11 @@ async def ingest(
             try:
                 res_json = json.loads(res.text)
                 print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] 📊 [Extracted JSON] {json.dumps(res_json, ensure_ascii=False)}")
-                ai_ready_data = res_json                if is_livestock:
-                    insight_text = f"가축: {ai_ready_data.get('livestock_type', '알수없음')}, 이벤트: {ai_ready_data.get('event_type', '알수없음')}, 백신명: {ai_ready_data.get('vaccine_name', '해당없음')}, 이상징후: {ai_ready_data.get('anomaly_detected', False)}"
+                ai_ready_data = res_json
+                if is_livestock:
+                    insight_text = f"💡 요약: {ai_ready_data.get('summary', '없음')}\n📌 주요 작업: {', '.join(ai_ready_data.get('key_activities', []))}\n가축: {ai_ready_data.get('livestock_type', '알수없음')}, 백신: {ai_ready_data.get('vaccine_info', '해당없음')}, 이상징후: {ai_ready_data.get('anomaly_detected', False)}"
                 else:
-                    insight_text = f"작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 생육: {ai_ready_data.get('growth_stage', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
+                    insight_text = f"💡 요약: {ai_ready_data.get('summary', '없음')}\n📌 주요 작업: {', '.join(ai_ready_data.get('key_activities', []))}\n작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
                 insights = f"{insight_text}\n\n```json\n{json.dumps(ai_ready_data, ensure_ascii=False, indent=2)}\n```"
             except json.JSONDecodeError:
                 insights = res.text
