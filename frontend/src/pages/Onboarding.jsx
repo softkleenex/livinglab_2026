@@ -50,8 +50,17 @@ export default function Onboarding({ onComplete, googleUser }) {
     const parts = farm.path.split('/');
     setFarmName(parts.pop());
     setLocationText(parts.join(' '));
-    const matchedInd = INDUSTRIES.find(i => farm.industry.includes(i.value.split(' ')[0]));
-    if(matchedInd) setIndustryId(matchedInd.id);
+    
+    const farmInd = farm.industry || '';
+    if (farmInd.includes('축산') || farmInd.includes('양돈')) {
+      setIndustryId('pig');
+    } else if (farmInd.includes('스마트팜') || farmInd.includes('농업')) {
+      setIndustryId('crop');
+    } else {
+      // 연구기관, 공공/지자체, IT/로보틱스 등 나머지는 모두 B2B(데이터 구매자)로 맵핑
+      setIndustryId('b2b');
+    }
+    
     setShowAllFarms(false);
   };
 

@@ -404,7 +404,7 @@ async def ingest(
 
         if is_guest_bool:
             base_trust = 40.0 if file else 30.0
-            insights = "[⚠️ 게스트 모드] " + insights
+            # Removed the '[⚠️ 게스트 모드]' text to ensure clean demo UI
         else:
             base_trust = 85.0 if file else 75.0
 
