@@ -129,8 +129,8 @@ export default function B2BMarket({ addToast, onPurchaseSuccess }) {
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
+    const fetchProducts = async (isBackground = false) => {
+      if (!isBackground) setLoading(true);
       try {
         const categoryParam = activeTab === 'synthetic_data' ? 'synthetic_data' : 'b_grade_produce';
         const res = await axios.get(`${API_BASE_URL}/api/v1/b2b-market/products`, {
@@ -156,10 +156,13 @@ export default function B2BMarket({ addToast, onPurchaseSuccess }) {
       } catch (err) {
         console.error("Failed to load products", err);
       } finally {
-        setLoading(false);
+        if (!isBackground) setLoading(false);
       }
     };
+    
     fetchProducts();
+    const intervalId = setInterval(() => fetchProducts(true), 3000);
+    return () => clearInterval(intervalId);
   }, [activeTab]);
 
   return (

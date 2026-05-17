@@ -71,11 +71,16 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
     return () => axios.interceptors.request.eject(reqInterceptor);
   }, [googleUser]);
 
-  const fetchWallet = async () => {
+  const fetchWallet = async (isBackground = false) => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/wallet/transactions`);
       if (res.data?.status === 'success') {
-        setWalletBalance(res.data.balance);
+        setWalletBalance(prev => {
+          if (isBackground && prev !== 0 && res.data.balance > prev) {
+             addToast(`🎉 상품이 성공적으로 판매되었습니다! 수익금 입금 완료`, "success");
+          }
+          return res.data.balance;
+        });
       }
     } catch (err) {
       console.error(err);
@@ -83,7 +88,9 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
   };
 
   useEffect(() => {
-    fetchWallet(); // Automatically fetch on mount, guest fallback is handled in backend
+    fetchWallet(); // Initial fetch
+    const intervalId = setInterval(() => fetchWallet(true), 3000); // Background polling every 3 seconds
+    return () => clearInterval(intervalId);
   }, [googleUser]);
 
   const handleExport = async () => {
