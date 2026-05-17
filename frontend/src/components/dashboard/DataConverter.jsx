@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FileJson, Camera, Mic, CheckCircle2, Clock, FileBadge } from 'lucide-react';
+import { FileJson, Camera, Mic, CheckCircle2, Clock, FileBadge, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
@@ -9,6 +9,7 @@ export default function DataConverter({ userContext, openIngest, openVoice, refr
   const [entries, setEntries] = useState([]);
   const [sampleEntries, setSampleEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -29,6 +30,24 @@ export default function DataConverter({ userContext, openIngest, openVoice, refr
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries, refreshTrigger]);
+
+  const handleDelete = async (hash) => {
+    if (!window.confirm('이 기록을 삭제하시겠습니까? 관련 데이터 가치와 스토리지 파일도 함께 삭제됩니다.')) return;
+
+    setDeletingId(hash);
+    try {
+      const pathStr = userContext.location.join('/');
+      await axios.delete(`${API_BASE_URL}/api/v1/ingest/delete`, {
+        params: { path: pathStr, hash_val: hash }
+      });
+      fetchEntries(); // Refresh the list
+    } catch (err) {
+      console.error("Failed to delete entry:", err);
+      alert(err.response?.data?.detail || "삭제에 실패했습니다.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const displayEntries = entries.length > 0 ? entries : sampleEntries;
   const isSample = entries.length === 0 && sampleEntries.length > 0;
@@ -61,7 +80,7 @@ export default function DataConverter({ userContext, openIngest, openVoice, refr
             </div>
             <span className="text-sm font-bold text-indigo-100">현장 일지 촬영</span>
           </button>
-          
+
           <button 
             onClick={openVoice}
             className="flex flex-col items-center justify-center gap-3 p-4 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/30 rounded-xl transition-all hover:-translate-y-0.5"
@@ -81,7 +100,7 @@ export default function DataConverter({ userContext, openIngest, openVoice, refr
           </h3>
           {isSample && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30">Hugging Face 연동</span>}
         </div>
-        
+
         {loading ? (
           <div className="text-center text-sm text-slate-500 py-10 animate-pulse">로딩 중...</div>
         ) : displayEntries.length === 0 ? (
@@ -90,13 +109,25 @@ export default function DataConverter({ userContext, openIngest, openVoice, refr
           </div>
         ) : (
           <div className="space-y-3">
-            {displayEntries.slice(0, 10).map((entry, idx) => (
-              <div key={idx} className={`bg-[#0A0F1A]/80 border ${isSample ? 'border-violet-800/50 shadow-violet-900/10' : 'border-slate-800/80'} rounded-xl p-4 shadow-sm`}>
+            {displayEntries.slice().reverse().slice(0, 10).map((entry, idx) => (
+              <div key={idx} className={`bg-[#0A0F1A]/80 border ${isSample ? 'border-violet-800/50 shadow-violet-900/10' : 'border-slate-800/80'} rounded-xl p-4 shadow-sm relative group`}>
                 <div className="flex justify-between items-start mb-2">
                   <div className={`text-xs flex items-center gap-1 font-medium ${isSample ? 'text-violet-400' : 'text-slate-400'}`}>
                     <CheckCircle2 size={14} className={isSample ? 'text-violet-500' : 'text-indigo-500'} /> {isSample ? 'Hugging Face 동기화 완료' : '전자 문서화 완료'}
                   </div>
-                  <div className="text-[10px] text-slate-500">{entry.timestamp}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] text-slate-500">{entry.timestamp}</span>
+                    {!isSample && (
+                      <button 
+                        onClick={() => handleDelete(entry.hash)}
+                        disabled={deletingId === entry.hash}
+                        className="text-slate-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                        title="기록 삭제"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="text-sm text-slate-200 font-medium mb-3">
                   {entry.raw_text}

@@ -385,8 +385,10 @@ async def ingest(
 
         trust_index = round(base_trust + random.uniform(0.0, 14.9), 1)
 
+        import pytz
+        kst = pytz.timezone('Asia/Seoul')
         entry = {
-            "timestamp": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")),
+            "timestamp": str(datetime.datetime.now(kst).strftime("%Y-%m-%d %H:%M")),
             "insights": insights,
             "hash": trust_hash,
             "drive_link": drive_link,
