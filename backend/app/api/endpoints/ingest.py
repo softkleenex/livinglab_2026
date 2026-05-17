@@ -321,20 +321,25 @@ async def ingest(
                     pest_disease_detected: bool = Field(..., description="병해충/시듦 현상 유무")
 
             # Unblock the event loop for LLM inference
+            import time
+            start_time = time.time()
+            print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] 🤖 [Gemini 2.5] Vision AI Parsing Started...")
             res = await asyncio.to_thread(
-                client.models.generate_content, 
-                model=model_name, 
+                client.models.generate_content,
+                model=model_name,
                 contents=prompt_parts,
                 config=genai.types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=AIReadyData,
                 )
             )
-            
+            elapsed = time.time() - start_time
+            print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ✅ [Gemini 2.5] Parsing Completed in {elapsed:.2f}s!")
+
             try:
                 res_json = json.loads(res.text)
-                ai_ready_data = res_json
-                if is_livestock:
+                print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] 📊 [Extracted JSON] {json.dumps(res_json, ensure_ascii=False)}")
+                ai_ready_data = res_json                if is_livestock:
                     insight_text = f"가축: {ai_ready_data.get('livestock_type', '알수없음')}, 이벤트: {ai_ready_data.get('event_type', '알수없음')}, 백신명: {ai_ready_data.get('vaccine_name', '해당없음')}, 이상징후: {ai_ready_data.get('anomaly_detected', False)}"
                 else:
                     insight_text = f"작물: {ai_ready_data.get('crop_type', '알수없음')}, 온도: {ai_ready_data.get('temperature', '알수없음')}, 생육: {ai_ready_data.get('growth_stage', '알수없음')}, 병해충: {ai_ready_data.get('pest_disease_detected', False)}"
