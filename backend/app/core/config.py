@@ -2,6 +2,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
+import os
+from dotenv import load_dotenv
+
+# Force load from .env to override global system variables that might be leaked
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"), override=True)
+
 class Settings(BaseSettings):
     # App Settings
     PROJECT_NAME: str = "MDGA Enterprise B2B SaaS"
