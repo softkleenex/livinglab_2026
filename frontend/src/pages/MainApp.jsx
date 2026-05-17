@@ -40,6 +40,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const timeoutRefs = useRef([]);
 
   useEffect(() => {
@@ -151,7 +152,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
                 <RefreshCw size={28} className="text-blue-600 animate-spin" />
               </motion.div>
             ) : activeTab === 'converter' ? (
-              <DataConverter userContext={userContext} addToast={addToast} openIngest={() => setShowIngest(true)} openVoice={() => setShowVoice(true)} />
+              <DataConverter userContext={userContext} addToast={addToast} openIngest={() => setShowIngest(true)} openVoice={() => setShowVoice(true)} refreshTrigger={refreshTrigger} />
             ) : activeTab === 'map' ? (
               <TwinMapSharing userContext={userContext} addToast={addToast} />
             ) : activeTab === 'b2b' ? (
@@ -194,6 +195,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
               onClose={() => setShowVoice(false)}
               onSuccess={() => {
                 setShowVoice(false);
+                setRefreshTrigger(prev => prev + 1);
                 addToast("성공적으로 음성이 텍스트로 기록 및 자산화되었습니다.", "success");
               }}
               locationPath={userContext.location.join('/')}

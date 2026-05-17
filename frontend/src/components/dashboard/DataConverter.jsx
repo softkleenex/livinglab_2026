@@ -5,12 +5,13 @@ import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
-export default function DataConverter({ userContext, openIngest, openVoice }) {
+export default function DataConverter({ userContext, openIngest, openVoice, refreshTrigger }) {
   const [entries, setEntries] = useState([]);
   const [sampleEntries, setSampleEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchEntries = useCallback(async () => {
+    setLoading(true);
     try {
       const pathStr = userContext.location.join('/');
       const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/personal?path=${pathStr}`);
@@ -27,7 +28,7 @@ export default function DataConverter({ userContext, openIngest, openVoice }) {
 
   useEffect(() => {
     fetchEntries();
-  }, [fetchEntries]);
+  }, [fetchEntries, refreshTrigger]);
 
   const displayEntries = entries.length > 0 ? entries : sampleEntries;
   const isSample = entries.length === 0 && sampleEntries.length > 0;
