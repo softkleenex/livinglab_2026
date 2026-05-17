@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
-export default function VoiceRecordModal({ isGuest, onClose, onSuccess, locationPath, addToast }) {
+export default function VoiceRecordModal({ isGuest, onClose, onSuccess, locationPath, addToast, industry }) {
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState('');

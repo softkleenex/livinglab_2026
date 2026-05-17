@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
-export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, childOptions = [], addToast }) {
+export default function IngestModal({ isGuest, onClose, onSuccess, locationPath, childOptions = [], addToast, industry }) {
   const [rawText, setRawText] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -42,6 +42,7 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
     if (file) formData.append('file', file);
     formData.append('location', selectedPath);
     if (isGuest) formData.append('is_guest', 'true');
+    if (industry) formData.append('industry', industry);
     
     try {
       const response = await axios.post(`${API_BASE_URL}/api/v1/ingest`, formData);

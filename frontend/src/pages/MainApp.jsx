@@ -183,13 +183,15 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
               onSuccess={(val) => {
                 setShowIngest(false);
                 if (val) setWalletBalance(prev => prev + val);
+                setRefreshTrigger(prev => prev + 1);
                 addToast("성공적으로 데이터가 기록되었습니다.", "success");
               }}
               locationPath={userContext.location.join('/')}
+              industry={userContext.industry}
               addToast={addToast}
             />
-          )}
-          {showVoice && (
+            )}
+            {showVoice && (
             <VoiceRecordModal
               isGuest={googleUser?.isGuest}
               onClose={() => setShowVoice(false)}
@@ -199,6 +201,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
                 addToast("성공적으로 음성이 텍스트로 기록 및 자산화되었습니다.", "success");
               }}
               locationPath={userContext.location.join('/')}
+              industry={userContext.industry}
               addToast={addToast}
             />
           )}
