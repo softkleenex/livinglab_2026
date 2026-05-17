@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://mdga-api.onrender.com').replace(/\/$/, '');
 
-export default function B2BMarket({ addToast }) {
+export default function B2BMarket({ addToast, onPurchaseSuccess }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('synthetic_data'); // 'synthetic_data' or 'b_grade_produce'
@@ -120,6 +120,7 @@ export default function B2BMarket({ addToast }) {
       if (res.data?.status === 'success') {
         addToast("구매 요청이 성공적으로 전송되었습니다.", "success");
         setItems(prevItems => prevItems.map(item => item.id === productId ? { ...item, status: 'matched' } : item));
+        if (onPurchaseSuccess) onPurchaseSuccess();
       }
     } catch (err) {
       console.error(err);

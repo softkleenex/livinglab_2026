@@ -71,20 +71,19 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
     return () => axios.interceptors.request.eject(reqInterceptor);
   }, [googleUser]);
 
-  useEffect(() => {
-    const fetchWallet = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/wallet/transactions`);
-        if (res.data?.status === 'success') {
-          setWalletBalance(res.data.balance);
-        }
-      } catch (err) {
-        console.error(err);
+  const fetchWallet = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/v1/dashboard/wallet/transactions`);
+      if (res.data?.status === 'success') {
+        setWalletBalance(res.data.balance);
       }
-    };
-    if (!googleUser?.isGuest) {
-      fetchWallet();
+    } catch (err) {
+      console.error(err);
     }
+  };
+
+  useEffect(() => {
+    fetchWallet(); // Automatically fetch on mount, guest fallback is handled in backend
   }, [googleUser]);
 
   const handleExport = async () => {
@@ -156,7 +155,7 @@ export default function MainApp({ userContext, googleUser, onLogout }) {
             ) : activeTab === 'map' ? (
               <TwinMapSharing userContext={userContext} addToast={addToast} />
             ) : activeTab === 'b2b' ? (
-              <B2BMarket userContext={userContext} addToast={addToast} />
+              <B2BMarket userContext={userContext} addToast={addToast} onPurchaseSuccess={fetchWallet} />
             ) : activeTab === 'insight' ? (
               <SynthesisInsight userContext={userContext} addToast={addToast} />
             ) : null}
