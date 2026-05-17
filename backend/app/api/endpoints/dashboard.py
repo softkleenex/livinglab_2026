@@ -25,18 +25,23 @@ async def get_twin_map_risks(db: Session = Depends(get_db)):
     
     for i, r in enumerate(regions):
         # Determine risk type heuristically or alternatingly
-        if i % 2 == 0:
+        if i == 0: # Force an ASF warning for the demo
+            r_type = "disease"
+            r_status = "critical"
+            r_name = "아프리카돼지열병(ASF) 발생"
+            r_distance = "반경 15km 이내 위험"
+        elif i == 1:
             alert = await public_data_service.generate_livestock_alert(r.name, "돼지")
-            r_type = "weather" if "폭염" in alert.get("actionable_insight", "") else "disease"
-            r_status = "critical" if alert.get("mortality_risk_level") in ["심각", "고위험"] else "warning"
-            r_name = f"위험 지수 {alert.get('heat_stress_index', '경계')}"
+            r_type = "weather"
+            r_status = "warning"
+            r_name = f"열 스트레스 지수 {alert.get('heat_stress_index', 85.2)}"
             r_distance = f"골든타임 {alert.get('golden_time_hours', 2)}시간"
         else:
-            alert = await public_data_service.generate_oversupply_risk("사과")
-            r_type = "ventilation"
+            alert = await public_data_service.generate_oversupply_risk("딸기")
+            r_type = "market"
             r_status = "warning"
             r_name = f"수급 위험: {alert.get('risk_level', '주의')}"
-            r_distance = f"예상 하락폭 {alert.get('expected_price_drop_percent', 10)}%"
+            r_distance = f"예상 하락폭 {alert.get('price_drop_forecast_percent', 10)}%"
 
         lat = r.lat + random.uniform(-0.05, 0.05) if r.lat else 36.0 + random.uniform(-1, 1)
         lng = r.lng + random.uniform(-0.05, 0.05) if r.lng else 128.0 + random.uniform(-1, 1)
