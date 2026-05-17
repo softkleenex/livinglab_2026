@@ -8,24 +8,24 @@ MDGA는 이미 상용 수준의 PaaS/SaaS 인프라에 배포가 완료된 상�
 
 ```mermaid
 graph TD
-    User((Farmer / B2B Client)) <-->|HTTPS| Cloudflare[Cloudflare Pages\nFrontend SPA]
+    User((Farmer / B2B Client<br/>데이터 생산자 및 수요자)) <-->|HTTPS| Cloudflare[Cloudflare Pages<br/>Frontend SPA 및 UI]
     
-    Cloudflare <-->|REST API| API_Gateway[Render.com\nFastAPI Backend]
+    Cloudflare <-->|REST API| API_Gateway[Render.com<br/>FastAPI Backend API 제어]
     
     subgraph Data & Storage Layer
-        API_Gateway <-->|SQLAlchemy / SSL| DB[(Supabase\nManaged PostgreSQL)]
-        API_Gateway <-->|OAuth 2.0 / API| GDrive[(Google Drive\nImage/File Storage)]
+        API_Gateway <-->|SQLAlchemy / SSL| DB[(Supabase<br/>정형 데이터 및 시뮬레이션 결과 영구저장)]
+        API_Gateway <-->|OAuth 2.0 / API| GDrive[(Google Drive<br/>이미지 및 Raw 파일 스토리지)]
     end
     
     subgraph External AI & APIs
-        API_Gateway <-->|gRPC / HTTP| AI[Google Gemini 2.5 Pro\nMultimodal AI]
-        API_Gateway <-->|HTTP GET| PublicAPI[data.go.kr\nWeather API]
+        API_Gateway <-->|gRPC / HTTP| AI[Google Gemini 2.5 Pro<br/>멀티모달 AI 데이터 파싱]
+        API_Gateway <-->|HTTP GET| PublicAPI[data.go.kr<br/>기상청 환경 공공데이터 수집]
     end
     
     subgraph Backend Internal [Backend Services]
-        API_Gateway --> AI_Parser[AI Parser Service]
-        API_Gateway --> Geo_Engine[Hierarchy & Geo Engine]
-        API_Gateway --> Simulator[Synthetic Simulator]
+        API_Gateway --> AI_Parser[AI Parser Service<br/>텍스트/이미지 정형화 모듈]
+        API_Gateway --> Geo_Engine[Hierarchy & Geo Engine<br/>공간 계층 롤업 및 매핑 모듈]
+        API_Gateway --> Simulator[Synthetic Simulator<br/>▶ AgiBot: 자율주행 시나리오 검증<br/>▶ LeRobot EnvHub: 물리 생육 시뮬레이션<br/>▶ RoboCasa: 3D 비전 렌더링]
     end
 ```
 

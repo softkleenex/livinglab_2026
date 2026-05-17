@@ -30,14 +30,16 @@ MDGA는 농가의 수기 일지, 생육 데이터, 외부 공공 기상 데이�
 
 ```mermaid
 graph TD
-    A[농가/스마트팜 User] -->|영농일지, 사진| B(React Frontend)
-    C[B2B 기업 User] -->|데이터 구매/구독| B
-    B <-->|REST API| D[FastAPI Backend]
+    A[농가/스마트팜 User<br/>(원천 데이터 생산자)] -->|영농일지, 사진| B(React Frontend<br/>UI 및 대시보드)
+    C[B2B 기업 User<br/>(합성 데이터 수요자)] -->|데이터 구매/구독| B
+    B <-->|REST API| D[FastAPI Backend<br/>비즈니스 로직 및 API 제어]
     
-    D -->|멀티모달 파싱| E[Gemini 2.5 Pro]
-    D <-->|CRUD & Tokenomics| F[(Supabase PostgreSQL)]
-    D -->|공공 API| G[기상청 / 농진청]
-    D -->|Hugging Face| H[오픈소스 데이터셋 Seeding]
+    D -->|멀티모달 파싱| E[Gemini 2.5 Pro<br/>비정형 데이터의 정형화]
+    D <-->|CRUD & Tokenomics| F[(Supabase PostgreSQL<br/>정형/시뮬레이션 데이터 영구저장)]
+    D -->|공공 API| G[기상청 / 농진청<br/>기후 및 환경 공공데이터 수집]
+    
+    D -->|Raw Data 주입| H[Synthetic Data Engine<br/>▶ AgiBot: 자율주행 농기계 시나리오 검증<br/>▶ EnvHub: 물리적 기후/생육 환경 시뮬레이션<br/>▶ RoboCasa: 3D 농작물 및 객체 비전 렌더링]
+    H -.->|고부가가치 합성 데이터 생성| F
     
     E -.->|JSON 구조화| D
     F -.->|AI 분석 및 위험 지도| B
