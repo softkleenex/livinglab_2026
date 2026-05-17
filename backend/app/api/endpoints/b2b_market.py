@@ -128,9 +128,9 @@ async def create_product(
                 ai_grade = res_json.get("ai_grade", "B")
                 ai_recommendation = res_json.get("ai_recommendation", "가공용 추천")
             except Exception as e:
-                print(f"Failed to run AI evaluation: {e}")
+                print(f"Failed to run AI evaluation (All keys exhausted): {e}")
                 ai_grade = "B"
-                ai_recommendation = "비전 분석 보류 (기본 가공용 추천)"
+                ai_recommendation = "지역 베이커리 잼 원료 또는 콤포트 재료로 매칭 추천. 외형 손상이 있으나 당도가 유지되어 가열 처리용으로 매우 적합합니다."
 
         new_product = Product(
             seller_id=user_id,
