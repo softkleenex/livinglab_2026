@@ -256,12 +256,20 @@ async def create_matching(
         seller_wallet = db.query(Wallet).filter(Wallet.user_id == product.seller_id).first()
 
         if total_price > 0:
-            if not buyer_wallet or buyer_wallet.balance < total_price:
+            is_demo_admin = False
+            if buyer_wallet:
+                from app.core.database import User
+                buyer_user = db.query(User).filter(User.id == buyer_id).first()
+                if buyer_user and buyer_user.role == "admin":
+                    is_demo_admin = True
+                    
+            if not is_demo_admin and (not buyer_wallet or buyer_wallet.balance < total_price):
                 raise HTTPException(status_code=400, detail="잔여 토큰(MDGA)이 부족합니다.")
             
-            # Deduct from buyer
-            buyer_wallet.balance -= total_price
-            db.add(Transaction(wallet_id=buyer_wallet.id, amount=-total_price, tx_type="SPEND", description=f"[{product.title}] 구매"))
+            # Deduct from buyer (skip if admin is buying their own product to show earning effect in demo)
+            if buyer_wallet and not (is_demo_admin and buyer_id == product.seller_id):
+                buyer_wallet.balance -= total_price
+                db.add(Transaction(wallet_id=buyer_wallet.id, amount=-total_price, tx_type="SPEND", description=f"[{product.title}] 구매"))
             
             # Add to seller
             if seller_wallet:
