@@ -589,10 +589,9 @@ async def delete_entry(
 
         if (
             entry_to_del.farm
-            and (
-                entry_to_del.farm.owner_id != user["user_id"] or user["role"] == "guest"
-            )
+            and entry_to_del.farm.owner_id != user["user_id"]
             and user["role"] != "admin"
+            and not (user["role"] == "guest" and entry_to_del.is_guest == 1)
         ):
             raise HTTPException(
                 status_code=403, detail="Not authorized to delete this entry"
