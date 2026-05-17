@@ -119,14 +119,34 @@ export default function IngestModal({ isGuest, onClose, onSuccess, locationPath,
                 <span className="text-xs text-slate-400">다른 사용자의 데이터 다운로드 허용 안 함<br/><span className="text-[10px] text-red-400 font-bold">(현재 개발 중으로 필수 공개 설정됨)</span></span>
               </label>
 
-              <button onClick={handleIngest} disabled={loading || (!rawText && !file)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? (
-                  <>
-                    <RefreshCw className="animate-spin" size={16}/>
-                    <span>AI가 데이터를 분석 중입니다...</span>
-                  </>
-                ) : "업로드 및 자산화"}
-              </button>
+              {loading ? (
+                <div className="w-full space-y-2 bg-[#0A0F1A] border border-blue-500/30 p-4 rounded-xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-blue-500/5 animate-pulse"></div>
+                  <div className="relative z-10 flex justify-between text-xs text-blue-400 font-bold mb-2">
+                    <span className="flex items-center gap-2"><RefreshCw className="animate-spin" size={14}/> 멀티모달 AI 분석 진행 중...</span>
+                    <motion.span 
+                      initial={{ opacity: 0 }} 
+                      animate={{ opacity: 1 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    >
+                      Wait...
+                    </motion.span>
+                  </div>
+                  <div className="relative z-10 w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700/50">
+                    <motion.div 
+                      className="bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 h-full rounded-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: "95%" }}
+                      transition={{ duration: 4, ease: "circOut" }}
+                    />
+                  </div>
+                  <p className="relative z-10 text-[10px] text-slate-400 text-center mt-2">비정형 데이터를 분석하여 JSON 객체로 정형화하고 있습니다.</p>
+                </div>
+              ) : (
+                <button onClick={handleIngest} disabled={!rawText && !file} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-500 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(37,99,235,0.2)] transition-all">
+                  업로드 및 자산화
+                </button>
+              )}
             </>
           ) : (
             <div className="py-10 text-center space-y-4">
