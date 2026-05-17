@@ -37,8 +37,7 @@ export default function SynthesisInsight({ userContext }) {
 
   // Periodic polling for new logs
   useEffect(() => {
-    if (!isB2B && !!userContext?.industry) return; // Only for B2B/Research
-
+    // Always fetch for demo purposes so terminal is always active
     const fetchLogs = async () => {
       try {
         const logsRes = await axios.get(`${API_BASE_URL}/api/v1/ax-data/simulation-logs`);
@@ -52,7 +51,7 @@ export default function SynthesisInsight({ userContext }) {
 
     const interval = setInterval(fetchLogs, 5000); // Fetch new scenario logs every 5 seconds
     return () => clearInterval(interval);
-  }, [isB2B, userContext?.industry]);
+  }, []);
 
   const isPigFarm = userContext?.industry?.includes('양돈') || userContext?.industry?.includes('축산');
   const isSmartFarm = userContext?.industry?.includes('스마트팜') || userContext?.industry?.includes('농업');
@@ -244,47 +243,45 @@ export default function SynthesisInsight({ userContext }) {
             </>
           )}
 
-          {/* Open Source Synthetic Data Generator (For B2B Buyers) */}
-          {isB2B && (
-            <div className="bg-[#0A0F1A]/80 border border-slate-800/80 rounded-2xl p-4 shadow-lg mb-4">
-              <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                <Database className="text-violet-400" />
-                오픈소스 AI 합성 환경 (EnvHub)
-              </h2>
-              <p className="text-[11px] text-slate-400 mb-4 leading-relaxed">
-                멘토링 피드백 반영: AgiBot Genie Sim, Hugging Face LeRobot EnvHub, RoboCasa 등 오픈소스 기반 시나리오로 고품질 합성 데이터를 무상 제공합니다.
-              </p>
+          {/* Open Source Synthetic Data Generator (Terminal always visible for Demo) */}
+          <div className="bg-[#0A0F1A]/80 border border-slate-800/80 rounded-2xl p-4 shadow-lg mb-4">
+            <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <Database className="text-violet-400" />
+              오픈소스 AI 합성 환경 (EnvHub)
+            </h2>
+            <p className="text-[11px] text-slate-400 mb-4 leading-relaxed">
+              멘토링 피드백 반영: AgiBot Genie Sim, Hugging Face LeRobot EnvHub, RoboCasa 등 오픈소스 기반 시나리오로 고품질 합성 데이터를 무상 제공합니다.
+            </p>
 
-              {/* Sim Terminal / Log View */}
-              <div className="bg-[#05080F] border border-slate-800 rounded-xl p-3">
-                <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                    <Database size={12} /> LeRobot EnvHub Active
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span className="text-[9px] text-emerald-400">Generating</span>
-                  </span>
-                </div>
-                <div className="font-mono text-[10px] text-emerald-500/80 space-y-1 h-20 overflow-hidden relative flex flex-col justify-end">
-                  <AnimatePresence initial={false}>
-                    {displayedLogs.map((log, i) => (
-                      <motion.p 
-                        key={`${log}-${i}`}
-                        initial={{ opacity: 0, x: -5 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="break-all"
-                      >
-                        {log}
-                      </motion.p>
-                    ))}
-                  </AnimatePresence>
-                  <p className="animate-pulse mt-1 inline-block w-2 h-3 bg-emerald-500/50"></p>
-                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent pointer-events-none"></div>
-                </div>
+            {/* Sim Terminal / Log View */}
+            <div className="bg-[#05080F] border border-slate-800 rounded-xl p-3">
+              <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
+                <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                  <Database size={12} /> LeRobot EnvHub Active
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-[9px] text-emerald-400">Generating</span>
+                </span>
+              </div>
+              <div className="font-mono text-[10px] text-emerald-500/80 space-y-1 h-20 overflow-hidden relative flex flex-col justify-end">
+                <AnimatePresence initial={false}>
+                  {displayedLogs.map((log, i) => (
+                    <motion.p 
+                      key={`${log}-${i}`}
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="break-all"
+                    >
+                      {log}
+                    </motion.p>
+                  ))}
+                </AnimatePresence>
+                <p className="animate-pulse mt-1 inline-block w-2 h-3 bg-emerald-500/50"></p>
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#05080F] to-transparent pointer-events-none"></div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Agricultural News Widget */}
           {newsData.length > 0 && (
