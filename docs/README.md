@@ -28,5 +28,6 @@ Welcome to the documentation for MDGA (Universal Data Engine). This directory co
 - **[Business Rules (requirements/BUSINESS_RULES.md)](./requirements/BUSINESS_RULES.md)**: Core algorithms, AI parsing rules, and synthesis simulation engines.
 
 ## 💼 Additional Materials
+- **[Presentation Reconstruction (presentation/)](./presentation/)**: High-fidelity HTML/CSS reconstructions of the final presentation, including extracted images and analysis scripts.
 - **[Portfolio Guide (PORTFOLIO_GUIDE.md)](./PORTFOLIO_GUIDE.md)**: Guide for extracting portfolio and presentation content from this repository.
 - **[Interview Transcripts (interview/)](./interview/)**: Raw transcripts from user interviews guiding the Agricultural AX pivot.
