@@ -1,4 +1,3 @@
-import httpx
 import asyncio
 import json
 import random
@@ -335,7 +334,7 @@ class PublicDataService:
                 "water_supply_recommendation_liters": random.randint(80, 200),
                 "fertilizer_reduction_percent": random.randint(10, 30),
                 "carbon_reduction_kg": round(random.uniform(2.0, 10.0), 1),
-                "actionable_insight": f"토양 상태에 따른 스마트 자원 투입으로 탄소 발자국을 최소화할 수 있습니다.",
+                "actionable_insight": "토양 상태에 따른 스마트 자원 투입으로 탄소 발자국을 최소화할 수 있습니다.",
             }
 
         db = SessionLocal()

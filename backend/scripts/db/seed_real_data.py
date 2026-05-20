@@ -5,7 +5,7 @@ import random
 import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from app.core.database import SessionLocal, Farm, DataEntry, Region, User, Wallet
+from app.core.database import SessionLocal, Farm, DataEntry, Region, User
 
 def fetch_and_seed_real_dataset():
     db = SessionLocal()

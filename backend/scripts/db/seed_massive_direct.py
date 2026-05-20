@@ -5,7 +5,7 @@ import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from app.core.database import SessionLocal, User, Farm, Region, Product, DataEntry, Wallet
-from scripts.db.seed_data import get_massive_data, generate_sensor_json
+from scripts.db.seed_data import get_massive_data
 
 def run():
     db = SessionLocal()
@@ -69,7 +69,7 @@ def run():
                     farm_id=farm.id,
                     industry=item["industry"],
                     raw_text=item["insight"],
-                    insights=f"{{\n  \"info\": \"Dummy Seeded Data\"\n}}",
+                    insights="{\n  \"info\": \"Dummy Seeded Data\"\n}",
                     trust_index=random.uniform(50.0, 99.0),
                     effective_value=random.randint(1000, 50000),
                     hash_val=f"mock_{random.randint(100000, 99999999)}",

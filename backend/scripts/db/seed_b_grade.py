@@ -1,6 +1,5 @@
 import sys
 import os
-from sqlalchemy.orm import Session
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from app.core.database import SessionLocal, Product, Region, User

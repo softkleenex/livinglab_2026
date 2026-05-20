@@ -1,4 +1,3 @@
-import pytest
 import os
 os.environ["ADMIN_SEED_TOKEN"] = "mdga-admin-seed-2026"
 from fastapi.testclient import TestClient
