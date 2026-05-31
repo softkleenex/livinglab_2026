@@ -1,7 +1,7 @@
 # MDGA (Universal Data Engine) 🌾🚀
 
 <div align="center">
-  <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
+  <img src="docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
   
   <br />
 
@@ -83,30 +83,68 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 
 ---
 
-## 🌟 Core Features
+## 🌟 Core Features Specification
 
 <table width="100%">
   <tr>
     <td width="50%" valign="top">
       <h3>1. AI Data One-Touch Converter ✍️</h3>
-      <p>When a farmer takes a photo of handwritten logs, vaccination lists, or on-site notes, the Google Gemini 2.5 Pro Multimodal AI parses and structures it in real time into government-standard (e.g., HACCP) JSON format in a single second.</p>
+      <ul>
+        <li><b>Multimodal Parsing</b>: Leverages Google Gemini 2.5 Pro Multimodal Vision capabilities to identify and extract unstructured photos of handwritten paper logs, veterinary formulas, blackboard notes, and voice recordings.</li>
+        <li><b>HACCP Standardization</b>: Structures raw parsed input into standard JSON schemas conforming to national livestock traceability regulations and food safety compliance frameworks in 1 second.</li>
+        <li><b>2-Step Decoupled Parser</b>: Employs a secure boundary architecture featuring an Intent Parser (raw JSON intent extraction) and a Conversational Chatbot to safely bypass LLM safety alignment constraints during CRUD executions.</li>
+      </ul>
     </td>
     <td width="50%" valign="top">
       <h3>2. Twin Map Quarantine/Environment Monitor 🗺️</h3>
-      <p>Locally collected farmer logs are automatically scaled and rolled up into region-level datasets to visualize infectious disease boundaries (e.g., African Swine Fever) and climate risks (e.g., heatstroke threshold index) on an interactive live map (Leaflet.js).</p>
+      <ul>
+        <li><b>Digital Twin Map Rendering</b>: Implements dynamic map layers using Leaflet.js to visualizes geolocated farm boundaries, livestock pens, and localized environment markers.</li>
+        <li><b>Spatial Roll-Up Engine</b>: Computes and aggregates individual farm outputs asynchronously up to neighborhood (Dong), district (Gu), and metropolitan (City) hierarchies to evaluate B2B macro health indexes.</li>
+        <li><b>Live Disease Feeds</b>: Merges geolocated farm coordinates with national livestock epidemic API feeds (African Swine Fever, Foot-and-Mouth Disease) to establish active quarantine buffers.</li>
+      </ul>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <h3>3. B-grade Produce B2B Marketplace 🍎</h3>
-      <p>Uploading pictures of B-grade (ugly) crop immediately triggers a real-time vision grading analysis (sugar content, A/B/C tier) and matches them to local juice bars or bakeries. Settlement is automatically handled by the local Tokenomics Wallet.</p>
+      <ul>
+        <li><b>Vision Quality Grading</b>: Evaluates sugar content levels and physical aesthetics (Tier A/B/C) of low-marketability ugly crops using visual AI classifiers.</li>
+        <li><b>Direct Deal Brokerage</b>: Seamlessly matches sub-premium produce to local small businesses (bakeries, juice bars) who process raw ingredients, transforming waste into revenues.</li>
+        <li><b>Production-Ready Tokenomics</b>: Features real-time secure wallet balance query, automatic token payouts upon purchase transaction approvals, and CSV accounting export.</li>
+      </ul>
     </td>
     <td width="50%" valign="top">
       <h3>4. Intelligent B2B Synthetic Data Engine 🤖</h3>
-      <p>Using real farming inputs, the engine runs climate simulation algorithms to output high-fidelity synthetic training data for world-class virtual physical systems like AgiBot, EnvHub, and RoboCasa for B2B dataset trading.</p>
+      <ul>
+        <li><b>Climate Stress Simulations</b>: Implements mathematical Temperature-Humidity Index (THI) thresholds to predict heatstroke-induced pig mortality, raising critical alarms 2 hours prior to golden-time limits.</li>
+        <li><b>Open-Source Sandbox Seeding</b>: Translates real-world normalized growth metrics into compliant datasets to seed high-fidelity virtual physical engines: <b>AgiBot</b> (machinery scenario testing), <b>EnvHub</b> (stress scaling), and <b>RoboCasa</b> (3D visual rendering).</li>
+        <li><b>B2B Licensing Marketplace</b>: Distributes high-value synthetic datasets to corporate AI research facilities and automotive manufacturers, incorporating secure tokenized API Key authorization gates.</li>
+      </ul>
     </td>
   </tr>
 </table>
+
+---
+
+## 🛠️ Major Technical Achievements (Accomplishments)
+
+To ensure maximum performance for the Living Lab competition, the initial prototype has been successfully evolved into an **enterprise-ready production MVP**.
+
+### 🛢️ 1. Complete 3NF RDBMS Migration for Data Integrity
+* **Challenge**: The initial prototype relied on stateful in-memory tree nodes, making scale-out impossible and exposing the codebase to massive data corruption and session loss.
+* **Solution**: Transited data persistence entirely to Supabase Postgres. Normalized relations to Third Normal Form (3NF) across `Region`, `Farm`, `DataEntry`, `Wallet`, and `SyntheticData` tables. Enforced strict constraints, foreign keys, and `ON DELETE CASCADE` rules, assuring 100% relational integrity.
+
+### 🧠 2. Decoupled Intent Parser to Bypass LLM Safety Alignment
+* **Challenge**: When users commanded the assistant to modify pen data (e.g. "delete my last log"), the LLM's conversational safety alignment blocked queries, mistaking SQL transactions for unauthorized operations.
+* **Solution**: Decoupled the architecture into an independent Conversational Agent and a raw-JSON output **Intent Parser**. The Intent Parser strictly outputs structured JSON schemas (`action: DELETE`) which are then securely executed by the FastAPI backend directly on the Postgres DB.
+
+### 🔑 3. google-genai & Google Drive API Scope Security Partitioning
+* **Challenge**: Google Drive storage connection required root-level drive authorizations, causing security audit alerts and frequent `403 Forbidden` API request rejections.
+* **Solution**: Strictly implemented the Principle of Least Privilege by confining OAuth scopes to `auth/drive.file`. Mapped individual farming asset hashes (`hash_val`) to unique Google Drive File IDs, ensuring that the application can only access and modify object files created by its own session.
+
+### 🌐 4. Real Data Seeding via Hugging Face Pipeline
+* **Challenge**: The initial demo dashboard depended on random seed parameters, severely reducing the business model's simulation credibility.
+* **Solution**: Engineered a robust seeding pipeline that streams real-world global agricultural crop datasets from **Hugging Face (`jason1966/aksahaha_crop-recommendation`)**. Populating our Postgres instance with authentic physical growth metrics elevated our crop prediction and data valuation algorithms to standard commercial reliability levels.
 
 ---
 
