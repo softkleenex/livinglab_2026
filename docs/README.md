@@ -32,6 +32,7 @@ graph TD
 ```
 
 ### 🎯 1. Overview (프로젝트 및 성과 요약)
+* **[🏆 종합 기술 아카이브 가이드 (ARCHIVE_GUIDE.md)](./ARCHIVE_GUIDE.md)**: MDGA 플랫폼의 완전한 기술 사양서. 2단계 의도 파싱, Leaflet 공간 롤업, THI 시뮬레이션 공식, Supabase 3NF 스키마, Hugging Face 수집/시딩 파이프라인 및 보안 샌드박싱 설계를 집대성한 마스터 문서.
 * **[프로젝트 상세 기획안 (PROJECT_SPEC_AND_PLAN.md)](./00_Overview/PROJECT_SPEC_AND_PLAN.md)**: MDGA의 비전, 핵심 기능 사양(Data Converter, Twin Map 등) 및 개발 마일스톤의 Single Source of Truth.
 * **[포트폴리오 및 면접 활용 가이드 (PORTFOLIO_GUIDE.md)](./00_Overview/PORTFOLIO_GUIDE.md)**: 백엔드/프론트엔드/AI 직무별 핵심 문제 해결 경험(3NF 정규화, LLM 의도 파싱, OAuth 스코프 우회 등) 기술 면접 가이드.
 
@@ -63,38 +64,54 @@ graph TD
 ## 🏆 6. Competition Deliverables (대회 단계별 핵심 산출물 아카이브)
 
 > [!NOTE]  
-> HWP, PDF, PPTX, MP4와 같은 대용량 바이너리 파일들은 깃 저장소의 용량 최적화를 위해 `.gitignore` 처리되어 원격 깃허브에는 업로드되지 않지만, **본 로컬 워크스페이스 상에는 안전하게 보관**되어 있습니다. 로컬에서 원본 파일로 즉시 열어보실 수 있습니다.
+> HWP, PDF, PPTX, MP4와 같은 대용량 바이너리 파일들은 깃 저장소의 용량 최적화를 위해 `.gitignore` 처리되어 깃허브 원격 커밋에서는 제외되었습니다.  
+> 대신 **GitHub Releases**에 아카이빙되어 있어 아래의 **`🌐 온라인 다운로드`** 링크를 통해 깃허브 상에서도 즉시 다운로드할 수 있으며, 로컬 워크스페이스 상에서도 원본 경로로 열어보실 수 있습니다.  
+> 릴리즈 업로드/관리 매뉴얼은 👉 **[대용량 산출물 아카이빙 가이드](./05_Competition_Deliverables/GITHUB_RELEASE_GUIDE.md)**를 참조해주세요.
 
 ### 📁 0) 제안 및 신청 단계 (docs/05_Competition_Deliverables/00_Proposal/)
 대회 참여를 위한 초기 제안 및 서류 제출 단계의 자료입니다.
-* **참가신청서 및 제안서**: **[[MDGA_리빙랩_제안] 참가신청서_및_제안서_이상재.pdf](./05_Competition_Deliverables/00_Proposal/[MDGA_리빙랩_제안] 참가신청서_및_제안서_이상재.pdf)**
+* **참가신청서 및 제안서**:  
+  - 🌐 [온라인 다운로드 (1.4MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Proposal_Application.pdf)  
+  - 💻 [로컬 원본 경로](./05_Competition_Deliverables/00_Proposal/[MDGA_리빙랩_제안] 참가신청서_및_제안서_이상재.pdf)
 
 ### 📁 1) 중간 점검 단계 (docs/05_Competition_Deliverables/01_Intermediate/)
-중간 심사 당시 제출 및 발표했던 핵심 자료입니다. 모든 파일은 직관적으로 명명되었습니다.
-* **중간 발표 슬라이드**: **[[MDGA_리빙랩_중간] 발표자료.pptx](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 발표자료.pptx)**
-* **중간 시연 동영상**: **[[MDGA_리빙랩_중간] 시연영상.mp4](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4)** (초기 MVP 실행 화면)
-* **중간 공식 회의록 및 보고서**: **[[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf)**
+중간 심사 당시 제출 및 발표했던 핵심 자료입니다.
+* **중간 발표 슬라이드**:  
+  - 🌐 [온라인 PPTX 다운로드 (8.0MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Slides.pptx)  
+  - 💻 [로컬 PPTX 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 발표자료.pptx)
+* **중간 시연 동영상**:  
+  - 🌐 [온라인 MP4 다운로드 (30.4MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Demo.mp4)  
+  - 💻 [로컬 MP4 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4)
+* **중간 공식 보고서 및 회의록**:  
+  - 🌐 [온라인 PDF 다운로드 (90.3MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Report.pdf)  
+  - 💻 [로컬 PDF 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf)
 
 ### 📁 2) 최종 제출 단계 (docs/05_Competition_Deliverables/02_Final/)
-대회 본선 및 최종 심사를 위해 제작된 마스터 피스들입니다.
-* **최종 발표 슬라이드 (PPTX)**: **[[MDGA_리빙랩_최종] 발표자료.pptx](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx)**
-* **최종 발표 보고서 (PDF)**: **[[MDGA_리빙랩_최종] 발표보고서.pdf](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표보고서.pdf)**
-* **최종 시연 동영상**: **[[MDGA_리빙랩_최종] 시연영상.mp4](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4)** (AI 파이프라인 완벽 연동 데모)
-* **최종 데모 영상 기획 및 스크립트**: **[[MDGA_리빙랩_최종] 시연영상_제작스크립트.md](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상_제작스크립트.md)**
-* **최종 공식 회의록 및 최종 결과 보고서**: **[[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf)**
+대회 본선 및 최종 심사를 위해 제작된 완성형 최종 산출물들입니다.
+* **최종 발표 슬라이드 (PPTX/PDF)**:  
+  - 🌐 [온라인 PPTX 다운로드 (9.0MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx) \| 🌐 [온라인 PDF 다운로드 (2.9MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf)  
+  - 💻 [로컬 PPTX 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx)
+* **최종 시연 동영상**:  
+  - 🌐 [온라인 MP4 다운로드 (138.8MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Demo.mp4)  
+  - 💻 [로컬 MP4 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4)
+* **최종 데모 영상 제작 스크립트**:  
+  - 💻 [로컬 마크다운 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상_제작스크립트.md)
+* **최종 공식 활동보고서 및 종합 회의록**:  
+  - 🌐 [온라인 PDF 다운로드 (52.2MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf)  
+  - 💻 [로컬 PDF 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf)
 
 ### 📁 3) 홍보 및 카드뉴스 (docs/05_Competition_Deliverables/03_CardNews/)
-리빙랩 성과 홍보를 위해 제작된 카드뉴스 원본 이미지 및 본문 텍스트입니다.
-* **카드뉴스 설명 본문**: **[[MDGA_리빙랩_카드뉴스] 카드뉴스_설명글.txt](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 카드뉴스_설명글.txt)**
+리빙랩 성과 대외 홍보를 위해 제작된 카드뉴스 모음입니다.
+* **카드뉴스 설명 본문**: [로컬 텍스트 경로](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 카드뉴스_설명글.txt)
 * **디자인 슬라이드 이미지**:
-  - **[[MDGA_리빙랩_카드뉴스] 01_메인표지.jpeg](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 01_메인표지.jpeg)**
-  - **[[MDGA_리빙랩_카드뉴스] 02_기능소개.png](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 02_기능소개.png)**
-  - **[[MDGA_리빙랩_카드뉴스] 03_비즈니스모델.png](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 03_비즈니스모델.png)**
+  - [01_메인표지.jpeg](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 01_메인표지.jpeg)
+  - [02_기능소개.png](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 02_기능소개.png)
+  - [03_비즈니스모델.png](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 03_비즈니스모델.png)
 
 ### 📁 4) 교육 및 안내 자료 (docs/05_Competition_Deliverables/04_References/)
-대회 주최 측에서 제공한 핵심 사전 교육 자료 및 중간점검 가이드라인입니다.
-* **사전 교육 자료**: **[[MDGA_리빙랩_교육] 사전_교육자료.pdf](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 사전_교육자료.pdf)**
-* **중간점검 교육 자료**: **[[MDGA_리빙랩_교육] 중간점검_교육자료_김보라.pdf](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 중간점검_교육자료_김보라.pdf)**
+대회 주최 측에서 제공한 핵심 사전 교육 자료 및 가이드라인입니다.
+* **사전 교육 자료**: [로컬 PDF 경로](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 사전_교육자료.pdf)
+* **중간점검 교육 자료**: [로컬 PDF 경로](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 중간점검_교육자료_김보라.pdf)
 
 ---
 

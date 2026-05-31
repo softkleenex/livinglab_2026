@@ -46,8 +46,11 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 
 ## 🎬 Demo Video & Presentation Slides Showcase
 
-> [!TIP]
-> We have designed **interactive mockup containers** to present the demo videos and presentation slides beautifully directly on GitHub. Click on the image cards below to play the videos on YouTube or view the PDF reports!
+> [!IMPORTANT]  
+> **[Large Deliverables Download Notice]**  
+> Large-scale original videos (`*.mp4`), proposals (`*.hwp`), and presentation slides (`*.pptx`) are ignored in Git commits via `.gitignore` to prevent **Git Bloat (excessive repo size)** and guarantee instant local checkout.  
+> If those files are not showing on GitHub web UI, simply click the **`🌐 Online Download`** links below to download them directly!  
+> For step-by-step instructions on publishing/managing these files, please refer to the 👉 **[Large Deliverables Archiving Guide (docs/05_Competition_Deliverables/GITHUB_RELEASE_GUIDE.md)](./docs/05_Competition_Deliverables/GITHUB_RELEASE_GUIDE.md)**.
 
 <table width="100%">
   <tr>
@@ -57,7 +60,11 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
         <img src="https://img.youtube.com/vi/KS7ftQ3nPoo/0.jpg" alt="MDGA Final Demo Video" width="95%" style="border-radius: 8px; border: 1px solid #ddd;" />
       </a>
       <p><i>(Final pitch & full-pipeline demonstration - Click to play on YouTube)</i></p>
-      <sub>※ Local path of raw video: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4">docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4</a></sub>
+      <sub>
+        🎥 <b>Final Demo Video</b><br/>
+        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Demo.mp4">Online Download (138MB)</a><br/>
+        • 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4">Local File Path</a>
+      </sub>
     </td>
     <td width="50%" align="center">
       <h4>⏱️ Intermediate Milestone Demo (Intermediate Demo Video)</h4>
@@ -65,7 +72,11 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
         <img src="https://img.youtube.com/vi/bFC9kAiN40U/0.jpg" alt="MDGA Intermediate Demo Video" width="95%" style="border-radius: 8px; border: 1px solid #ddd;" />
       </a>
       <p><i>(Intermediate evaluation & MVP prototype demonstration - Click to play on YouTube)</i></p>
-      <sub>※ Local path of raw video: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4">docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4</a></sub>
+      <sub>
+        🎥 <b>Intermediate Demo Video</b><br/>
+        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Demo.mp4">Online Download (30.4MB)</a><br/>
+        • 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4">Local File Path</a>
+      </sub>
     </td>
   </tr>
 </table>
@@ -74,11 +85,16 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 
 <div align="center">
   <h4>📊 Final Presentation Slides & Activity Reports</h4>
-  <a href="./docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표보고서.pdf" target="_blank">
+  <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf" target="_blank">
     <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
   </a>
-  <p><i>(Click the slide card above to view the PDF report natively on GitHub)</i></p>
-  <sub>※ Local path of PowerPoint source: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx</a></sub>
+  <p><i>(Click the slide card above to view or download the PDF report natively from Release Assets)</i></p>
+  <sub>
+    📁 <b>Final Deliverables Package</b><br/>
+    • 📊 <b>Final Presentation Slides</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx">PPTX Download (9.0MB)</a> \| 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf">PDF Download (2.9MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">Local PPTX Path</a><br/>
+    • 📄 <b>Final Activity Report & Minutes</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf">PDF Download (52.2MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf">Local PDF Path</a><br/>
+    • 📄 <b>Intermediate Activity Report & Minutes</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Report.pdf">PDF Download (90.3MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf">Local PDF Path</a>
+  </sub>
 </div>
 
 ---
