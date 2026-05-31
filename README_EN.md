@@ -47,28 +47,39 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 ## 🎬 Demo Video & Presentation Slides Showcase
 
 > [!TIP]
-> We have designed **interactive mockup containers** to present the demo video and presentation slides beautifully directly on GitHub. Click on the image cards below to navigate directly to their respective resources!
+> We have designed **interactive mockup containers** to present the demo videos and presentation slides beautifully directly on GitHub. Click on the image cards below to play the videos on YouTube or view the PDF reports!
 
 <table width="100%">
   <tr>
     <td width="50%" align="center">
-      <h4>🎬 Final Demo Video</h4>
-      <a href="https://www.youtube.com/watch?v=your_video_id_here" target="_blank">
-        <img src="https://img.youtube.com/vi/your_video_id_here/0.jpg" alt="MDGA Demo Video" width="95%" style="border-radius: 8px; border: 1px solid #ddd;" />
+      <h4>🏆 Final Pitch Presentation Demo (Final Demo Video)</h4>
+      <a href="https://www.youtube.com/watch?v=KS7ftQ3nPoo&t=46s" target="_blank">
+        <img src="https://img.youtube.com/vi/KS7ftQ3nPoo/0.jpg" alt="MDGA Final Demo Video" width="95%" style="border-radius: 8px; border: 1px solid #ddd;" />
       </a>
-      <p><i>(Click the video thumbnail above to play the demo video on YouTube)</i></p>
+      <p><i>(Final pitch & full-pipeline demonstration - Click to play on YouTube)</i></p>
       <sub>※ Local path of raw video: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4">docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4</a></sub>
     </td>
     <td width="50%" align="center">
-      <h4>📊 Final Pitch Presentation Slides</h4>
-      <a href="./docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표보고서.pdf" target="_blank">
-        <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Presentation PDF" width="95%" style="border-radius: 8px; border: 1px solid #ddd; filter: brightness(0.9);" />
+      <h4>⏱️ Intermediate Milestone Demo (Intermediate Demo Video)</h4>
+      <a href="https://youtu.be/bFC9kAiN40U" target="_blank">
+        <img src="https://img.youtube.com/vi/bFC9kAiN40U/0.jpg" alt="MDGA Intermediate Demo Video" width="95%" style="border-radius: 8px; border: 1px solid #ddd;" />
       </a>
-      <p><i>(Click the slide preview above to view the PDF report natively on GitHub)</i></p>
-      <sub>※ Local path of PowerPoint source: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx</a></sub>
+      <p><i>(Intermediate evaluation & MVP prototype demonstration - Click to play on YouTube)</i></p>
+      <sub>※ Local path of raw video: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4">docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4</a></sub>
     </td>
   </tr>
 </table>
+
+<br />
+
+<div align="center">
+  <h4>📊 Final Presentation Slides & Activity Reports</h4>
+  <a href="./docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표보고서.pdf" target="_blank">
+    <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
+  </a>
+  <p><i>(Click the slide card above to view the PDF report natively on GitHub)</i></p>
+  <sub>※ Local path of PowerPoint source: <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx</a></sub>
+</div>
 
 ---
 
