@@ -50,9 +50,6 @@ docs/**/*.pdf
 docs/**/*.pptx
 docs/**/*.mp4
 docs/**/*.hwp
-docs/2026_livinglabMDGA최종/
-docs/중간점검/
-docs/최종 제출/
 .agents/
 .claude/
 *.mp4

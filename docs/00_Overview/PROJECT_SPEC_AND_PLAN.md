@@ -12,7 +12,7 @@
 *   **미션:** 비정형 데이터의 자동 정형화(AI-Ready), 지역 단위 공간 계층화, 기후 및 작황 시뮬레이션을 통한 고품질 합성 데이터 생성 및 거래 마켓플레이스 제공.
 
 ### 1.2 기 구축된 시스템 인프라 현황 (Deployed Infrastructure)
-*자세한 시스템 구성은 [`architecture/SYSTEM_ARCH.md`](./architecture/SYSTEM_ARCH.md) 문서를 참조하세요.*
+*자세한 시스템 구성은 [`architecture/SYSTEM_ARCH.md`](../02_Architecture_&_API/architecture/SYSTEM_ARCH.md) 문서를 참조하세요.*
 *   **Frontend:** React 19, Vite, Tailwind CSS (현재 **Cloudflare Pages**에 배포 및 운영 중)
 *   **Backend:** Python 3.11, FastAPI, SQLAlchemy 2.0 (현재 **Render.com** 웹 서비스로 배포 및 운영 중)
 *   **Database:** PostgreSQL (**Supabase** Managed DB로 연동 완료)
@@ -30,7 +30,7 @@
 
 ### 2.1 핵심 비즈니스 시나리오 (MDGA 4대 핵심 기능)
 멘토링 피드백을 반영한 농업 AX(Agricultural AX) 피봇팅에 따른 최종 타겟 페르소나 및 핵심 서비스 로직은 분리된 상세 문서를 참조하십시오:
-👉 **[핵심 서비스 기획 및 로직 (docs/service_logic/CORE_LOGIC_AND_PLANNING.md)](./service_logic/CORE_LOGIC_AND_PLANNING.md)**
+👉 **[핵심 서비스 기획 및 로직 (docs/01_Requirements_&_Design/service_logic/CORE_LOGIC_AND_PLANNING.md)](../01_Requirements_&_Design/service_logic/CORE_LOGIC_AND_PLANNING.md)**
 
 *(참고: MVP 배포 버전에서는 외부 유료/공공 API 연동의 한계로 인해, '기상청(KMA)', '농진청(RDA)' 및 '쇼핑몰 매출 데이터', 'B2B 합성 데이터 엔진' 등은 백엔드 내에서 AI 기반의 동적 시뮬레이션으로 제공하도록 경계를 설정했습니다.)*
 
@@ -94,24 +94,42 @@
 ## 6. 문서 관리 구조 (`/docs`)
 ```text
 docs/
-├── PROJECT_SPEC_AND_PLAN.md    # 현재 문서 (전체 프로젝트 명세 및 계획)
-├── PORTFOLIO_GUIDE.md          # 포트폴리오 및 면접용 핵심 성과 가이드
 ├── README.md                   # 전체 문서 통합 인덱스 (목차)
-├── architecture/               # 아키텍처 및 시스템 설계
-│   ├── SYSTEM_ARCH.md          # 인프라 구성도, 배포 전략, 시퀀스 다이어그램
-│   └── DB_SCHEMA.md            # ERD 명세 및 테이블 컬럼 상세 정의서
-├── api/                        # API 연동 규격서
-│   ├── REST_API_DOCS.md        # 백엔드 제공 RESTful API 명세
-│   └── EXTERNAL_API_DOCS.md    # 외부 API 연동 가이드
-├── infrastructure/             # 🛠 인프라스트럭처 명세
-│   ├── CURRENT_STATE.md        # 현재 배포 인프라 상세 분석 (Render, Supabase 등)
-│   ├── DEPLOYMENT_GUIDE.md     # 환경 변수, CI/CD, 마이그레이션 등 배포 가이드
-│   ├── SECURITY_COMPLIANCE.md  # 통신, 저장, 권한(OAuth, JWT, RLS) 보안 정책
-│   └── FUTURE_EXPANSION.md     # Redis, PostGIS, Task Queue 등 향후 확장 로드맵
-├── design/                     # 화면 및 사용자 플로우 설계
-│   └── USER_FLOW.md            # 유저 시나리오 및 플로우 차트 설명
-├── requirements/               # 요구사항 및 정책 명세
-│   └── BUSINESS_RULES.md       # 핵심 비즈니스 로직 및 제약사항
-└── service_logic/              # 농업 AX 타겟 페르소나 및 핵심 서비스 로직 상세 정의
-    └── CORE_LOGIC_AND_PLANNING.md
+├── 00_Overview/                # 프로젝트 기획 및 성과 요약
+│   ├── PROJECT_SPEC_AND_PLAN.md # 본 문서 (전체 프로젝트 명세 및 계획)
+│   └── PORTFOLIO_GUIDE.md      # 포트폴리오 및 면접용 핵심 성과 가이드
+├── 01_Requirements_&_Design/   # 기획 및 유저 플로우 설계
+│   ├── design/
+│   │   └── USER_FLOW.md        # 유저 시나리오 및 플로우 차트 설명
+│   ├── requirements/
+│   │   └── BUSINESS_RULES.md   # 핵심 비즈니스 로직 및 제약사항
+│   └── service_logic/
+│       ├── CORE_LOGIC_AND_PLANNING.md # 농업 AX 타겟 페르소나 및 핵심 서비스 로직 상세 정의
+│       └── COMPETITOR_ANALYSIS.md     # 경쟁 플랫폼 대비 MDGA 차별화 BM 분석
+├── 02_Architecture_&_API/      # 기술 설계 및 연동 규격
+│   ├── api/
+│   │   ├── REST_API_DOCS.md    # 백엔드 제공 RESTful API 명세
+│   │   └── EXTERNAL_API_DOCS.md # 외부 API 연동 가이드 (Gemini, Drive 등)
+│   └── architecture/
+│       ├── SYSTEM_ARCH.md      # 인프라 구성도, 배포 전략, 시퀀스 다이어그램
+│       └── DB_SCHEMA.md        # ERD 명세 및 테이블 컬럼 상세 정의서
+├── 03_Infrastructure/          # 인프라스트럭처 명세
+│   └── infrastructure/
+│       ├── CURRENT_STATE.md    # 현재 배포 인프라 상세 분석 (Render, Supabase 등)
+│       ├── DEPLOYMENT_GUIDE.md # 환경 변수, CI/CD, 마이그레이션 등 배포 가이드
+│       ├── SECURITY_COMPLIANCE.md # 통신, 저장, 권한(OAuth, JWT, RLS) 보안 정책
+│       └── FUTURE_EXPANSION.md # Redis, PostGIS, Task Queue 등 향후 확장 로드맵
+├── 04_Research_&_Feedback/     # 사용자 리서치 및 자문 자료
+│   ├── interview/
+│   │   ├── 김세찬1.txt         # 돈사 농가 인터뷰
+│   │   └── 유재혁1.txt         # 스마트팜 농가 인터뷰
+│   └── ip_consultation/
+│       └── MEETING_MINUTES.md  # 지식재산(IP) 특허 자문 회의록
+└── 05_Competition_Deliverables/ # 🏆 리빙랩 대회 산출물 (제안, 중간, 최종, 카드뉴스, 교육자료)
+    ├── 00_Proposal/            # 제안 및 신청 단계 (참가신청서 및 제안서 PDF)
+    ├── 01_Intermediate/        # 중간 점검 단계 (발표자료 PPTX, 시연영상 MP4, 활동보고서 PDF)
+    ├── 02_Final/               # 최종 제출 단계 (발표자료 PPTX, 발표보고서 PDF, 시연영상 MP4, 보고서 PDF)
+    │   └── [MDGA_리빙랩_최종] 시연영상_제작스크립트.md
+    ├── 03_CardNews/            # 카드뉴스 홍보 단계 (디자인 이미지 및 설명글)
+    └── 04_References/          # 교육 및 안내 자료 (사전 및 중간점검 가이드 PDF)
 ```
