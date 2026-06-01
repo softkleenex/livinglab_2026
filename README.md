@@ -62,8 +62,7 @@
       <p><i>(최종 발표 및 풀 파이프라인 시연 - 클릭 시 유튜브 이동)</i></p>
       <sub>
         🎥 <b>최종 발표 동영상 원본</b><br/>
-        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Demo.mp4">온라인 다운로드 (138MB)</a><br/>
-        • 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4">로컬 원본 경로</a>
+        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Demo.mp4">온라인 다운로드 (138MB)</a>
       </sub>
     </td>
     <td width="50%" align="center">
@@ -74,8 +73,7 @@
       <p><i>(중간 평가 및 MVP 프로토타입 시연 - 클릭 시 유튜브 이동)</i></p>
       <sub>
         🎥 <b>중간 점검 동영상 원본</b><br/>
-        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Demo.mp4">온라인 다운로드 (30.4MB)</a><br/>
-        • 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4">로컬 원본 경로</a>
+        • 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Demo.mp4">온라인 다운로드 (30.4MB)</a>
       </sub>
     </td>
   </tr>
@@ -91,9 +89,9 @@
   <p><i>(위 최종 발표 사진 카드를 클릭하시면 릴리즈에서 직접 PDF 보고서가 다운로드됩니다)</i></p>
   <sub>
     📁 <b>최종 산출물 모음</b><br/>
-    • 📊 <b>최종 발표 슬라이드</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx">PPTX 다운로드 (9.0MB)</a> \| 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf">PDF 다운로드 (2.9MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">로컬 PPTX 경로</a><br/>
-    • 📄 <b>최종 활동보고서 및 회의록</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf">PDF 다운로드 (52.2MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf">로컬 PDF 경로</a><br/>
-    • 📄 <b>중간 활동보고서 및 회의록</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Report.pdf">PDF 다운로드 (90.3MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf">로컬 PDF 경로</a>
+    • 📊 <b>최종 발표 슬라이드</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx">PPTX 다운로드 (9.0MB)</a> \| 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf">PDF 다운로드 (2.9MB)</a><br/>
+    • 📄 <b>최종 활동보고서 및 회의록</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf">PDF 다운로드 (52.2MB)</a><br/>
+    • 📄 <b>중간 활동보고서 및 회의록</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Report.pdf">PDF 다운로드 (90.3MB)</a>
   </sub>
 </div>
 

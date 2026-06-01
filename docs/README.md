@@ -65,44 +65,37 @@ graph TD
 
 > [!NOTE]  
 > HWP, PDF, PPTX, MP4와 같은 대용량 바이너리 파일들은 깃 저장소의 용량 최적화를 위해 `.gitignore` 처리되어 깃허브 원격 커밋에서는 제외되었습니다.  
-> 대신 **GitHub Releases**에 아카이빙되어 있어 아래의 **`🌐 온라인 다운로드`** 링크를 통해 깃허브 상에서도 즉시 다운로드할 수 있으며, 로컬 워크스페이스 상에서도 원본 경로로 열어보실 수 있습니다.  
+> 대신 **GitHub Releases**에 아카이빙되어 있어 아래의 **`🌐 온라인 다운로드`** 링크를 통해 즉시 다운로드하실 수 있습니다.  
 > 릴리즈 업로드/관리 매뉴얼은 👉 **[대용량 산출물 아카이빙 가이드](./05_Competition_Deliverables/GITHUB_RELEASE_GUIDE.md)**를 참조해주세요.
 
 ### 📁 0) 제안 및 신청 단계 (docs/05_Competition_Deliverables/00_Proposal/)
 대회 참여를 위한 초기 제안 및 서류 제출 단계의 자료입니다.
 * **참가신청서 및 제안서**:  
   - 🌐 [온라인 다운로드 (1.4MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Proposal_Application.pdf)  
-  - 💻 [로컬 원본 경로](./05_Competition_Deliverables/00_Proposal/[MDGA_리빙랩_제안] 참가신청서_및_제안서_이상재.pdf)
 
 ### 📁 1) 중간 점검 단계 (docs/05_Competition_Deliverables/01_Intermediate/)
 중간 심사 당시 제출 및 발표했던 핵심 자료입니다.
 * **중간 발표 슬라이드**:  
   - 🌐 [온라인 PPTX 다운로드 (8.0MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Slides.pptx)  
-  - 💻 [로컬 PPTX 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 발표자료.pptx)
 * **중간 시연 동영상**:  
   - 🌐 [온라인 MP4 다운로드 (30.4MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Demo.mp4)  
-  - 💻 [로컬 MP4 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 시연영상.mp4)
 * **중간 공식 보고서 및 회의록**:  
   - 🌐 [온라인 PDF 다운로드 (90.3MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Intermediate_Report.pdf)  
-  - 💻 [로컬 PDF 경로](./05_Competition_Deliverables/01_Intermediate/[MDGA_리빙랩_중간] 활동보고서_및_회의록.pdf)
 
 ### 📁 2) 최종 제출 단계 (docs/05_Competition_Deliverables/02_Final/)
 대회 본선 및 최종 심사를 위해 제작된 완성형 최종 산출물들입니다.
 * **최종 발표 슬라이드 (PPTX/PDF)**:  
   - 🌐 [온라인 PPTX 다운로드 (9.0MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx) \| 🌐 [온라인 PDF 다운로드 (2.9MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf)  
-  - 💻 [로컬 PPTX 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx)
 * **최종 시연 동영상**:  
   - 🌐 [온라인 MP4 다운로드 (138.8MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Demo.mp4)  
-  - 💻 [로컬 MP4 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상.mp4)
 * **최종 데모 영상 제작 스크립트**:  
-  - 💻 [로컬 마크다운 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상_제작스크립트.md)
+  - 📝 [시연영상_제작스크립트.md (로컬 마크다운)](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상_제작스크립트.md)
 * **최종 공식 활동보고서 및 종합 회의록**:  
   - 🌐 [온라인 PDF 다운로드 (52.2MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf)  
-  - 💻 [로컬 PDF 경로](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 활동보고서_및_회의록.pdf)
 
 ### 📁 3) 홍보 및 카드뉴스 (docs/05_Competition_Deliverables/03_CardNews/)
 리빙랩 성과 대외 홍보를 위해 제작된 카드뉴스 모음입니다.
-* **카드뉴스 설명 본문**: [로컬 텍스트 경로](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 카드뉴스_설명글.txt)
+* **카드뉴스 설명 본문**: [카드뉴스_설명글.txt](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 카드뉴스_설명글.txt)
 * **디자인 슬라이드 이미지**:
   - [01_메인표지.jpeg](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 01_메인표지.jpeg)
   - [02_기능소개.png](./05_Competition_Deliverables/03_CardNews/[MDGA_리빙랩_카드뉴스] 02_기능소개.png)
@@ -110,8 +103,9 @@ graph TD
 
 ### 📁 4) 교육 및 안내 자료 (docs/05_Competition_Deliverables/04_References/)
 대회 주최 측에서 제공한 핵심 사전 교육 자료 및 가이드라인입니다.
-* **사전 교육 자료**: [로컬 PDF 경로](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 사전_교육자료.pdf)
-* **중간점검 교육 자료**: [로컬 PDF 경로](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 중간점검_교육자료_김보라.pdf)
+* **교육 자료 실물**: 
+  - [사전_교육자료.pdf](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 사전_교육자료.pdf)
+  - [중간점검_교육자료_김보라.pdf](./05_Competition_Deliverables/04_References/[MDGA_리빙랩_교육] 중간점검_교육자료_김보라.pdf)
 
 ---
 
