@@ -1,7 +1,7 @@
 # MDGA (Universal Data Engine) 🌾🚀
 
 <div align="center">
-  <img src="docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
+  <img src="./docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
   
   <br />
 
@@ -86,9 +86,9 @@
 <div align="center">
   <h4>📊 최종 발표 자료 및 종합 보고서 (Presentation Slides & Reports)</h4>
   <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf" target="_blank">
-    <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
+    <img src="./docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
   </a>
-  <p><i>(위 발표 자료 이미지 카드를 클릭하시면 릴리즈에서 직접 PDF 보고서가 다운로드됩니다)</i></p>
+  <p><i>(위 최종 발표 사진 카드를 클릭하시면 릴리즈에서 직접 PDF 보고서가 다운로드됩니다)</i></p>
   <sub>
     📁 <b>최종 산출물 모음</b><br/>
     • 📊 <b>최종 발표 슬라이드</b>: 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pptx">PPTX 다운로드 (9.0MB)</a> \| 🌐 <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf">PDF 다운로드 (2.9MB)</a> \| 💻 <a href="file:///Volumes/samsd/workspace_v2/livinglab_2026/docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 발표자료.pptx">로컬 PPTX 경로</a><br/>
@@ -222,20 +222,23 @@ docs/
 
 ---
 
-## 🚀 로컬 개발 가이드 (Getting Started)
+## 🔮 변리사 연계 지식재산(IP) 전략 및 향후 프로젝트 확장 계획 (Future Roadmap)
 
-### 1. 환경 변수 설정 (`backend/.env`)
-```env
-DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres
-GEMINI_API_KEY=your_gemini_api_key_here
-```
+본 프로젝트는 단순 소프트웨어 구현에 그치지 않고, **지식재산(IP) 리빙랩 대회**의 비전에 발맞추어 기술 고유성 보호와 장기 비즈니스 확장을 위한 지식재산권 확보 전략을 긴밀히 수립하였습니다.
 
-### 2. 로컬 실행
-프로젝트 루트 폴더에서 통합 개발 환경 실행 스크립트를 작동시킵니다:
-```bash
-# 통합 백엔드(8080) 및 프론트엔드(5173) 동시 실행 스크립트
-./dev.sh
-```
+### 🛡️ 1. 특허 및 지식재산권(IP) 보호 전략
+대회 과정 중 전문 변리사와의 집중 연계 멘토링 및 선행 기술 조사를 통해 **MDGA만의 독자적인 핵심 기술 2건에 대한 BM(Business Method) 특허 출원 가능성**을 검토하고 구체적인 청구항을 설계하였습니다.
+
+1.  **AI 2-Step 의도 분리 영농일지 파싱 알고리즘**:
+    *   사용자의 다양한 대화 패턴 및 비정형 일지 이미지에서 시스템 실행 의도와 세부 엔티티를 독립된 이중 레이어(Intent Parser & Metadata Extractor)로 격리하여 LLM Safety Alignment 거부 교착 상태를 우회하는 제어 기술의 고유성 확보.
+2.  **못난이 농산물 등급 자동 감별 및 지갑 연동 다이렉트 딜 토크노믹스**:
+    *   멀티모달 이미지 기반의 품질 흠집 분석 데이터와 이중 분개 기반의 원장 지갑 트랜잭션을 실시간 동기화하여 투명한 유통 생태계를 확보하는 매칭 기술의 BM 특허성 확보.
+
+### 🚀 2. 향후 프로젝트 확장 로드맵
+특허 자산 확보를 교두보 삼아 지역 사회와 B2B 농업 기업을 잇는 지속 가능한 비즈니스 파이프라인으로 확장을 지향합니다.
+*   **B2B 합성 데이터 라이선스 마켓플레이스 활성화**: 자율주행 농기계 개발사 및 기후 연구소 등의 기관에 익명화/합성 가공된 대량의 영농 환경 데이터셋을 안전하게 라이선스 판매하는 비즈니스 장벽 구축.
+*   **지역 소상공인 연계망 확대**: 대구 인근의 베이커리, 가공 식품 공장과의 파트너십 허브를 구축하여, 버려지는 흠집 농산물의 리사이클링 유통 거래 플랫폼을 실서비스화.
+*   **정부/지자체 스마트팜 방역 허브**: 3D 디지털 트윈 지도를 강화하고 전국 단위의 전염병(ASF, 구제역 등) 조기 예측망을 기상청 공공 API와 완전 비동기 결합하여 지자체 맞춤형 방역 종합 관제 솔루션 패키지로 확장 공급.
 
 ---
-*MDGA - Empowering the Future of Agricultural Transformation.* 🌾
+*MDGA - Secure IP Strategy & Empowering the Future of Agricultural Transformation.* 🌾

@@ -1,7 +1,7 @@
 # MDGA (Universal Data Engine) 🌾🚀
 
 <div align="center">
-  <img src="docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
+  <img src="./docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Dashboard Preview" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
   
   <br />
 
@@ -86,7 +86,7 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 <div align="center">
   <h4>📊 Final Presentation Slides & Activity Reports</h4>
   <a href="https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Slides.pdf" target="_blank">
-    <img src="docs/01_Requirements_&_Design/design/screenshots/screenshot.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
+    <img src="./docs/01_Requirements_&_Design/design/screenshots/main_hero.png" alt="MDGA Presentation PDF" width="80%" style="border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.15);" />
   </a>
   <p><i>(Click the slide card above to view or download the PDF report natively from Release Assets)</i></p>
   <sub>
@@ -222,20 +222,23 @@ docs/
 
 ---
 
-## 🚀 Getting Started
+## 🔮 Patent Consultation Strategy & Future Roadmap
 
-### 1. Environment Variables (`backend/.env`)
-```env
-DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres
-GEMINI_API_KEY=your_gemini_api_key_here
-```
+In line with the vision of the **Living Lab 2026** competition, this project has established a concrete intellectual property (IP) and business growth strategy instead of remaining as a simple software prototype.
 
-### 2. Run Locally
-Execute the unified development shell script:
-```bash
-# Concurrently runs FastAPI Backend (8080) and React Frontend (5173)
-./dev.sh
-```
+### 🛡️ 1. IP & Patent Protection Strategy
+Through in-depth mentoring sessions with a professional patent attorney and rigorous prior-art searches, we designed technical claims for **two core business method (BM) patents** that represent MDGA's proprietary innovations:
+
+1.  **AI 2-Step Decoupled Farming Log Parser Algorithm**:
+    *   Surgically separates the user's conversational interface into decoupled layers (Intent Parser & Metadata Extractor) to analyze complex multimodal imagery and unstructured notes without triggering LLM safety alignment refusers or CRUD execution deadlocks.
+2.  **Ugly Crop Quality Evaluation & Wallet-Integrated Direct Deal Tokenomics**:
+    *   Automates agricultural grade classification using multimodal visual inspection and synchronizes transactions on a double-entry ledger database, securing transparency in processing-grade agricultural distributions.
+
+### 🚀 2. Future Project Expansion Roadmap
+By leveraging our proprietary patent assets, we aim to transition the MVP into a highly scalable, real-world platform:
+*   **B2B Synthetic Data Marketplace**: Licensing anonymized, clean agricultural datasets to autonomous tractor manufacturers (AgiBot), climate researchers (EnvHub), and manipulator engineers (RoboCasa).
+*   **Local Eco-Friendly Recycling Networks**: Building partnerships with juice bars, bakeries, and food factories to process ugly or grade-B crops directly, establishing a highly sustainable regional economy.
+*   **National Quarantine Smart-Monitor**: Deploying interactive 3D digital twin maps combined with real-time public disease database APIs to provide local governments with an end-to-end epidemic prevention control dashboard.
 
 ---
-*MDGA - Empowering the Future of Agricultural Transformation.* 🌾
+*MDGA - Secure IP Strategy & Empowering the Future of Agricultural Transformation.* 🌾

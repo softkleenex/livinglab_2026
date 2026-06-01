@@ -204,37 +204,25 @@ MDGA는 파일 스토리지로 연동되는 **Google Drive API**에 대해 절�
 
 ---
 
-## 🛠️ 6. 유지보수 및 복구 가이드 (DevOps & Recovery)
+## 🔮 6. 변리사 연계 지식재산(IP) 보호 전략 및 확장 로드맵 (IP Strategy & Future Roadmap)
 
-### 💻 6.1. 로컬 개발 환경 3분 셋업
-1. **리포지토리 클론**:
-   ```bash
-   git clone git@github.com:softkleenex/livinglab_2026.git
-   cd livinglab_2026
-   ```
-2. **환경변수 복사 및 설정**:
-   `.env.example` 파일을 복사하여 `.env`를 생성하고 Supabase API Key, Gemini API Key, Google Drive Client Credentials를 기입합니다.
-   ```bash
-   cp .env.example .env
-   ```
-3. **가상환경 활성화 및 패키지 설치**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r backend/requirements.txt
-   ```
-4. **DB 초기 스키마 마이그레이션 및 Hugging Face 실데이터 시딩**:
-   ```bash
-   python backend/app/main.py --db-init
-   python backend/app/seed.py
-   ```
-5. **로컬 개발 서버 동시 구동**:
-   ```bash
-   ./dev.sh
-   ```
+본 프로젝트는 단순 소프트웨어 구현에 그치지 않고, **지식재산(IP) 리빙랩 대회**의 비전에 발맞추어 기술 고유성 보호와 장기 비즈니스 확장을 위한 지식재산권 확보 전략을 긴밀히 수립하였습니다.
 
-### 🚨 6.2. 비상 장애 복구 절차
-* **구글 API 인증 만료 (401 Unauthorized)**:
-  `backend/token.json` 파일을 완전히 삭제한 후 백엔드 서버를 재시작하여 OAuth 웹 브라우저 동의 창을 통해 신규 `token.json` 인가 토큰을 재발행받으십시오.
-* **Supabase 연결 유실 및 Connection Pool 포화**:
-  `backend/app/database.py` 내의 `pool_recycle=1800` 설정을 점검하고, Supabase 웹 콘솔에서 백그라운드 유령 세션을 `kill` 한 뒤 Render 웹 서버를 재부팅(Manual Deploy -> Clear Cache & Deploy)하십시오.
+### 🛡️ 6.1. BM 특허 출원 및 청구항 설계 범위
+대회 과정 중 전문 변리사와의 집중 연계 멘토링 및 선행 기술 조사를 통해 **MDGA만의 독자적인 핵심 기술 2건에 대한 BM(Business Method) 특허 출원 가능성**을 검토하고 구체적인 청구항을 설계하였습니다.
+
+1.  **AI 2-Step 의도 분리 영농일지 파싱 알고리즘 특허**:
+    *   **청구 범위**: 사용자의 다양한 대화 패턴 및 비정형 일지 이미지에서 시스템 실행 의도와 세부 엔티티를 독립된 이중 레이어(Intent Parser & Metadata Extractor)로 격리하여 LLM Safety Alignment 거부 교착 상태를 우회하는 제어 기술.
+    *   **핵심 이점**: AI의 자율적 제어 한계를 시스템 트랜잭션과 논리적으로 완전 분리하여 시스템 오류 및 오동작을 미연에 감지하고 안전하게 원장을 조작할 수 있는 독창적 보안 아키텍처.
+2.  **못난이 농산물 등급 자동 감별 및 지갑 연동 다이렉트 딜 토크노믹스 특허**:
+    *   **청구 범위**: 멀티모달 이미지 기반의 품질 흠집 분석 데이터와 이중 분개 기반의 원장 지갑 트랜잭션을 실시간 동기화하여 투명한 B2B 가공용 농산물 유통 생태계를 확보하는 매칭 시스템.
+    *   **핵심 이점**: 주관적인 등급 분류 체계를 AI 모델로 객관화하고, 신용 결제를 대체하는 안전한 원장 거래 프로세스를 DB 트랜잭션과 바인딩하여 사기 리스크를 배제하는 비즈니스 구조.
+
+### 🚀 6.2. 향후 프로젝트 확장 로드맵
+특허 자산 확보를 교두보 삼아 지역 사회와 B2B 농업 기업을 잇는 지속 가능한 비즈니스 파이프라인으로 확장을 지향합니다.
+*   **B2B 합성 데이터 라이선스 마켓플레이스 활성화**: 자율주행 농기계 개발사 및 기후 연구소 등의 기관에 익명화/합성 가공된 대량의 영농 환경 데이터셋을 안전하게 라이선스 판매하는 비즈니스 장벽 구축 (AgiBot, EnvHub, RoboCasa 표준 허브).
+*   **지역 소상공인 연계망 확대**: 대구 인근의 베이커리, 가공 식품 공장과의 파트너십 허브를 구축하여, 버려지는 흠집 농산물의 리사이클링 유통 거래 플랫폼을 실서비스화.
+*   **정부/지자체 스마트팜 방역 허브**: 3D 디지털 트윈 지도를 강화하고 전국 단위의 전염병(ASF, 구제역 등) 조기 예측망을 기상청 공공 API와 완전 비동기 결합하여 지자체 맞춤형 방역 종합 관제 솔루션 패키지로 확장 공급.
+
+---
+*MDGA - Secure IP Strategy & Empowering the Future of Agricultural Transformation.* 🌾
