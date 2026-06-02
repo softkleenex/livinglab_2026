@@ -49,9 +49,15 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 This project successfully completed all official stages of the Daegu Regional Strategic Industry Intellectual Property Living Lab 2026 and was awarded the following credentials and honors upon final evaluation.
 
 *   **🎓 Official Completion (Daegu Intellectual Property Living Lab)**:
-    *   Successfully completed all required program modules including conceptual architecture design, MVP production deployment, professional patent consulting (prior-art search), and final stage pitch presentation, earning an official completion certificate issued by the Daegu Intellectual Property Center and the Korea Invention Promotion Association.
+    *   Successfully completed all required program modules including conceptual architecture design, MVP production deployment, professional patent consulting (prior-art search), and final stage pitch presentation, earning an official completion certificate issued by the Daegu Intellectual Property Center and the Korea Invention Promotion Association.  
+    *   📄 **[View Certificate PDF (Anonymous version)](./docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_비식별.pdf)**
 *   **🏅 Excellent Project Award & Technical Prize**:
     *   Recognized for the high novelty and technical competitiveness of our core systems—the "AI 2-Step Decoupled Farming Log Parser" and "Ugly Crop B2B Tokenomics Wallet Ledger"—earning **final selection as an Excellent Project with a Technical Prize (equivalent to 200,000 KRW in value)**.
+
+<div align="center">
+  <img src="./docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_비식별.png" alt="MDGA Certificate" width="60%" style="border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.10); margin-top: 15px;" />
+  <p><i>(Daegu Intellectual Property Living Lab 2026 Certificate - Redacted for privacy protection)</i></p>
+</div>
 
 ---
 

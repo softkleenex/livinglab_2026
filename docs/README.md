@@ -94,6 +94,8 @@ graph TD
   - 🌐 [온라인 PDF 다운로드 (52.2MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf)  
 * **🏆 우수 프로젝트 성과 및 순위 증빙 자료**:  
   - 🖼️ [카카오톡 공식 결과 발표 이미지](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 카카오톡_공식_순위_발표.png)
+* **🎓 공식 지식재산리빙랩 수료증**:  
+  - 📄 [수료증 PDF (비식별화 버전)](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_비식별.pdf) \| 🖼️ [수료증 PNG 이미지 (비식별화 버전)](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_비식별.png)
 
 
 ### 📁 3) 홍보 및 카드뉴스 (docs/05_Competition_Deliverables/03_CardNews/)
