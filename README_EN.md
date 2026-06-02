@@ -44,6 +44,17 @@ This project was developed for the **2026 Daegu Regional Strategic Industry Prob
 
 ---
 
+## 🏆 Achievements & Credentials
+
+This project successfully completed all official stages of the Daegu Regional Strategic Industry Intellectual Property Living Lab 2026 and was awarded the following credentials and honors upon final evaluation.
+
+*   **🎓 Official Completion (Daegu Intellectual Property Living Lab)**:
+    *   Successfully completed all required program modules including conceptual architecture design, MVP production deployment, professional patent consulting (prior-art search), and final stage pitch presentation, earning an official completion certificate issued by the Daegu Intellectual Property Center and the Korea Invention Promotion Association.
+*   **🏅 Excellent Project Award & Technical Prize**:
+    *   Recognized for the high novelty and technical competitiveness of our core systems—the "AI 2-Step Decoupled Farming Log Parser" and "Ugly Crop B2B Tokenomics Wallet Ledger"—earning **final selection as an Excellent Project with a Technical Prize (equivalent to 200,000 KRW in value)**.
+
+---
+
 ## 🎬 Demo Video & Presentation Slides Showcase
 
 > [!IMPORTANT]  
