@@ -92,6 +92,9 @@ graph TD
   - 📝 [시연영상_제작스크립트.md (로컬 마크다운)](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 시연영상_제작스크립트.md)
 * **최종 공식 활동보고서 및 종합 회의록**:  
   - 🌐 [온라인 PDF 다운로드 (52.2MB)](https://github.com/softkleenex/livinglab_2026/releases/download/v1.0.0-archive/MDGA_Final_Report.pdf)  
+* **🏆 우수 프로젝트 성과 및 순위 증빙 자료**:  
+  - 🖼️ [카카오톡 공식 결과 발표 이미지](./05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 카카오톡_공식_순위_발표.png)
+
 
 ### 📁 3) 홍보 및 카드뉴스 (docs/05_Competition_Deliverables/03_CardNews/)
 리빙랩 성과 대외 홍보를 위해 제작된 카드뉴스 모음입니다.
