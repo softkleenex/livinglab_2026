@@ -57,3 +57,6 @@ docs/**/*.hwp
 # Certificate Git policy: track anonymous version, ignore raw original
 !docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_비식별.pdf
 docs/05_Competition_Deliverables/02_Final/[MDGA_리빙랩_최종] 지식재산리빙랩_수료증_원본.pdf
+
+# 에이전트 CLI 로컬 상태
+.antigravitycli/
